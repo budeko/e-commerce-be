@@ -1,7 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
-import { paginationSchema, productListQuerySchema } from "./schemas.js";
+import type { Sql } from "../../db/client.js";
+import { productListQuerySchema } from "./schemas.js";
 
 export const catalogRoutes: FastifyPluginAsync = async (app) => {
+  const sql = app.sql as Sql;
+
   app.get("/catalog/product-listings", async (request, reply) => {
     const parsed = productListQuerySchema.safeParse(request.query);
     if (!parsed.success) {
@@ -11,13 +14,14 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
     const { page, limit, categoryId, q } = parsed.data;
     const offset = (page - 1) * limit;
 
-    const searchTerm = q?.trim() || null;
+    const searchTerm: string | null = q?.trim() ? q.trim() : null;
+    const categoryFilter: string | null = categoryId ?? null;
 
-    const countRows = await app.sql<{ count: string }[]>`
+    const countRows = await sql<{ count: string }[]>`
       SELECT COUNT(*)::text AS count
       FROM product_listings pl
       WHERE pl.listing_status = 'active'
-        AND (${categoryId}::uuid IS NULL OR pl.category_id = ${categoryId ?? null})
+        AND (${categoryFilter}::uuid IS NULL OR pl.category_id = ${categoryFilter})
         AND (
           COALESCE(${searchTerm}, '') = ''
           OR pl.search_vector @@ plainto_tsquery('simple', ${searchTerm})
@@ -25,7 +29,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
     `;
     const total = Number(countRows[0]?.count ?? 0);
 
-    const rows = await app.sql<
+    const rows = await sql<
       {
         id: string;
         seller_profile_id: string;
@@ -56,7 +60,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
         pl.created_at
       FROM product_listings pl
       WHERE pl.listing_status = 'active'
-        AND (${categoryId}::uuid IS NULL OR pl.category_id = ${categoryId ?? null})
+        AND (${categoryFilter}::uuid IS NULL OR pl.category_id = ${categoryFilter})
         AND (
           COALESCE(${searchTerm}, '') = ''
           OR pl.search_vector @@ plainto_tsquery('simple', ${searchTerm})
@@ -77,7 +81,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/catalog/product-listings/:id", async (request, reply) => {
     const id = (request.params as { id: string }).id;
-    const rows = await app.sql<
+    const rows = await sql<
       {
         id: string;
         seller_profile_id: string;
@@ -129,7 +133,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
       return reply.code(404).send({ error: "not_found" });
     }
 
-    const media = await app.sql<
+    const media = await sql<
       { id: string; url: string; media_type: string; is_cover: boolean; sort_order: number }[]
     >`
       SELECT id, url, media_type::text, is_cover, sort_order
@@ -150,13 +154,14 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
 
     const { page, limit, categoryId, q } = parsed.data;
     const offset = (page - 1) * limit;
-    const searchTerm = q?.trim() || null;
+    const searchTerm: string | null = q?.trim() ? q.trim() : null;
+    const categoryFilter: string | null = categoryId ?? null;
 
-    const countRows = await app.sql<{ count: string }[]>`
+    const countRows = await sql<{ count: string }[]>`
       SELECT COUNT(*)::text AS count
       FROM production_listings pl
       WHERE pl.listing_status = 'active'
-        AND (${categoryId}::uuid IS NULL OR pl.category_id = ${categoryId ?? null})
+        AND (${categoryFilter}::uuid IS NULL OR pl.category_id = ${categoryFilter})
         AND (
           COALESCE(${searchTerm}, '') = ''
           OR pl.search_vector @@ plainto_tsquery('simple', ${searchTerm})
@@ -164,7 +169,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
     `;
     const total = Number(countRows[0]?.count ?? 0);
 
-    const rows = await app.sql<
+    const rows = await sql<
       {
         id: string;
         seller_profile_id: string;
@@ -189,7 +194,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
         pl.created_at
       FROM production_listings pl
       WHERE pl.listing_status = 'active'
-        AND (${categoryId}::uuid IS NULL OR pl.category_id = ${categoryId ?? null})
+        AND (${categoryFilter}::uuid IS NULL OR pl.category_id = ${categoryFilter})
         AND (
           COALESCE(${searchTerm}, '') = ''
           OR pl.search_vector @@ plainto_tsquery('simple', ${searchTerm})
@@ -210,7 +215,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/catalog/production-listings/:id", async (request, reply) => {
     const id = (request.params as { id: string }).id;
-    const rows = await app.sql<
+    const rows = await sql<
       {
         id: string;
         seller_profile_id: string;
@@ -256,7 +261,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
       return reply.code(404).send({ error: "not_found" });
     }
 
-    const media = await app.sql<
+    const media = await sql<
       { id: string; url: string; media_type: string; is_cover: boolean; sort_order: number }[]
     >`
       SELECT id, url, media_type::text, is_cover, sort_order
