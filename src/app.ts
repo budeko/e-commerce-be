@@ -1,21 +1,22 @@
-import Fastify from "fastify";
-import dbPlugin from "./plugins/db.js";
-import authGuardPlugin from "./plugins/authGuard.js";
-import { authRoutes } from "./modules/auth/auth.routes.js";
+import fastify from 'fastify';
+import { connectDB } from './lib/db';
+import authRoutes from './features/auth/auth.routes';
 
-export async function buildApp() {
-  const app = Fastify({
-    logger: true,
-    // Avvio varsayılan plugin timeout'u 10 sn; Atlas bağlantısı bunu aşabiliyor
-    pluginTimeout: 30_000,
-  });
+const app = fastify();
 
-  await app.register(dbPlugin);
-  await app.register(authGuardPlugin);
+const start = async () => {
+  try {
+    await connectDB();
+    console.log('✅ Veritabanı bağlantısı başarılı!');
 
-  app.get("/health", async () => ({ status: "ok" }));
+    await app.register(authRoutes, { prefix: '/auth' });
 
-  await app.register(authRoutes, { prefix: "/api/auth" });
+    await app.listen({ port: 3000 });
+    console.log('🚀 Sunucu http://localhost:3000 adresinde çalışıyor');
+  } catch (err) {
+    console.error('❌ Başlatma hatası:', err);
+    process.exit(1);
+  }
+};
 
-  return app;
-}
+start();

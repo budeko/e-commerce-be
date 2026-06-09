@@ -1,6 +1,16 @@
-node_modules
-dist
-.env*
-*.tsbuildinfo
-.DS_Store
+# Bağımlılıklar
+node_modules/
+dist/
+build/
+
+# Gizli bilgiler
+.env
+
+# Log dosyaları
+*.log
 npm-debug.log*
+
+# Editör dosyaları
+.vscode/
+.idea/
+.DS_Store
