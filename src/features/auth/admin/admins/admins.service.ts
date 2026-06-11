@@ -1,9 +1,80 @@
-import { canCreateAdminRole, canDeleteAdmin } from '../../../../lib/auth/admin-permissions';
+import {
+  canAssignAdminRole,
+  canCreateAdminRole,
+  canDeleteAdmin,
+  canUpdateAdminRole,
+  canViewAdmin,
+} from '../../../../lib/auth/admin-permissions';
+import { formatAdminResponse } from '../../../../lib/auth/admin-response';
 import { hashPassword } from '../../../../lib/common/password';
 import { Admin, User } from '../../../../db';
 import type { AdminRole } from '../../../../db/auth/admin.model';
 import { RegisterError, isDuplicateKeyError } from '../../register/register.errors';
 import type { CreateAdminInput } from './schemas/create-admin.schema';
+import type { UpdateAdminInput } from './schemas/update-admin.schema';
+
+const findAdminRecord = async (targetUserId: string) => {
+  const targetAdmin = await Admin.findOne({ userId: targetUserId });
+
+  if (!targetAdmin) {
+    throw new RegisterError(404, 'Admin bulunamadı');
+  }
+
+  const targetUser = await User.findById(targetUserId).select('email role isEmailVerified createdAt');
+
+  if (!targetUser || targetUser.role !== 'admin') {
+    throw new RegisterError(404, 'Admin bulunamadı');
+  }
+
+  return { targetAdmin, targetUser };
+};
+
+export const getAdminByUserId = async (
+  actorRole: AdminRole,
+  actorUserId: string,
+  targetUserId: string
+) => {
+  if (!canViewAdmin(actorRole, actorUserId, targetUserId)) {
+    throw new RegisterError(403, 'Bu admin profilini görüntüleme yetkin yok');
+  }
+
+  const { targetAdmin, targetUser } = await findAdminRecord(targetUserId);
+  return formatAdminResponse(targetAdmin, targetUser);
+};
+
+export const updateAdmin = async (
+  actorRole: AdminRole,
+  actorUserId: string,
+  targetUserId: string,
+  data: UpdateAdminInput
+) => {
+  if (!canUpdateAdminRole(actorRole, actorUserId, targetUserId)) {
+    throw new RegisterError(403, 'Bu admin profilini güncelleme yetkin yok');
+  }
+
+  if (!canAssignAdminRole(actorRole, data.adminRole)) {
+    throw new RegisterError(403, 'Bu admin rolünü atama yetkin yok');
+  }
+
+  const { targetAdmin, targetUser } = await findAdminRecord(targetUserId);
+
+  if (targetAdmin.adminRole === data.adminRole) {
+    return formatAdminResponse(targetAdmin, targetUser);
+  }
+
+  if (targetAdmin.adminRole === 'owner' && data.adminRole === 'helper') {
+    const ownerCount = await Admin.countDocuments({ adminRole: 'owner' });
+
+    if (ownerCount <= 1) {
+      throw new RegisterError(400, 'Son owner helper yapılamaz');
+    }
+  }
+
+  targetAdmin.adminRole = data.adminRole;
+  await targetAdmin.save();
+
+  return formatAdminResponse(targetAdmin, targetUser);
+};
 
 export const listAdmins = async () => {
   const admins = await Admin.find().sort({ createdAt: -1 }).lean();
@@ -16,15 +87,7 @@ export const listAdmins = async () => {
 
   return admins.map((admin) => {
     const user = usersById.get(String(admin.userId));
-
-    return {
-      userId: admin.userId,
-      email: user?.email,
-      isEmailVerified: user?.isEmailVerified,
-      adminRole: admin.adminRole,
-      createdAt: user?.createdAt ?? admin.createdAt,
-      createdBy: admin.createdBy,
-    };
+    return formatAdminResponse(admin, user);
   });
 };
 
@@ -58,13 +121,12 @@ export const createAdmin = async (
       userId: user._id,
       adminRole: data.adminRole,
       createdBy: creatorUserId,
+      ...(data.firstName !== undefined ? { firstName: data.firstName } : {}),
+      ...(data.lastName !== undefined ? { lastName: data.lastName } : {}),
+      ...(data.phone !== undefined ? { phone: data.phone } : {}),
     });
 
-    return {
-      userId: user._id,
-      email: user.email,
-      adminRole: admin.adminRole,
-    };
+    return formatAdminResponse(admin, user);
   } catch (error) {
     if (isDuplicateKeyError(error)) {
       throw new RegisterError(409, 'Bu e-posta adresi zaten kayıtlı');

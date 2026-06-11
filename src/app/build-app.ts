@@ -5,7 +5,11 @@ import authRoutes from '../features/auth/auth.routes';
 import ecommerceRoutes from '../features/ecommerce/ecommerce.routes';
 
 export const buildApp = async (): Promise<FastifyInstance> => {
-  const app = fastify({ logger: false });
+  const app = fastify({
+    logger: {
+      level: process.env.LOG_LEVEL ?? 'info',
+    },
+  });
 
   app.setErrorHandler((error: unknown, _request, reply) => {
     const statusCode =

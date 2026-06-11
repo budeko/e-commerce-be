@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { validateBody } from '../../../lib/common/middleware/validate-body';
+import { buildAuthUserFields } from '../../../lib/auth/auth-user-response';
 import { RegisterError } from '../register/register.errors';
 import { verifyEmail } from './verify-email.service';
 import { verifyEmailSchema, type VerifyEmailInput } from './schemas/verify-email.schema';
@@ -15,11 +16,14 @@ const handleError = (reply: FastifyReply, error: unknown) => {
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(verifyEmailSchema) }, async (req, reply) => {
     try {
-      const user = await verifyEmail((req.body as VerifyEmailInput).token);
+      const { user, token } = await verifyEmail(req.body as VerifyEmailInput);
+      const statusFields = await buildAuthUserFields(user);
 
       return reply.status(200).send({
         message: 'E-posta doğrulandı',
+        ...statusFields,
         isEmailVerified: user.isEmailVerified,
+        token,
       });
     } catch (error) {
       return handleError(reply, error);

@@ -1,16 +1,34 @@
-import { signAuthToken } from '../../../lib/auth/auth-token';
+import { createLogger } from '../../../lib/common/logger';
 import { sendUserVerificationEmail } from '../../../lib/auth/email/send-verification';
+import {
+  assertRegisterEmailCooldown,
+  markRegisterEmailCooldown,
+  markVerificationEmailSent,
+} from '../../../lib/auth/email-cooldown';
+import {
+  deleteUnverifiedUser,
+  getVerificationExpiresAt,
+} from '../../../lib/auth/unverified-user';
+import { invalidateAuthOtp } from '../../../lib/auth/otp';
 import { hashPassword } from '../../../lib/common/password';
 import { User, Buyer, Seller } from '../../../db';
 import { RegisterError } from './register.errors';
 import type { RegisterInput } from './schemas';
 
-const ensureEmailAvailable = async (email: string) => {
+const log = createLogger({ module: 'register' });
+
+const resolveEmailForRegister = async (email: string) => {
   const existing = await User.findOne({ email: email.toLowerCase() });
 
-  if (existing) {
+  if (!existing) {
+    return;
+  }
+
+  if (existing.isEmailVerified) {
     throw new RegisterError(409, 'Bu e-posta adresi zaten kayıtlı');
   }
+
+  await deleteUnverifiedUser(existing._id.toString());
 };
 
 const createUserWithProfile = async (
@@ -25,6 +43,8 @@ const createUserWithProfile = async (
     password: hashedPassword,
     role,
     isActive: false,
+    isEmailVerified: false,
+    verificationExpiresAt: getVerificationExpiresAt(),
   });
 
   try {
@@ -34,24 +54,33 @@ const createUserWithProfile = async (
       await Seller.create({ userId: user._id });
     }
   } catch {
-    await User.findByIdAndDelete(user._id);
+    await deleteUnverifiedUser(user._id.toString());
     throw new RegisterError(500, 'Kayıt tamamlanamadı, lütfen tekrar deneyin');
   }
 
-  const token = signAuthToken(user._id.toString(), role);
-
   try {
     await sendUserVerificationEmail(user._id.toString(), email);
+    await markRegisterEmailCooldown(email);
+    await markVerificationEmailSent(user._id.toString());
   } catch (error) {
-    console.error('Doğrulama e-postası gönderilemedi:', error);
+    log.error({ err: error, userId: user._id.toString(), email }, 'Doğrulama e-postası gönderilemedi');
+    await markRegisterEmailCooldown(email);
+    await invalidateAuthOtp(user._id.toString(), 'email_verify');
+    await deleteUnverifiedUser(user._id.toString());
+    throw new RegisterError(
+      503,
+      'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin'
+    );
   }
 
-  return { user, token };
+  return { user };
 };
 
 export const register = async (data: RegisterInput) => {
   const { email, password, role } = data;
+  const normalizedEmail = email.toLowerCase();
 
-  await ensureEmailAvailable(email);
-  return createUserWithProfile(email, password, role);
+  await assertRegisterEmailCooldown(normalizedEmail);
+  await resolveEmailForRegister(normalizedEmail);
+  return createUserWithProfile(normalizedEmail, password, role);
 };

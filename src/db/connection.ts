@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { logger } from '../lib/common/logger';
 
 if (!process.env.RAILWAY_ENVIRONMENT) {
   dotenv.config();
@@ -22,10 +23,9 @@ export const connectDB = async () => {
     }
 
     await mongoose.connect(mongoUri);
-
-    console.log("🚀 MongoDB'ye başarıyla bağlandı!");
+    logger.info('MongoDB bağlantısı başarılı');
   } catch (error) {
-    console.error('❌ Veritabanı bağlantı hatası:', error);
+    logger.error({ err: error }, 'Veritabanı bağlantı hatası');
     process.exit(1);
   }
 };

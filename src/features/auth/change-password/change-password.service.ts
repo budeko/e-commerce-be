@@ -21,5 +21,8 @@ export const changePassword = async (
   }
 
   const hashedPassword = await hashPassword(data.newPassword);
-  await User.findByIdAndUpdate(auth.userId, { password: hashedPassword });
+  await User.findByIdAndUpdate(auth.userId, {
+    password: hashedPassword,
+    passwordChangedAt: new Date(),
+  });
 };

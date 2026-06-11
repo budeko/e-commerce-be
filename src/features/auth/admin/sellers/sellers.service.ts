@@ -1,4 +1,9 @@
 import { canManageSellers } from '../../../../lib/auth/admin-permissions';
+import {
+  sendSellerApprovedEmail,
+  sendSellerRejectedEmail,
+} from '../../../../lib/auth/email/send-mail';
+import { createLogger } from '../../../../lib/common/logger';
 import { Seller, User } from '../../../../db';
 import type { AdminRole } from '../../../../db/auth/admin.model';
 import type { SellerApprovalStatus } from '../../../../db/auth/seller.model';
@@ -9,6 +14,8 @@ const assertCanManageSellers = (adminRole: AdminRole) => {
     throw new RegisterError(403, 'Satıcı yönetimi için yetkin yok');
   }
 };
+
+const log = createLogger({ module: 'sellers-admin' });
 
 export const listSellers = async (status?: SellerApprovalStatus) => {
   const filter = status ? { approvalStatus: status } : {};
@@ -69,7 +76,7 @@ export const getSellerByUserId = async (userId: string) => {
 
 export const rejectSeller = async (adminRole: AdminRole, userId: string, reason: string) => {
   assertCanManageSellers(adminRole);
-  const user = await User.findById(userId).select('role').lean();
+  const user = await User.findById(userId).select('role email').lean();
 
   if (!user || user.role !== 'seller') {
     throw new RegisterError(404, 'Satıcı bulunamadı');
@@ -89,6 +96,12 @@ export const rejectSeller = async (adminRole: AdminRole, userId: string, reason:
   seller.rejectionReason = reason;
   await seller.save();
 
+  try {
+    await sendSellerRejectedEmail(user.email, reason, seller.companyName);
+  } catch (error) {
+    log.error({ err: error, userId }, 'Satıcı red bildirimi gönderilemedi');
+  }
+
   return {
     userId: seller.userId,
     approvalStatus: seller.approvalStatus,
@@ -98,7 +111,7 @@ export const rejectSeller = async (adminRole: AdminRole, userId: string, reason:
 
 export const approveSeller = async (adminRole: AdminRole, userId: string) => {
   assertCanManageSellers(adminRole);
-  const user = await User.findById(userId).select('role').lean();
+  const user = await User.findById(userId).select('role email').lean();
 
   if (!user || user.role !== 'seller') {
     throw new RegisterError(404, 'Satıcı bulunamadı');
@@ -117,6 +130,12 @@ export const approveSeller = async (adminRole: AdminRole, userId: string) => {
   seller.approvalStatus = 'approved';
   seller.rejectionReason = null;
   await seller.save();
+
+  try {
+    await sendSellerApprovedEmail(user.email, seller.companyName);
+  } catch (error) {
+    log.error({ err: error, userId }, 'Satıcı onay bildirimi gönderilemedi');
+  }
 
   return {
     userId: seller.userId,

@@ -20,14 +20,13 @@ const handleRegisterError = (reply: FastifyReply, error: unknown) => {
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(baseSchema) }, async (req, reply) => {
     try {
-      const { user, token } = await register(req.body as RegisterInput);
+      const { user } = await register(req.body as RegisterInput);
       const statusFields = await buildAuthUserFields(user);
 
       return reply.status(201).send({
-        message: 'Kayıt başarılı',
+        message: 'Kayıt başarılı. E-posta adresini doğrula.',
         ...statusFields,
         isEmailVerified: user.isEmailVerified,
-        token,
       });
     } catch (error) {
       return handleRegisterError(reply, error);

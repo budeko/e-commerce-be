@@ -2,6 +2,12 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { verifyAuthToken, type AuthTokenPayload } from '../../auth/auth-token';
 import { isTokenRevoked } from '../../auth/revoked-token';
+import {
+  isTokenIssuedBefore,
+  PASSWORD_CHANGED_MESSAGE,
+  SESSIONS_REVOKED_MESSAGE,
+} from '../../auth/session-invalidation';
+import { User } from '../../../db';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -26,6 +32,19 @@ export const requireAuth = async (request: FastifyRequest, reply: FastifyReply) 
 
     request.auth = verifyAuthToken(token);
     request.authToken = token;
+
+    const decoded = jwt.decode(token) as jwt.JwtPayload | null;
+    const user = await User.findById(request.auth.userId).select(
+      'passwordChangedAt sessionsRevokedAt'
+    );
+
+    if (isTokenIssuedBefore(decoded?.iat, user?.passwordChangedAt ?? null)) {
+      return reply.status(401).send({ message: PASSWORD_CHANGED_MESSAGE });
+    }
+
+    if (isTokenIssuedBefore(decoded?.iat, user?.sessionsRevokedAt ?? null)) {
+      return reply.status(401).send({ message: SESSIONS_REVOKED_MESSAGE });
+    }
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       return reply.status(401).send({ message: 'Oturum süresi doldu, tekrar giriş yapın' });

@@ -5,3 +5,7 @@ export type { SellerApprovalStatus } from './seller.model';
 export { Admin, ADMIN_ROLES } from './admin.model';
 export type { AdminRole } from './admin.model';
 export { RevokedToken } from './revoked-token.model';
+export { AuthOtp, AUTH_OTP_PURPOSES } from './auth-otp.model';
+export type { AuthOtpPurpose } from './auth-otp.model';
+export { AuthEmailCooldown, AUTH_EMAIL_COOLDOWN_PURPOSES } from './auth-email-cooldown.model';
+export type { AuthEmailCooldownPurpose } from './auth-email-cooldown.model';

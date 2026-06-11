@@ -15,8 +15,7 @@ const handleError = (reply: FastifyReply, error: unknown) => {
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(resetPasswordSchema) }, async (req, reply) => {
     try {
-      const { token, newPassword } = req.body as ResetPasswordInput;
-      await resetPassword(token, newPassword);
+      await resetPassword(req.body as ResetPasswordInput);
 
       return reply.status(200).send({
         message: 'Şifre başarıyla sıfırlandı',
