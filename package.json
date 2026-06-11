@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "packageManager": "npm@11.12.1",
   "bugs": {
     "url": "https://github.com/ARK322/e-commerce-be/issues"
   },
