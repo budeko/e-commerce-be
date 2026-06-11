@@ -1,16 +1,16 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/common/middleware/require-auth';
-import { requireAdmin } from '../../../../lib/auth/middleware/require-admin';
-import { validateBody } from '../../../../lib/common/middleware/validate-body';
-import { validateParams } from '../../../../lib/common/middleware/validate-params';
+import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { requireAdmin } from '../access/require-admin';
+import { validateBody } from '../../../../lib/common/http/validate-body';
+import { validateParams } from '../../../../lib/common/http/validate-params';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { RegisterError } from '../../register/register.errors';
-import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from './admins.service';
-import { createAdminSchema, type CreateAdminInput } from './schemas/create-admin.schema';
-import { updateAdminSchema, type UpdateAdminInput } from './schemas/update-admin.schema';
+import { AuthError } from '../../shared/errors';
+import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from './services/admins.service';
+import { createAdminSchema, type CreateAdminInput } from '../../schemas/admin/create-admin.schema';
+import { updateAdminSchema, type UpdateAdminInput } from '../../schemas/admin/update-admin.schema';
 
 const handleAdminManageError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof RegisterError) {
+  if (error instanceof AuthError) {
     return reply.status(error.statusCode).send({ message: error.message });
   }
 

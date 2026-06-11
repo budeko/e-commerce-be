@@ -1,1 +1,1 @@
-// TODO: payment errors
+export { EcommerceError } from '../shared/errors';

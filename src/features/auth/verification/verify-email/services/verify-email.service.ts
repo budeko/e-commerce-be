@@ -1,0 +1,83 @@
+import jwt from 'jsonwebtoken';
+import { signAuthToken, type UserRole } from '../../../../../lib/auth/token/access-token';
+import { verifyEmailVerificationToken } from '../../../../../lib/auth/token/email-token';
+import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '../../../../../lib/auth/otp/otp';
+import { deleteUnverifiedUser } from '../../../credentials/register/helpers/unverified-user';
+import { User } from '../../../../../db';
+import { AuthError } from '../../../shared/errors';
+import type { VerifyEmailInput } from '../../../schemas/verification/verify-email.schema';
+
+const markEmailVerified = async (userId: string) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AuthError(404, 'Kullanıcı bulunamadı');
+  }
+
+  if (user.isEmailVerified) {
+    throw new AuthError(409, 'E-posta zaten doğrulanmış');
+  }
+
+  if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+    await deleteUnverifiedUser(userId);
+    throw new AuthError(410, 'Doğrulama süresi doldu, lütfen tekrar kayıt ol');
+  }
+
+  user.isEmailVerified = true;
+  user.verificationExpiresAt = null;
+  await user.save();
+  await invalidateAuthOtp(userId, 'email_verify');
+
+  return user;
+};
+
+const verifyEmailByToken = async (token: string) => {
+  let userId: string;
+
+  try {
+    userId = verifyEmailVerificationToken(token);
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new AuthError(410, 'Doğrulama bağlantısının süresi doldu');
+    }
+
+    throw new AuthError(400, 'Geçersiz doğrulama tokeni');
+  }
+
+  return markEmailVerified(userId);
+};
+
+const verifyEmailByCode = async (email: string, code: string) => {
+  const user = await User.findOne({ email: email.toLowerCase() });
+
+  if (!user) {
+    throw new AuthError(404, 'Kullanıcı bulunamadı');
+  }
+
+  if (user.isEmailVerified) {
+    throw new AuthError(409, 'E-posta zaten doğrulanmış');
+  }
+
+  try {
+    await verifyAuthOtp(user._id.toString(), 'email_verify', code);
+  } catch (error) {
+    if (error instanceof OtpError) {
+      throw new AuthError(error.statusCode, error.message);
+    }
+
+    throw error;
+  }
+
+  return markEmailVerified(user._id.toString());
+};
+
+export const verifyEmail = async (input: VerifyEmailInput) => {
+  const user =
+    'token' in input
+      ? await verifyEmailByToken(input.token)
+      : await verifyEmailByCode(input.email, input.code);
+
+  const token = signAuthToken(user._id.toString(), user.role as UserRole);
+
+  return { user, token };
+};

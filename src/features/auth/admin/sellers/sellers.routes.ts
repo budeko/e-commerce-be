@@ -1,17 +1,17 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/common/middleware/require-auth';
-import { requireAdmin } from '../../../../lib/auth/middleware/require-admin';
-import { validateBody } from '../../../../lib/common/middleware/validate-body';
-import { validateParams } from '../../../../lib/common/middleware/validate-params';
-import { validateQuery } from '../../../../lib/common/middleware/validate-query';
+import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { requireAdmin } from '../access/require-admin';
+import { validateBody } from '../../../../lib/common/http/validate-body';
+import { validateParams } from '../../../../lib/common/http/validate-params';
+import { validateQuery } from '../../../../lib/common/http/validate-query';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { RegisterError } from '../../register/register.errors';
-import { listSellersQuerySchema, type ListSellersQuery } from './schemas/list-sellers.schema';
-import { rejectSellerSchema, type RejectSellerInput } from './schemas/reject-seller.schema';
-import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from './sellers.service';
+import { AuthError } from '../../shared/errors';
+import { listSellersQuerySchema, type ListSellersQuery } from '../../schemas/admin/list-sellers.schema';
+import { rejectSellerSchema, type RejectSellerInput } from '../../schemas/admin/reject-seller.schema';
+import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from './services/sellers.service';
 
 const handleSellerAdminError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof RegisterError) {
+  if (error instanceof AuthError) {
     return reply.status(error.statusCode).send({ message: error.message });
   }
 

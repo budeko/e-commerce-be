@@ -1,4 +1,4 @@
-export { connectDB } from './connection';
+export { connectDB } from './shared/connection';
 export {
   User,
   Buyer,

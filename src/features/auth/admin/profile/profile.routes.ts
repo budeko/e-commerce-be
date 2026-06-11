@@ -1,18 +1,18 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/common/middleware/require-auth';
-import { requireAdmin } from '../../../../lib/auth/middleware/require-admin';
-import { validateBody } from '../../../../lib/common/middleware/validate-body';
-import { validateParams } from '../../../../lib/common/middleware/validate-params';
+import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { requireAdmin } from '../access/require-admin';
+import { validateBody } from '../../../../lib/common/http/validate-body';
+import { validateParams } from '../../../../lib/common/http/validate-params';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { RegisterError } from '../../register/register.errors';
+import { AuthError } from '../../shared/errors';
 import {
   adminProfileUpdateSchema,
   type AdminProfileUpdateInput,
-} from '../schemas/admin-profile-fields.schema';
-import { getAdminProfile, updateAdminProfile } from './profile.service';
+} from '../../schemas/admin/admin-profile-fields.schema';
+import { getAdminProfile, updateAdminProfile } from './services/profile.service';
 
 const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof RegisterError) {
+  if (error instanceof AuthError) {
     return reply.status(error.statusCode).send({ message: error.message });
   }
 

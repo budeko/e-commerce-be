@@ -1,15 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
-import registerRoutes from './register/register.routes';
-import loginRoutes from './login/login.routes';
-import profileupdateRoutes from './profileupdate/profileupdate.routes';
-import changePasswordRoutes from './change-password/change-password.routes';
-import logoutRoutes from './logout/logout.routes';
-import verifyEmailRoutes from './verify-email/verify-email.routes';
-import forgotPasswordRoutes from './forgot-password/forgot-password.routes';
-import resetPasswordRoutes from './reset-password/reset-password.routes';
-import resendVerificationRoutes from './resend-verification/resend-verification.routes';
-import meRoutes from './me/me.routes';
+import registerRoutes from './credentials/register/register.routes';
+import loginRoutes from './credentials/login/login.routes';
+import logoutRoutes from './credentials/logout/logout.routes';
+import changePasswordRoutes from './credentials/change-password/change-password.routes';
+import verifyEmailRoutes from './verification/verify-email/verify-email.routes';
+import resendVerificationRoutes from './verification/resend-verification/resend-verification.routes';
+import forgotPasswordRoutes from './recovery/forgot-password/forgot-password.routes';
+import resetPasswordRoutes from './recovery/reset-password/reset-password.routes';
+import meRoutes from './account/me/me.routes';
+import profileRoutes from './account/profile/profile.routes';
 import adminRoutes from './admin/admin.routes';
 
 const PUBLIC_AUTH_RATE_LIMIT = {
@@ -35,7 +35,7 @@ export default async function (fastify: FastifyInstance) {
   });
 
   await fastify.register(meRoutes, { prefix: '/me' });
-  await fastify.register(profileupdateRoutes, { prefix: '/profile' });
+  await fastify.register(profileRoutes, { prefix: '/profile' });
   await fastify.register(changePasswordRoutes, { prefix: '/change-password' });
   await fastify.register(logoutRoutes, { prefix: '/logout' });
 

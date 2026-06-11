@@ -1,1 +1,1 @@
-// TODO: order errors
+export { EcommerceError } from '../shared/errors';

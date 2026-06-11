@@ -1,8 +1,7 @@
 import fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
-import authRoutes from '../features/auth/auth.routes';
-import ecommerceRoutes from '../features/ecommerce/ecommerce.routes';
+import { registerRoutes } from './routes/register-routes';
 
 export const buildApp = async (): Promise<FastifyInstance> => {
   const app = fastify({
@@ -38,8 +37,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
     timeWindow: '1 minute',
   });
 
-  await app.register(authRoutes, { prefix: '/auth' });
-  await app.register(ecommerceRoutes);
+  await registerRoutes(app);
 
   return app;
 };
