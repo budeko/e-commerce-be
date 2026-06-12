@@ -1,10 +1,12 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
+import multipart from '@fastify/multipart';
 import { requireAuth } from '../../../../lib/auth/guard/require-auth';
 import { requireEmailVerified } from '../../../../lib/auth/guard/require-email-verified';
 import { AuthError } from '../../shared/errors';
 import { getProfile, updateProfile } from './services/profile.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '../../schemas/profile';
 import { validateProfileUpdate } from './helpers/validate-profile-update';
+import documentsRoutes from './documents.routes';
 
 const handleProfileError = (reply: FastifyReply, error: unknown) => {
   if (error instanceof AuthError) {
@@ -15,6 +17,15 @@ const handleProfileError = (reply: FastifyReply, error: unknown) => {
 };
 
 export default async function (fastify: FastifyInstance) {
+  await fastify.register(multipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+      files: 1,
+    },
+  });
+
+  await fastify.register(documentsRoutes, { prefix: '/documents' });
+
   fastify.get('/', { preHandler: [requireAuth, requireEmailVerified] }, async (req, reply) => {
     try {
       const result = await getProfile(req.auth!);
