@@ -5,13 +5,13 @@ import {
   canListAdmins,
   canUpdateAdminRole,
   canViewAdmin,
-} from '../../access/permissions';
-import { formatAdminResponse } from '../../../shared/responses/admin.response';
-import { hashPassword } from '../../../../../lib/common/password';
-import { Admin, User, type AdminRole } from '../../../../../db';
-import { AuthError, isDuplicateKeyError } from '../../../shared/errors';
-import type { CreateAdminInput } from '../../../schemas/admin/create-admin.schema';
-import type { UpdateAdminInput } from '../../../schemas/admin/update-admin.schema';
+} from '@/features/auth/admin/access/permissions';
+import { formatAdminResponse } from '@/features/auth/shared/responses/admin.response';
+import { hashPassword } from '@/lib/common/password';
+import { Admin, User, type AdminRole } from '@/db';
+import { AuthError, isDuplicateKeyError } from '@/features/auth/shared/errors';
+import type { CreateAdminInput } from '@/features/auth/schemas/admin/create-admin.schema';
+import type { UpdateAdminInput } from '@/features/auth/schemas/admin/update-admin.schema';
 
 const findAdminRecord = async (targetUserId: string) => {
   const targetAdmin = await Admin.findOne({ userId: targetUserId });

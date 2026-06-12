@@ -1,4 +1,4 @@
-import { AuthOtp, Buyer, Seller, User } from '../../../../../db';
+import { AuthOtp, Buyer, Seller, User } from '@/db';
 
 export const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 

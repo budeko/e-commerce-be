@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify';
-import { HttpError } from '../../../lib/common/errors';
-import { isDuplicateKeyError } from './errors';
+import { HttpError } from '@/lib/common/errors';
+import { isDuplicateKeyError } from '@/features/auth/shared/errors';
 
 type HandleAuthRouteErrorOptions = {
   duplicateKeyMessage?: string;

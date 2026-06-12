@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import jwt from 'jsonwebtoken';
-import { signAuthToken, verifyAuthToken } from './access-token';
+import { signAuthToken, verifyAuthToken } from '@/lib/auth/token/access-token';
 
 const userId = '507f1f77bcf86cd799439011';
 

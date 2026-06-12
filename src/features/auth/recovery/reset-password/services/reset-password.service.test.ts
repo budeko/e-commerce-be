@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { signPasswordResetToken } from '../../../../../lib/auth/token/email-token';
+import { signPasswordResetToken } from '@/lib/auth/token/email-token';
 
 const mockFindOne = vi.fn();
 const mockFindById = vi.fn();
@@ -38,8 +38,8 @@ vi.mock('../../../../../lib/common/password', () => ({
   comparePassword: vi.fn(),
 }));
 
-import { OtpError } from '../../../shared/otp/otp';
-import { resetPassword } from './reset-password.service';
+import { OtpError } from '@/features/auth/shared/otp/otp';
+import { resetPassword } from '@/features/auth/recovery/reset-password/services/reset-password.service';
 
 const userId = '507f1f77bcf86cd799439011';
 const newPassword = 'NewPass123';

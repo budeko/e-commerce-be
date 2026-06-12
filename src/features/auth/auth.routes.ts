@@ -1,16 +1,16 @@
 import { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
-import registerRoutes from './credentials/register/register.routes';
-import loginRoutes from './credentials/login/login.routes';
-import logoutRoutes from './credentials/logout/logout.routes';
-import changePasswordRoutes from './credentials/change-password/change-password.routes';
-import verifyEmailRoutes from './verification/verify-email/verify-email.routes';
-import resendVerificationRoutes from './verification/resend-verification/resend-verification.routes';
-import forgotPasswordRoutes from './recovery/forgot-password/forgot-password.routes';
-import resetPasswordRoutes from './recovery/reset-password/reset-password.routes';
-import meRoutes from './account/me/me.routes';
-import profileRoutes from './account/profile/profile.routes';
-import adminRoutes from './admin/admin.routes';
+import registerRoutes from '@/features/auth/credentials/register/register.routes';
+import loginRoutes from '@/features/auth/credentials/login/login.routes';
+import logoutRoutes from '@/features/auth/credentials/logout/logout.routes';
+import changePasswordRoutes from '@/features/auth/credentials/change-password/change-password.routes';
+import verifyEmailRoutes from '@/features/auth/verification/verify-email/verify-email.routes';
+import resendVerificationRoutes from '@/features/auth/verification/resend-verification/resend-verification.routes';
+import forgotPasswordRoutes from '@/features/auth/recovery/forgot-password/forgot-password.routes';
+import resetPasswordRoutes from '@/features/auth/recovery/reset-password/reset-password.routes';
+import meRoutes from '@/features/auth/account/me/me.routes';
+import profileRoutes from '@/features/auth/account/profile/profile.routes';
+import adminRoutes from '@/features/auth/admin/admin.routes';
 
 const PUBLIC_AUTH_RATE_LIMIT = {
   max: 10,

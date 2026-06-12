@@ -1,15 +1,15 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '../../shared/guard/require-auth';
-import { requireAdmin } from '../access/require-admin';
-import { validateBody } from '../../../../lib/common/http/validate-body';
-import { validateParams } from '../../../../lib/common/http/validate-params';
-import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
+import { requireAuth } from '@/features/auth/shared/guard/require-auth';
+import { requireAdmin } from '@/features/auth/admin/access/require-admin';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { validateParams } from '@/lib/common/http/validate-params';
+import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
 import {
   adminProfileUpdateSchema,
   type AdminProfileUpdateInput,
-} from '../../schemas/admin/admin-profile-fields.schema';
-import { getAdminProfile, updateAdminProfile } from './services/profile.service';
+} from '@/features/auth/schemas/admin/admin-profile-fields.schema';
+import { getAdminProfile, updateAdminProfile } from '@/features/auth/admin/profile/services/profile.service';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 

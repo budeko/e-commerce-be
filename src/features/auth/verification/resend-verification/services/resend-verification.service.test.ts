@@ -23,7 +23,7 @@ vi.mock('../../../shared/otp/otp', () => ({
 }));
 
 vi.mock('../../../shared/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('../../../shared/mail/cooldown')>(
+  const actual = await vi.importActual<typeof import('@/features/auth/shared/mail/cooldown')>(
     '../../../shared/mail/cooldown'
   );
 
@@ -34,8 +34,8 @@ vi.mock('../../../shared/mail/cooldown', async () => {
   };
 });
 
-import { EmailCooldownError } from '../../../shared/mail/cooldown';
-import { resendVerificationEmail } from './resend-verification.service';
+import { EmailCooldownError } from '@/features/auth/shared/mail/cooldown';
+import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/services/resend-verification.service';
 
 describe('resendVerificationEmail', () => {
   beforeEach(() => {

@@ -1,13 +1,13 @@
-import { createLogger } from '../../../../../lib/common/logger';
+import { createLogger } from '@/lib/common/logger';
 import {
   assertEmailCooldown,
   EmailCooldownError,
   markVerificationEmailSent,
-} from '../../../shared/mail/cooldown';
-import { sendUserVerificationEmail } from '../../../shared/mail/send-verification';
-import { invalidateAuthOtp } from '../../../shared/otp/otp';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
+} from '@/features/auth/shared/mail/cooldown';
+import { sendUserVerificationEmail } from '@/features/auth/shared/mail/send-verification';
+import { invalidateAuthOtp } from '@/features/auth/shared/otp/otp';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 
 const log = createLogger({ module: 'resend-verification' });
 

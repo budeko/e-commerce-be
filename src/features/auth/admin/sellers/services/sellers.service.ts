@@ -1,11 +1,11 @@
-import { canManageSellers } from '../../access/permissions';
+import { canManageSellers } from '@/features/auth/admin/access/permissions';
 import {
   sendSellerApprovedEmail,
   sendSellerRejectedEmail,
-} from '../../mail/send-seller-notifications';
-import { createLogger } from '../../../../../lib/common/logger';
-import { Seller, User, type AdminRole, type SellerApprovalStatus } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
+} from '@/features/auth/admin/mail/send-seller-notifications';
+import { createLogger } from '@/lib/common/logger';
+import { Seller, User, type AdminRole, type SellerApprovalStatus } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 
 const assertCanManageSellers = (adminRole: AdminRole) => {
   if (!canManageSellers(adminRole)) {

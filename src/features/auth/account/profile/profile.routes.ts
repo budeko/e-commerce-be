@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
-import { requireAuth } from '../../shared/guard/require-auth';
-import { requireEmailVerified } from '../../shared/guard/require-email-verified';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { getProfile, updateProfile } from './services/profile.service';
-import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '../../schemas/profile';
-import { validateProfileUpdate } from './helpers/validate-profile-update';
-import documentsRoutes from './documents.routes';
+import { requireAuth } from '@/features/auth/shared/guard/require-auth';
+import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { getProfile, updateProfile } from '@/features/auth/account/profile/services/profile.service';
+import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
+import { validateProfileUpdate } from '@/features/auth/account/profile/helpers/validate-profile-update';
+import documentsRoutes from '@/features/auth/account/profile/documents.routes';
 
 export default async function (fastify: FastifyInstance) {
   await fastify.register(multipart, {

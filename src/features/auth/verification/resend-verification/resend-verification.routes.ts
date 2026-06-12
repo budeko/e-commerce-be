@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '../../../../lib/common/http/validate-body';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { resendVerificationEmail } from './services/resend-verification.service';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/services/resend-verification.service';
 import {
   resendVerificationSchema,
   type ResendVerificationInput,
-} from '../../schemas/verification/resend-verification.schema';
+} from '@/features/auth/schemas/verification/resend-verification.schema';
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(resendVerificationSchema) }, async (req, reply) => {

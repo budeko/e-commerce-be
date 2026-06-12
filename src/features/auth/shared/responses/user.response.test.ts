@@ -13,7 +13,7 @@ vi.mock('../queries/admin-role', () => ({
   getAdminRole: (...args: unknown[]) => mockGetAdminRole(...args),
 }));
 
-import { buildAuthUserFields } from './user.response';
+import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
 
 const userId = '507f1f77bcf86cd799439011';
 

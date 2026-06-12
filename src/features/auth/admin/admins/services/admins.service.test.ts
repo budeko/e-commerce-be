@@ -20,7 +20,7 @@ const chainFindById = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
 });
 
-import { getAdminByUserId, listAdmins, updateAdmin } from './admins.service';
+import { getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/services/admins.service';
 
 const ownerId = '507f1f77bcf86cd799439011';
 const helperId = '507f1f77bcf86cd799439012';

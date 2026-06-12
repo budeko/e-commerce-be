@@ -1,13 +1,13 @@
-import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
-import { HttpError } from '../../../../../lib/common/errors';
+import type { AuthTokenPayload } from '@/lib/auth/token/access-token';
+import { HttpError } from '@/lib/common/errors';
 import {
   deleteFromSellerStorage,
   getSupabaseConfig,
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
-} from '../../../../../lib/storage/supabase';
-import { Seller } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
+} from '@/lib/storage/supabase';
+import { Seller } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 import {
   buildSellerDocumentObjectPath,
   isSellerDocumentType,
@@ -16,9 +16,9 @@ import {
   SELLER_DOCUMENT_FIELD_MAP,
   SELLER_DOCUMENT_RULES,
   type SellerDocumentType,
-} from '../helpers/seller-document-types';
-import type { SellerProfileUpdateInput } from '../../../schemas/profile';
-import { updateSellerProfile } from './seller.service';
+} from '@/features/auth/account/profile/helpers/seller-document-types';
+import type { SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
+import { updateSellerProfile } from '@/features/auth/account/profile/services/seller.service';
 
 export type UploadSellerDocumentInput = {
   docType: string;

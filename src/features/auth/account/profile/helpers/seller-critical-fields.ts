@@ -1,4 +1,4 @@
-import type { SellerProfileUpdateInput } from '../../../schemas/profile/seller-profile-update.schema';
+import type { SellerProfileUpdateInput } from '@/features/auth/schemas/profile/seller-profile-update.schema';
 
 export const SELLER_CRITICAL_FIELDS = [
   'sellerType',

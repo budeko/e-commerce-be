@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { ADMIN_ROLES } from '../../../../db';
-import { adminProfileFieldsSchema } from './admin-profile-fields.schema';
-import { emailSchema } from '../fields/email.schema';
-import { passwordSchema } from '../fields/password.schema';
+import { ADMIN_ROLES } from '@/db';
+import { adminProfileFieldsSchema } from '@/features/auth/schemas/admin/admin-profile-fields.schema';
+import { emailSchema } from '@/features/auth/schemas/fields/email.schema';
+import { passwordSchema } from '@/features/auth/schemas/fields/password.schema';
 
 export const createAdminSchema = adminProfileFieldsSchema.extend({
   email: emailSchema,

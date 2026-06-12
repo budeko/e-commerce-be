@@ -17,7 +17,7 @@ vi.mock('../../../../../lib/common/password', () => ({
   hashPassword: (...args: unknown[]) => mockHashPassword(...args),
 }));
 
-import { changePassword } from './change-password.service';
+import { changePassword } from '@/features/auth/credentials/change-password/services/change-password.service';
 
 describe('changePassword', () => {
   beforeEach(() => {

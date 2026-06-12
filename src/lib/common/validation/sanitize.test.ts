@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeRequestBody } from './sanitize';
+import { sanitizeRequestBody } from '@/lib/common/validation/sanitize';
 
 describe('sanitizeRequestBody', () => {
   it('$ ile başlayan anahtarları temizler', () => {

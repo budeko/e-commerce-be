@@ -1,10 +1,10 @@
-import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
-import { User, Buyer, Seller } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import { buildAuthUserFields } from '../../../shared/responses/user.response';
-import { updateBuyerProfile } from './buyer.service';
-import { updateSellerProfile } from './seller.service';
-import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '../../../schemas/profile';
+import type { AuthTokenPayload } from '@/lib/auth/token/access-token';
+import { User, Buyer, Seller } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
+import { updateBuyerProfile } from '@/features/auth/account/profile/services/buyer.service';
+import { updateSellerProfile } from '@/features/auth/account/profile/services/seller.service';
+import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
 
 export const getProfile = async (auth: AuthTokenPayload) => {
   const user = await User.findById(auth.userId).select('email role isActive isEmailVerified');

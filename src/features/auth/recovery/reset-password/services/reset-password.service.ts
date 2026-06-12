@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
-import { verifyPasswordResetToken } from '../../../../../lib/auth/token/email-token';
-import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '../../../shared/otp/otp';
-import { hashPassword } from '../../../../../lib/common/password';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { ResetPasswordInput } from '../../../schemas/recovery/reset-password.schema';
+import { verifyPasswordResetToken } from '@/lib/auth/token/email-token';
+import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/shared/otp/otp';
+import { hashPassword } from '@/lib/common/password';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { ResetPasswordInput } from '@/features/auth/schemas/recovery/reset-password.schema';
 
 const updateUserPassword = async (userId: string, newPassword: string) => {
   const user = await User.findById(userId);

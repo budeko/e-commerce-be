@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { AuthError } from './errors';
-import { handleAuthRouteError } from './handle-route-error';
+import { AuthError } from '@/features/auth/shared/errors';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
 
 const createReply = () => {
   const reply = {

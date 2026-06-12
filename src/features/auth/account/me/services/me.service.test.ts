@@ -13,7 +13,7 @@ vi.mock('../../../shared/responses/user.response', () => ({
   buildAuthUserFields: (...args: unknown[]) => mockBuildAuthUserFields(...args),
 }));
 
-import { getMe } from './me.service';
+import { getMe } from '@/features/auth/account/me/services/me.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

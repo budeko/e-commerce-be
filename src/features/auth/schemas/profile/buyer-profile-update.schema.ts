@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { optionalSafeString, phoneSchema, safeString } from '../../../../lib/common/validation/common-schemas';
+import { optionalSafeString, phoneSchema, safeString } from '@/lib/common/validation/common-schemas';
 
 const nationalIdSchema = safeString({
   min: 11,

@@ -1,4 +1,4 @@
-import type { AdminRole } from '../../../../db';
+import type { AdminRole } from '@/db';
 
 export const canManageSellers = (role: AdminRole) => role === 'owner';
 

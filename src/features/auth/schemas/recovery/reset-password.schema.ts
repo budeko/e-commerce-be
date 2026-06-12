@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { safeString } from '../../../../lib/common/validation/common-schemas';
-import { passwordSchema } from '../fields/password.schema';
-import { emailSchema } from '../fields/email.schema';
-import { otpCodeSchema } from '../fields/otp-code.schema';
+import { safeString } from '@/lib/common/validation/common-schemas';
+import { passwordSchema } from '@/features/auth/schemas/fields/password.schema';
+import { emailSchema } from '@/features/auth/schemas/fields/email.schema';
+import { otpCodeSchema } from '@/features/auth/schemas/fields/otp-code.schema';
 
 export const resetPasswordByTokenSchema = z.object({
   token: safeString({ min: 1, max: 2048, label: 'Sıfırlama tokeni' }),

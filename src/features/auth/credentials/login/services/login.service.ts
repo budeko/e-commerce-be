@@ -1,8 +1,8 @@
-import { signAuthToken } from '../../../../../lib/auth/token/access-token';
-import { comparePassword } from '../../../../../lib/common/password';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { LoginInput } from '../../../schemas/credentials/login.schema';
+import { signAuthToken } from '@/lib/auth/token/access-token';
+import { comparePassword } from '@/lib/common/password';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { LoginInput } from '@/features/auth/schemas/credentials/login.schema';
 
 export const login = async (data: LoginInput) => {
   const user = await User.findOne({ email: data.email.toLowerCase() });

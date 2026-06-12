@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { connectDB, Admin, User } from '../../db';
-import { hashPassword } from '../../lib/common/password';
+import { connectDB, Admin, User } from '@/db';
+import { hashPassword } from '@/lib/common/password';
 
 dotenv.config();
 

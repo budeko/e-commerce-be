@@ -1,6 +1,6 @@
-import { connectDB } from './db';
-import { buildApp } from './app/build-app';
-import { logger } from './lib/common/logger';
+import { connectDB } from '@/db';
+import { buildApp } from '@/app/build-app';
+import { logger } from '@/lib/common/logger';
 
 const getPort = () => {
   const port = process.env.PORT ? Number(process.env.PORT) : 8080;

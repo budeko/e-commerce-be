@@ -1,4 +1,4 @@
-export { connectDB } from './shared/connection';
+export { connectDB } from '@/db/shared/connection';
 export {
   User,
   Buyer,
@@ -11,10 +11,10 @@ export {
   AUTH_EMAIL_COOLDOWN_PURPOSES,
   ADMIN_ROLES,
   SELLER_APPROVAL_STATUSES,
-} from './auth';
+} from '@/db/auth';
 export type {
   AdminRole,
   SellerApprovalStatus,
   AuthOtpPurpose,
   AuthEmailCooldownPurpose,
-} from './auth';
+} from '@/db/auth';

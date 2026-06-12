@@ -1,4 +1,4 @@
-import { User } from '../../../../db';
+import { User } from '@/db';
 
 export const PASSWORD_CHANGED_MESSAGE = 'Şifre değiştirildi, tekrar giriş yapın';
 export const SESSIONS_REVOKED_MESSAGE = 'Tüm oturumlar sonlandırıldı, tekrar giriş yapın';

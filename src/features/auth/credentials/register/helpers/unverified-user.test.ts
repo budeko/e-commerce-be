@@ -22,7 +22,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-import { deleteUnverifiedUser, getVerificationExpiresAt } from './unverified-user';
+import { deleteUnverifiedUser, getVerificationExpiresAt } from '@/features/auth/credentials/register/helpers/unverified-user';
 
 const userId = '507f1f77bcf86cd799439011';
 

@@ -1,8 +1,8 @@
 export {
   buyerProfileUpdateSchema,
   type BuyerProfileUpdateInput,
-} from './buyer-profile-update.schema';
+} from '@/features/auth/schemas/profile/buyer-profile-update.schema';
 export {
   sellerProfileUpdateSchema,
   type SellerProfileUpdateInput,
-} from './seller-profile-update.schema';
+} from '@/features/auth/schemas/profile/seller-profile-update.schema';

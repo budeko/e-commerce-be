@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import adminsRoutes from './admins/admins.routes';
-import profileRoutes from './profile/profile.routes';
-import sellersRoutes from './sellers/sellers.routes';
+import adminsRoutes from '@/features/auth/admin/admins/admins.routes';
+import profileRoutes from '@/features/auth/admin/profile/profile.routes';
+import sellersRoutes from '@/features/auth/admin/sellers/sellers.routes';
 
 export default async function (fastify: FastifyInstance) {
   await fastify.register(profileRoutes, { prefix: '/profile' });

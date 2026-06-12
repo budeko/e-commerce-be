@@ -1,4 +1,4 @@
-import { actionButton, baseLayout, codeBox, footerNote } from './layout';
+import { actionButton, baseLayout, codeBox, footerNote } from '@/lib/auth/mail/layout';
 
 export const buildVerificationEmailHtml = (verifyUrl: string, code: string) =>
   baseLayout(`

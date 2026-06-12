@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { registerSchema } from './credentials/register.schema';
-import { loginSchema } from './credentials/login.schema';
-import { changePasswordSchema } from './credentials/change-password.schema';
-import { resendVerificationSchema } from './verification/resend-verification.schema';
-import { forgotPasswordSchema } from './recovery/forgot-password.schema';
-import { buyerProfileUpdateSchema } from './profile/buyer-profile-update.schema';
-import { createAdminSchema } from './admin/create-admin.schema';
-import { passwordSchema } from './fields/password.schema';
-import { emailSchema } from './fields/email.schema';
-import { otpCodeSchema } from './fields/otp-code.schema';
+import { registerSchema } from '@/features/auth/schemas/credentials/register.schema';
+import { loginSchema } from '@/features/auth/schemas/credentials/login.schema';
+import { changePasswordSchema } from '@/features/auth/schemas/credentials/change-password.schema';
+import { resendVerificationSchema } from '@/features/auth/schemas/verification/resend-verification.schema';
+import { forgotPasswordSchema } from '@/features/auth/schemas/recovery/forgot-password.schema';
+import { buyerProfileUpdateSchema } from '@/features/auth/schemas/profile/buyer-profile-update.schema';
+import { createAdminSchema } from '@/features/auth/schemas/admin/create-admin.schema';
+import { passwordSchema } from '@/features/auth/schemas/fields/password.schema';
+import { emailSchema } from '@/features/auth/schemas/fields/email.schema';
+import { otpCodeSchema } from '@/features/auth/schemas/fields/otp-code.schema';
 
 describe('registerSchema', () => {
   it('geçerli kayıt gövdesini kabul eder', () => {

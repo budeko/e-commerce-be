@@ -10,7 +10,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-import { updateSellerProfile } from './seller.service';
+import { updateSellerProfile } from '@/features/auth/account/profile/services/seller.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

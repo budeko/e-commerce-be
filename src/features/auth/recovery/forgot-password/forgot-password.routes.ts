@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '../../../../lib/common/http/validate-body';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { forgotPassword } from './services/forgot-password.service';
-import { forgotPasswordSchema, type ForgotPasswordInput } from '../../schemas/recovery/forgot-password.schema';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { forgotPassword } from '@/features/auth/recovery/forgot-password/services/forgot-password.service';
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@/features/auth/schemas/recovery/forgot-password.schema';
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(forgotPasswordSchema) }, async (req, reply) => {

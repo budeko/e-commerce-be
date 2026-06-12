@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '../../shared/guard/require-auth';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { getMe } from './services/me.service';
+import { requireAuth } from '@/features/auth/shared/guard/require-auth';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { getMe } from '@/features/auth/account/me/services/me.service';
 
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', { preHandler: requireAuth }, async (req, reply) => {

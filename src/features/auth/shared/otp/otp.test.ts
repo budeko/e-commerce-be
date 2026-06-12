@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { hashPassword } from '../../../../lib/common/password';
+import { hashPassword } from '@/lib/common/password';
 
 const mockFindOneAndUpdate = vi.fn();
 const mockFindOne = vi.fn();
@@ -13,7 +13,7 @@ vi.mock('../../../../db', () => ({
   },
 }));
 
-import { createAuthOtp, generateOtpCode, OtpError, verifyAuthOtp } from './otp';
+import { createAuthOtp, generateOtpCode, OtpError, verifyAuthOtp } from '@/features/auth/shared/otp/otp';
 
 describe('generateOtpCode', () => {
   it('6 haneli sayısal kod üretir', () => {

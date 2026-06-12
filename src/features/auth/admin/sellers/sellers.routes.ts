@@ -1,14 +1,14 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '../../shared/guard/require-auth';
-import { requireAdmin } from '../access/require-admin';
-import { validateBody } from '../../../../lib/common/http/validate-body';
-import { validateParams } from '../../../../lib/common/http/validate-params';
-import { validateQuery } from '../../../../lib/common/http/validate-query';
-import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { listSellersQuerySchema, type ListSellersQuery } from '../../schemas/admin/list-sellers.schema';
-import { rejectSellerSchema, type RejectSellerInput } from '../../schemas/admin/reject-seller.schema';
-import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from './services/sellers.service';
+import { requireAuth } from '@/features/auth/shared/guard/require-auth';
+import { requireAdmin } from '@/features/auth/admin/access/require-admin';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { validateParams } from '@/lib/common/http/validate-params';
+import { validateQuery } from '@/lib/common/http/validate-query';
+import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/schemas/admin/list-sellers.schema';
+import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/schemas/admin/reject-seller.schema';
+import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from '@/features/auth/admin/sellers/services/sellers.service';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {

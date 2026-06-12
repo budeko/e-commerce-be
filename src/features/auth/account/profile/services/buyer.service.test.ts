@@ -14,7 +14,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-import { updateBuyerProfile } from './buyer.service';
+import { updateBuyerProfile } from '@/features/auth/account/profile/services/buyer.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

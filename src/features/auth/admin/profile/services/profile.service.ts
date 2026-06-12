@@ -1,8 +1,8 @@
-import { canUpdateAdminProfile, canViewAdmin } from '../../access/permissions';
-import { formatAdminResponse } from '../../../shared/responses/admin.response';
-import { Admin, User, type AdminRole } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { AdminProfileUpdateInput } from '../../../schemas/admin/admin-profile-fields.schema';
+import { canUpdateAdminProfile, canViewAdmin } from '@/features/auth/admin/access/permissions';
+import { formatAdminResponse } from '@/features/auth/shared/responses/admin.response';
+import { Admin, User, type AdminRole } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { AdminProfileUpdateInput } from '@/features/auth/schemas/admin/admin-profile-fields.schema';
 
 const findAdminWithUser = async (targetUserId: string) => {
   const admin = await Admin.findOne({ userId: targetUserId });

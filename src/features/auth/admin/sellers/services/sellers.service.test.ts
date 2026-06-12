@@ -25,7 +25,7 @@ vi.mock('../../mail/send-seller-notifications', () => ({
   sendSellerRejectedEmail: (...args: unknown[]) => mockSendRejected(...args),
 }));
 
-import { approveSeller, rejectSeller } from './sellers.service';
+import { approveSeller, rejectSeller } from '@/features/auth/admin/sellers/services/sellers.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

@@ -26,7 +26,7 @@ vi.mock('../../../../../db', () => ({
 }));
 
 vi.mock('../../../shared/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('../../../shared/mail/cooldown')>(
+  const actual = await vi.importActual<typeof import('@/features/auth/shared/mail/cooldown')>(
     '../../../shared/mail/cooldown'
   );
   return {
@@ -54,7 +54,7 @@ vi.mock('../../../../../lib/common/password', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
 }));
 
-import { register } from './register.service';
+import { register } from '@/features/auth/credentials/register/services/register.service';
 
 describe('register', () => {
   beforeEach(() => {
@@ -91,7 +91,7 @@ describe('register', () => {
   });
 
   it('cooldown aktifken 429 döner', async () => {
-    const { EmailCooldownError } = await import('../../../shared/mail/cooldown');
+    const { EmailCooldownError } = await import('@/features/auth/shared/mail/cooldown');
 
     mockAssertRegisterEmailCooldown.mockRejectedValue(
       new EmailCooldownError(429, 'E-posta gönderimleri arasında bekleme süresi var')

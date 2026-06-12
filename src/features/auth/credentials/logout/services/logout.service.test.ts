@@ -8,7 +8,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-import { logoutAllSessions } from './logout.service';
+import { logoutAllSessions } from '@/features/auth/credentials/logout/services/logout.service';
 
 describe('logoutAllSessions', () => {
   beforeEach(() => {

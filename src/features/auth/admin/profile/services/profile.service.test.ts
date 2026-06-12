@@ -18,7 +18,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-import { updateAdminProfile } from './profile.service';
+import { updateAdminProfile } from '@/features/auth/admin/profile/services/profile.service';
 
 const ownerId = '507f1f77bcf86cd799439011';
 const helperId = '507f1f77bcf86cd799439012';

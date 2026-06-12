@@ -46,7 +46,7 @@ vi.mock('../../../shared/responses/user.response', () => ({
   }),
 }));
 
-import { getProfile, updateProfile } from './profile.service';
+import { getProfile, updateProfile } from '@/features/auth/account/profile/services/profile.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

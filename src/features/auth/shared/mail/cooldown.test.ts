@@ -4,7 +4,7 @@ import {
   EmailCooldownError,
   EMAIL_COOLDOWN_MS,
   getEmailCooldownRemainingSeconds,
-} from './cooldown';
+} from '@/features/auth/shared/mail/cooldown';
 
 describe('getEmailCooldownRemainingSeconds', () => {
   it('daha önce mail gönderilmediyse 0 döner', () => {

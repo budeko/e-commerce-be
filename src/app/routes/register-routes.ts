@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import authRoutes from '../../features/auth/auth.routes';
-import ecommerceRoutes from '../../features/ecommerce/ecommerce.routes';
+import authRoutes from '@/features/auth/auth.routes';
+import ecommerceRoutes from '@/features/ecommerce/ecommerce.routes';
 
 export const registerRoutes = async (app: FastifyInstance) => {
   await app.register(authRoutes, { prefix: '/auth' });

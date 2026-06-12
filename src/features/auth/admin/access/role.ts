@@ -1,1 +1,1 @@
-export { getAdminRole } from '../../shared/queries/admin-role';
+export { getAdminRole } from '@/features/auth/shared/queries/admin-role';

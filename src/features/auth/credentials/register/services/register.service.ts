@@ -1,20 +1,20 @@
-import { createLogger } from '../../../../../lib/common/logger';
-import { sendUserVerificationEmail } from '../../../shared/mail/send-verification';
+import { createLogger } from '@/lib/common/logger';
+import { sendUserVerificationEmail } from '@/features/auth/shared/mail/send-verification';
 import {
   assertRegisterEmailCooldown,
   EmailCooldownError,
   markRegisterEmailCooldown,
   markVerificationEmailSent,
-} from '../../../shared/mail/cooldown';
+} from '@/features/auth/shared/mail/cooldown';
 import {
   deleteUnverifiedUser,
   getVerificationExpiresAt,
-} from '../helpers/unverified-user';
-import { invalidateAuthOtp } from '../../../shared/otp/otp';
-import { hashPassword } from '../../../../../lib/common/password';
-import { User, Buyer, Seller } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { RegisterInput } from '../../../schemas/credentials/register.schema';
+} from '@/features/auth/credentials/register/helpers/unverified-user';
+import { invalidateAuthOtp } from '@/features/auth/shared/otp/otp';
+import { hashPassword } from '@/lib/common/password';
+import { User, Buyer, Seller } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { RegisterInput } from '@/features/auth/schemas/credentials/register.schema';
 
 const log = createLogger({ module: 'register' });
 

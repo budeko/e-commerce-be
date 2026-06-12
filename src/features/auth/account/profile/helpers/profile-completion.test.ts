@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBuyerProfileComplete, isSellerProfileComplete } from './profile-completion';
+import { isBuyerProfileComplete, isSellerProfileComplete } from '@/features/auth/account/profile/helpers/profile-completion';
 
 describe('isBuyerProfileComplete', () => {
   it('eksik alıcı profilini reddeder', () => {

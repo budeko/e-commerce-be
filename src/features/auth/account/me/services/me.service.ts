@@ -1,7 +1,7 @@
-import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
-import { buildAuthUserFields } from '../../../shared/responses/user.response';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
+import type { AuthTokenPayload } from '@/lib/auth/token/access-token';
+import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 
 export const getMe = async (auth: AuthTokenPayload) => {
   const user = await User.findById(auth.userId).select(

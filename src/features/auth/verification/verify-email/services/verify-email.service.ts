@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-import { signAuthToken, type UserRole } from '../../../../../lib/auth/token/access-token';
-import { verifyEmailVerificationToken } from '../../../../../lib/auth/token/email-token';
-import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '../../../shared/otp/otp';
-import { deleteUnverifiedUser } from '../../../credentials/register/helpers/unverified-user';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { VerifyEmailInput } from '../../../schemas/verification/verify-email.schema';
+import { signAuthToken, type UserRole } from '@/lib/auth/token/access-token';
+import { verifyEmailVerificationToken } from '@/lib/auth/token/email-token';
+import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/shared/otp/otp';
+import { deleteUnverifiedUser } from '@/features/auth/credentials/register/helpers/unverified-user';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { VerifyEmailInput } from '@/features/auth/schemas/verification/verify-email.schema';
 
 const markEmailVerified = async (userId: string) => {
   const user = await User.findById(userId);

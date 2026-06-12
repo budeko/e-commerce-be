@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { validateProfileUpdate } from './validate-profile-update';
+import { validateProfileUpdate } from '@/features/auth/account/profile/helpers/validate-profile-update';
 
 const createReply = () => {
   const reply = {

@@ -1,4 +1,4 @@
-import { actionButton, baseLayout, escapeHtml, footerNote, reasonBox } from '../../../../lib/auth/mail/layout';
+import { actionButton, baseLayout, escapeHtml, footerNote, reasonBox } from '@/lib/auth/mail/layout';
 
 export const buildSellerApprovedEmailHtml = (dashboardUrl: string, companyName?: string) =>
   baseLayout(`

@@ -1,8 +1,8 @@
-import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
-import { hashPassword, comparePassword } from '../../../../../lib/common/password';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import type { ChangePasswordInput } from '../../../schemas/credentials/change-password.schema';
+import type { AuthTokenPayload } from '@/lib/auth/token/access-token';
+import { hashPassword, comparePassword } from '@/lib/common/password';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import type { ChangePasswordInput } from '@/features/auth/schemas/credentials/change-password.schema';
 
 export const changePassword = async (
   auth: AuthTokenPayload,

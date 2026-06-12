@@ -1,7 +1,7 @@
-import { User, Buyer } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import { isBuyerProfileComplete } from '../helpers/profile-completion';
-import type { BuyerProfileUpdateInput } from '../../../schemas/profile';
+import { User, Buyer } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import { isBuyerProfileComplete } from '@/features/auth/account/profile/helpers/profile-completion';
+import type { BuyerProfileUpdateInput } from '@/features/auth/schemas/profile';
 
 const syncBuyerActiveStatus = async (userId: string, isComplete: boolean) => {
   await User.findByIdAndUpdate(userId, { isActive: isComplete });

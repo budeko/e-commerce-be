@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { hashPassword } from '../lib/common/password';
-import { signAuthToken } from '../lib/auth/token/access-token';
+import { hashPassword } from '@/lib/common/password';
+import { signAuthToken } from '@/lib/auth/token/access-token';
 
 const mockUserFindOne = vi.fn();
 const mockUserFindById = vi.fn();
@@ -9,7 +9,7 @@ const mockSellerFindOne = vi.fn();
 const mockRevokedTokenExists = vi.fn();
 
 vi.mock('../db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../db')>();
+  const actual = await importOriginal<typeof import('@/db')>();
   return {
     ...actual,
     User: {
@@ -28,7 +28,7 @@ vi.mock('../db', async (importOriginal) => {
   };
 });
 
-import { buildApp } from './build-app';
+import { buildApp } from '@/app/build-app';
 
 const userId = '507f1f77bcf86cd799439011';
 const sellerEmail = 'seller@test.com';

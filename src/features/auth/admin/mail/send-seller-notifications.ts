@@ -1,9 +1,9 @@
-import { sendMail } from '../../../../lib/auth/mail/send';
-import { getFrontendUrl } from '../../../../lib/auth/mail/transporter';
+import { sendMail } from '@/lib/auth/mail/send';
+import { getFrontendUrl } from '@/lib/auth/mail/transporter';
 import {
   buildSellerApprovedEmailHtml,
   buildSellerRejectedEmailHtml,
-} from './templates';
+} from '@/features/auth/admin/mail/templates';
 
 export const sendSellerApprovedEmail = async (
   to: string,

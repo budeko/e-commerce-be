@@ -1,4 +1,4 @@
-import { HttpError } from '../../../lib/common/errors';
+import { HttpError } from '@/lib/common/errors';
 
 export class EcommerceError extends HttpError {
   constructor(statusCode: number, message: string) {

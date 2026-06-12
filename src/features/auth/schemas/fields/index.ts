@@ -1,3 +1,3 @@
-export { emailSchema } from './email.schema';
-export { passwordSchema } from './password.schema';
-export { otpCodeSchema } from './otp-code.schema';
+export { emailSchema } from '@/features/auth/schemas/fields/email.schema';
+export { passwordSchema } from '@/features/auth/schemas/fields/password.schema';
+export { otpCodeSchema } from '@/features/auth/schemas/fields/otp-code.schema';

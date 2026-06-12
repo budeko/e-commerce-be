@@ -1,14 +1,14 @@
-import { createLogger } from '../../../../../lib/common/logger';
+import { createLogger } from '@/lib/common/logger';
 import {
   assertEmailCooldown,
   EmailCooldownError,
   markPasswordResetEmailSent,
-} from '../../../shared/mail/cooldown';
-import { signPasswordResetToken } from '../../../../../lib/auth/token/email-token';
-import { sendPasswordResetEmail } from '../../../../../lib/auth/mail/send';
-import { createAuthOtp, invalidateAuthOtp } from '../../../shared/otp/otp';
-import { User } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
+} from '@/features/auth/shared/mail/cooldown';
+import { signPasswordResetToken } from '@/lib/auth/token/email-token';
+import { sendPasswordResetEmail } from '@/lib/auth/mail/send';
+import { createAuthOtp, invalidateAuthOtp } from '@/features/auth/shared/otp/otp';
+import { User } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 
 const log = createLogger({ module: 'forgot-password' });
 

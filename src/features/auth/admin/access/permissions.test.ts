@@ -8,7 +8,7 @@ import {
   canUpdateAdminProfile,
   canUpdateAdminRole,
   canViewAdmin,
-} from './permissions';
+} from '@/features/auth/admin/access/permissions';
 
 describe('canCreateAdminRole', () => {
   it('owner her iki rolü de oluşturabilir', () => {

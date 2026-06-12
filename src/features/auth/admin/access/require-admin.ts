@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getAdminRole } from '../access/role';
+import { getAdminRole } from '@/features/auth/admin/access/role';
 
 declare module 'fastify' {
   interface FastifyRequest {

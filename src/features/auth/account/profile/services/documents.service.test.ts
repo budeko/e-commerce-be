@@ -26,7 +26,7 @@ vi.mock('./seller.service', () => ({
   updateSellerProfile: (...args: unknown[]) => mockUpdateSellerProfile(...args),
 }));
 
-import { uploadSellerDocument } from './documents.service';
+import { uploadSellerDocument } from '@/features/auth/account/profile/services/documents.service';
 
 const userId = '507f1f77bcf86cd799439011';
 const pdfBuffer = Buffer.from('%PDF-1.4 test');

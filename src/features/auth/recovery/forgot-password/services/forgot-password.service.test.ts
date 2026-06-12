@@ -27,7 +27,7 @@ vi.mock('../../../../../lib/auth/mail/send', () => ({
 }));
 
 vi.mock('../../../shared/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('../../../shared/mail/cooldown')>(
+  const actual = await vi.importActual<typeof import('@/features/auth/shared/mail/cooldown')>(
     '../../../shared/mail/cooldown'
   );
 
@@ -38,8 +38,8 @@ vi.mock('../../../shared/mail/cooldown', async () => {
   };
 });
 
-import { EmailCooldownError } from '../../../shared/mail/cooldown';
-import { forgotPassword } from './forgot-password.service';
+import { EmailCooldownError } from '@/features/auth/shared/mail/cooldown';
+import { forgotPassword } from '@/features/auth/recovery/forgot-password/services/forgot-password.service';
 
 describe('forgotPassword', () => {
   beforeEach(() => {

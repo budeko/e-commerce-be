@@ -1,1 +1,1 @@
-export { EcommerceError } from '../shared/errors';
+export { EcommerceError } from '@/features/ecommerce/shared/errors';

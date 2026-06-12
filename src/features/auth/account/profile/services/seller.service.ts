@@ -1,8 +1,8 @@
-import { Seller } from '../../../../../db';
-import { AuthError } from '../../../shared/errors';
-import { isSellerProfileComplete } from '../helpers/profile-completion';
-import { hasCriticalSellerFieldChanges } from '../helpers/seller-critical-fields';
-import type { SellerProfileUpdateInput } from '../../../schemas/profile';
+import { Seller } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
+import { isSellerProfileComplete } from '@/features/auth/account/profile/helpers/profile-completion';
+import { hasCriticalSellerFieldChanges } from '@/features/auth/account/profile/helpers/seller-critical-fields';
+import type { SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
 
 export const updateSellerProfile = async (userId: string, data: SellerProfileUpdateInput) => {
   const seller = await Seller.findOne({ userId });

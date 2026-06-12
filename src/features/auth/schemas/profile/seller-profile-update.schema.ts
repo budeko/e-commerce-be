@@ -5,7 +5,7 @@ import {
   phoneSchema,
   safeString,
   safeUrlSchema,
-} from '../../../../lib/common/validation/common-schemas';
+} from '@/lib/common/validation/common-schemas';
 
 const vknSchema = safeString({
   min: 10,

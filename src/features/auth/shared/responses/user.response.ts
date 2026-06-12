@@ -1,6 +1,6 @@
-import { getAdminRole } from '../queries/admin-role';
-import { Seller, type AdminRole, type SellerApprovalStatus } from '../../../../db';
-import { AuthError } from '../errors';
+import { getAdminRole } from '@/features/auth/shared/queries/admin-role';
+import { Seller, type AdminRole, type SellerApprovalStatus } from '@/db';
+import { AuthError } from '@/features/auth/shared/errors';
 
 type AuthUserLike = {
   _id: unknown;

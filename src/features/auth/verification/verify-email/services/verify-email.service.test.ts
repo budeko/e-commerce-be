@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { signEmailVerificationToken } from '../../../../../lib/auth/token/email-token';
-import { AuthError } from '../../../shared/errors';
+import { signEmailVerificationToken } from '@/lib/auth/token/email-token';
+import { AuthError } from '@/features/auth/shared/errors';
 
 const mockFindOne = vi.fn();
 const mockFindById = vi.fn();
@@ -36,8 +36,8 @@ vi.mock('../../../shared/otp/otp', async () => {
   };
 });
 
-import { OtpError } from '../../../shared/otp/otp';
-import { verifyEmail } from './verify-email.service';
+import { OtpError } from '@/features/auth/shared/otp/otp';
+import { verifyEmail } from '@/features/auth/verification/verify-email/services/verify-email.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

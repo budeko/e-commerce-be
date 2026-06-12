@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '../../../../lib/common/http/validate-body';
-import { handleAuthRouteError } from '../../shared/handle-route-error';
-import { buildAuthUserFields } from '../../shared/responses/user.response';
-import { registerSchema, type RegisterInput } from '../../schemas/credentials/register.schema';
-import { register } from './services/register.service';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
+import { registerSchema, type RegisterInput } from '@/features/auth/schemas/credentials/register.schema';
+import { register } from '@/features/auth/credentials/register/services/register.service';
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(registerSchema) }, async (req, reply) => {

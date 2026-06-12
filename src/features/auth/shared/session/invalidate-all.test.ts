@@ -3,7 +3,7 @@ import {
   isTokenIssuedBefore,
   PASSWORD_CHANGED_MESSAGE,
   SESSIONS_REVOKED_MESSAGE,
-} from './invalidate-all';
+} from '@/features/auth/shared/session/invalidate-all';
 
 describe('isTokenIssuedBefore', () => {
   it('invalidationPoint yoksa oturumu geçerli sayar', () => {

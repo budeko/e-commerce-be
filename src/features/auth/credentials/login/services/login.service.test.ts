@@ -18,7 +18,7 @@ vi.mock('../../../../../lib/auth/token/access-token', () => ({
   signAuthToken: (...args: unknown[]) => mockSignAuthToken(...args),
 }));
 
-import { login } from './login.service';
+import { login } from '@/features/auth/credentials/login/services/login.service';
 
 const userId = '507f1f77bcf86cd799439011';
 

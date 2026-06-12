@@ -3,7 +3,7 @@ import {
   verifyEmailByCodeSchema,
   verifyEmailByTokenSchema,
   verifyEmailSchema,
-} from './verify-email.schema';
+} from '@/features/auth/schemas/verification/verify-email.schema';
 
 describe('verifyEmailSchema', () => {
   it('token gövdesini kabul eder', () => {

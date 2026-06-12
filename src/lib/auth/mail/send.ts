@@ -1,9 +1,9 @@
-import { getResend, getFrontendUrl, getMailFrom } from './transporter';
+import { getResend, getFrontendUrl, getMailFrom } from '@/lib/auth/mail/transporter';
 import {
   buildPasswordResetEmailHtml,
   buildVerificationEmailHtml,
-} from './templates';
-import { createLogger } from '../../common/logger';
+} from '@/lib/auth/mail/templates';
+import { createLogger } from '@/lib/common/logger';
 
 const log = createLogger({ module: 'mail' });
 

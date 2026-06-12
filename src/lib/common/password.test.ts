@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comparePassword, hashPassword } from './password';
+import { comparePassword, hashPassword } from '@/lib/common/password';
 
 describe('password', () => {
   it('hash ve compare birbiriyle uyumludur', async () => {

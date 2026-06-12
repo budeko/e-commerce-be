@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { sanitizeRequestBody } from '../../../../../lib/common/validation/sanitize';
-import { buyerProfileUpdateSchema } from '../../../schemas/profile/buyer-profile-update.schema';
-import { sellerProfileUpdateSchema } from '../../../schemas/profile/seller-profile-update.schema';
+import { sanitizeRequestBody } from '@/lib/common/validation/sanitize';
+import { buyerProfileUpdateSchema } from '@/features/auth/schemas/profile/buyer-profile-update.schema';
+import { sellerProfileUpdateSchema } from '@/features/auth/schemas/profile/seller-profile-update.schema';
 
 export const validateProfileUpdate = async (
   request: FastifyRequest,
