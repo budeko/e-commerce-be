@@ -3,9 +3,9 @@ import {
   assertEmailCooldown,
   EmailCooldownError,
   markVerificationEmailSent,
-} from '../../../../../lib/auth/mail/cooldown';
-import { sendUserVerificationEmail } from '../../../../../lib/auth/mail/send-verification';
-import { invalidateAuthOtp } from '../../../../../lib/auth/otp/otp';
+} from '../../../shared/mail/cooldown';
+import { sendUserVerificationEmail } from '../../../shared/mail/send-verification';
+import { invalidateAuthOtp } from '../../../shared/otp/otp';
 import { User } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';
 

@@ -30,16 +30,16 @@ describe('canDeleteAdmin', () => {
 });
 
 describe('canManageSellers', () => {
-  it('owner ve helper satıcı yönetebilir', () => {
+  it('sadece owner satıcı yönetebilir', () => {
     expect(canManageSellers('owner')).toBe(true);
-    expect(canManageSellers('helper')).toBe(true);
+    expect(canManageSellers('helper')).toBe(false);
   });
 });
 
 describe('canListAdmins', () => {
-  it('owner ve helper admin listesini görebilir', () => {
+  it('sadece owner admin listesini görebilir', () => {
     expect(canListAdmins('owner')).toBe(true);
-    expect(canListAdmins('helper')).toBe(true);
+    expect(canListAdmins('helper')).toBe(false);
   });
 });
 

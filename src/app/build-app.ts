@@ -1,6 +1,8 @@
 import fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import { HttpError } from '../lib/common/errors';
+import { corsOriginHandler } from './cors-config';
 import { registerRoutes } from './routes/register-routes';
 
 export const buildApp = async (): Promise<FastifyInstance> => {
@@ -11,6 +13,10 @@ export const buildApp = async (): Promise<FastifyInstance> => {
   });
 
   app.setErrorHandler((error: unknown, _request, reply) => {
+    if (error instanceof HttpError) {
+      return reply.status(error.statusCode).send({ message: error.message });
+    }
+
     const statusCode =
       typeof error === 'object' &&
       error !== null &&
@@ -30,7 +36,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
   });
 
   await app.register(cors, {
-    origin: true,
+    origin: corsOriginHandler,
     // Default is GET,HEAD,POST only — PATCH/PUT/DELETE blocked in browser preflight
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });

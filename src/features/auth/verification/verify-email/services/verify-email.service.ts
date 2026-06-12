@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { signAuthToken, type UserRole } from '../../../../../lib/auth/token/access-token';
 import { verifyEmailVerificationToken } from '../../../../../lib/auth/token/email-token';
-import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '../../../../../lib/auth/otp/otp';
+import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '../../../shared/otp/otp';
 import { deleteUnverifiedUser } from '../../../credentials/register/helpers/unverified-user';
 import { User } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';

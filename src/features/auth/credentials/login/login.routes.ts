@@ -1,17 +1,9 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '../../../../lib/common/http/validate-body';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { buildAuthUserFields } from '../../shared/responses/user.response';
 import { login } from './services/login.service';
 import { loginSchema, type LoginInput } from '../../schemas/credentials/login.schema';
-
-const handleLoginError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Giriş sırasında bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(loginSchema) }, async (req, reply) => {
@@ -25,7 +17,7 @@ export default async function (fastify: FastifyInstance) {
         token,
       });
     } catch (error) {
-      return handleLoginError(reply, error);
+      return handleAuthRouteError(reply, error, 'Giriş sırasında bir hata oluştu');
     }
   });
 }

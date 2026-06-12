@@ -1,16 +1,8 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '../../../../lib/common/http/validate-body';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { forgotPassword } from './services/forgot-password.service';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../../schemas/recovery/forgot-password.schema';
-
-const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'İşlem sırasında bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(forgotPasswordSchema) }, async (req, reply) => {
@@ -21,7 +13,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'E-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi',
       });
     } catch (error) {
-      return handleError(reply, error);
+      return handleAuthRouteError(reply, error, 'İşlem sırasında bir hata oluştu');
     }
   });
 }

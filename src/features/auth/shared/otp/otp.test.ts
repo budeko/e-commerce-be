@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { hashPassword } from '../../common/password';
+import { hashPassword } from '../../../../lib/common/password';
 
 const mockFindOneAndUpdate = vi.fn();
 const mockFindOne = vi.fn();
 const mockDeleteOne = vi.fn();
 
-vi.mock('../../../db', () => ({
+vi.mock('../../../../db', () => ({
   AuthOtp: {
     findOneAndUpdate: (...args: unknown[]) => mockFindOneAndUpdate(...args),
     findOne: (...args: unknown[]) => mockFindOne(...args),

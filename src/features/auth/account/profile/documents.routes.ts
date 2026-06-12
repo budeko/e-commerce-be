@@ -1,16 +1,8 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/auth/guard/require-auth';
-import { requireEmailVerified } from '../../../../lib/auth/guard/require-email-verified';
-import { AuthError } from '../../shared/errors';
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../../shared/guard/require-auth';
+import { requireEmailVerified } from '../../shared/guard/require-email-verified';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { uploadSellerDocument } from './services/documents.service';
-
-const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Belge yüklenirken bir hata oluştu' });
-};
 
 export default async function documentsRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -44,7 +36,7 @@ export default async function documentsRoutes(fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleError(reply, error);
+        return handleAuthRouteError(reply, error, 'Belge yüklenirken bir hata oluştu');
       }
     }
   );

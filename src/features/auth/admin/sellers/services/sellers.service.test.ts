@@ -93,4 +93,18 @@ describe('sellers.service bildirimleri', () => {
 
     expect(result.approvalStatus).toBe('approved');
   });
+
+  it('helper satıcı onaylayamaz', async () => {
+    await expect(approveSeller('helper', userId)).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'Satıcı yönetimi için yetkin yok',
+    });
+  });
+
+  it('helper satıcı reddedemez', async () => {
+    await expect(rejectSeller('helper', userId, 'Sebep')).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'Satıcı yönetimi için yetkin yok',
+    });
+  });
 });

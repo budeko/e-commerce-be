@@ -1,6 +1,7 @@
 import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
 import { User, Buyer, Seller } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';
+import { buildAuthUserFields } from '../../../shared/responses/user.response';
 import { updateBuyerProfile } from './buyer.service';
 import { updateSellerProfile } from './seller.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '../../../schemas/profile';
@@ -12,6 +13,12 @@ export const getProfile = async (auth: AuthTokenPayload) => {
     throw new AuthError(404, 'Kullanıcı bulunamadı');
   }
 
+  if (auth.role === 'admin' || user.role === 'admin') {
+    throw new AuthError(403, 'Bu endpoint buyer ve seller içindir');
+  }
+
+  const statusFields = await buildAuthUserFields(user);
+
   if (auth.role === 'buyer') {
     const profile = await Buyer.findOne({ userId: auth.userId }).lean();
 
@@ -21,9 +28,7 @@ export const getProfile = async (auth: AuthTokenPayload) => {
 
     return {
       email: user.email,
-      role: user.role,
-      isActive: user.isActive,
-      isEmailVerified: user.isEmailVerified,
+      ...statusFields,
       profile,
     };
   }
@@ -37,10 +42,8 @@ export const getProfile = async (auth: AuthTokenPayload) => {
 
     return {
       email: user.email,
-      role: user.role,
-      isEmailVerified: user.isEmailVerified,
-      approvalStatus: profile.approvalStatus,
-      rejectionReason: profile.rejectionReason,
+      ...statusFields,
+      rejectionReason: profile.rejectionReason ?? null,
       profile,
     };
   }

@@ -41,8 +41,32 @@ export const getSupabaseClient = (): SupabaseClient => {
   return client;
 };
 
+export const parseStorageObjectPathFromPublicUrl = (publicUrl: string, bucket: string) => {
+  const marker = `/storage/v1/object/public/${bucket}/`;
+  const index = publicUrl.indexOf(marker);
+
+  if (index === -1) {
+    return null;
+  }
+
+  return decodeURIComponent(publicUrl.slice(index + marker.length));
+};
+
+export const deleteFromSellerStorage = async (objectPath: string) => {
+  const { bucket } = getSupabaseConfig();
+  const supabase = getSupabaseClient();
+
+  const { error } = await supabase.storage.from(bucket).remove([objectPath]);
+
+  if (error) {
+    logger.warn(
+      { bucket, objectPath, supabaseError: error.message },
+      'Supabase depolama silme hatası'
+    );
+  }
+};
+
 export const uploadToSellerStorage = async (
-  userId: string,
   objectPath: string,
   buffer: Buffer,
   contentType: string
@@ -52,13 +76,13 @@ export const uploadToSellerStorage = async (
 
   const { error } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
     contentType,
-    upsert: false,
+    upsert: true,
   });
 
   if (error) {
     logger.error(
       { bucket, objectPath, supabaseError: error.message },
-      'Supabase storage upload failed'
+      'Supabase depolama yükleme hatası'
     );
     throw new HttpError(503, 'Dosya yüklenemedi, lütfen tekrar deneyin');
   }

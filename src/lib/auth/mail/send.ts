@@ -1,4 +1,4 @@
-import { resend, getFrontendUrl, getMailFrom } from './transporter';
+import { getResend, getFrontendUrl, getMailFrom } from './transporter';
 import {
   buildPasswordResetEmailHtml,
   buildVerificationEmailHtml,
@@ -15,7 +15,7 @@ type SendMailInput = {
 
 export const sendMail = async ({ to, subject, html }: SendMailInput) => {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: getMailFrom(),
       to: [to],
       subject,

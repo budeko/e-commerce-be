@@ -1,8 +1,8 @@
 import type { AdminRole } from '../../../../db';
 
-export const canManageSellers = (_role: AdminRole) => true;
+export const canManageSellers = (role: AdminRole) => role === 'owner';
 
-export const canListAdmins = (_role: AdminRole) => true;
+export const canListAdmins = (role: AdminRole) => role === 'owner';
 
 export const canCreateAdminRole = (creatorRole: AdminRole, targetRole: AdminRole) => {
   if (creatorRole === 'owner') {

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { AuthOtp, AuthOtpPurpose } from '../../../db';
-import { comparePassword, hashPassword } from '../../common/password';
+import { AuthOtp, AuthOtpPurpose } from '../../../../db';
+import { comparePassword, hashPassword } from '../../../../lib/common/password';
 
 const MAX_OTP_ATTEMPTS = 5;
 

@@ -26,6 +26,26 @@ vi.mock('./seller.service', () => ({
   updateSellerProfile: (...args: unknown[]) => mockUpdateSellerProfile(...args),
 }));
 
+vi.mock('../../../shared/responses/user.response', () => ({
+  buildAuthUserFields: vi.fn(async (user: { _id: unknown; role: string; isActive?: boolean }) => {
+    if (user.role === 'buyer') {
+      return {
+        userId: user._id,
+        role: user.role,
+        isEmailVerified: true,
+        isActive: user.isActive ?? false,
+      };
+    }
+
+    return {
+      userId: user._id,
+      role: user.role,
+      isEmailVerified: true,
+      approvalStatus: 'pending',
+    };
+  }),
+}));
+
 import { getProfile, updateProfile } from './profile.service';
 
 const userId = '507f1f77bcf86cd799439011';
@@ -62,6 +82,7 @@ describe('getProfile', () => {
   it('buyer profilini döner', async () => {
     mockUserFindById.mockReturnValue(
       chainSelect({
+        _id: userId,
         email: 'buyer@example.com',
         role: 'buyer',
         isActive: false,
@@ -74,6 +95,7 @@ describe('getProfile', () => {
 
     expect(result).toMatchObject({
       email: 'buyer@example.com',
+      userId,
       role: 'buyer',
       isActive: false,
       profile: { firstName: 'Ali' },
@@ -98,7 +120,7 @@ describe('getProfile', () => {
 
     const result = await getProfile({ userId, role: 'seller' });
 
-    expect(result.approvalStatus).toBe('pending');
+    expect(result).toMatchObject({ approvalStatus: 'pending' });
   });
 });
 

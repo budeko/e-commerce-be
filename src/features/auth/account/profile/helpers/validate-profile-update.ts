@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { sanitizeRequestBody } from '../../../../../lib/common/validation/sanitize';
 import { buyerProfileUpdateSchema } from '../../../schemas/profile/buyer-profile-update.schema';
 import { sellerProfileUpdateSchema } from '../../../schemas/profile/seller-profile-update.schema';
 
@@ -17,7 +18,7 @@ export const validateProfileUpdate = async (
   }
 
   const schema = role === 'buyer' ? buyerProfileUpdateSchema : sellerProfileUpdateSchema;
-  const parsed = schema.safeParse(request.body);
+  const parsed = schema.safeParse(sanitizeRequestBody(request.body));
 
   if (!parsed.success) {
     return reply.status(400).send({

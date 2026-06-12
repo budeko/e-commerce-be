@@ -23,6 +23,12 @@ export const SELLER_DOCUMENT_RULES: Record<
 export const isSellerDocumentType = (value: string): value is SellerDocumentType =>
   (SELLER_DOCUMENT_TYPES as readonly string[]).includes(value);
 
+export const buildSellerDocumentObjectPath = (
+  userId: string,
+  docType: SellerDocumentType,
+  extension: string
+) => `${userId}/${docType}.${extension}`;
+
 export const resolveDocumentExtension = (mimeType: string, docType: SellerDocumentType) => {
   if (mimeType === 'image/png') {
     return 'png';

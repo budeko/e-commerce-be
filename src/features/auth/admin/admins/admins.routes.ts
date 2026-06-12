@@ -1,21 +1,13 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../../shared/guard/require-auth';
 import { requireAdmin } from '../access/require-admin';
 import { validateBody } from '../../../../lib/common/http/validate-body';
 import { validateParams } from '../../../../lib/common/http/validate-params';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from './services/admins.service';
 import { createAdminSchema, type CreateAdminInput } from '../../schemas/admin/create-admin.schema';
 import { updateAdminSchema, type UpdateAdminInput } from '../../schemas/admin/update-admin.schema';
-
-const handleAdminManageError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Admin işlemi sırasında bir hata oluştu' });
-};
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {
@@ -23,12 +15,16 @@ const adminWithUserId = {
 };
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get('/', adminOnly, async (_req, reply) => {
+  fastify.get('/', adminOnly, async (req, reply) => {
     try {
-      const admins = await listAdmins();
+      if (!req.adminRole) {
+        return reply.status(403).send({ message: 'Admin profili bulunamadı' });
+      }
+
+      const admins = await listAdmins(req.adminRole);
       return reply.status(200).send({ admins });
     } catch (error) {
-      return handleAdminManageError(reply, error);
+      return handleAuthRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -43,7 +39,7 @@ export default async function (fastify: FastifyInstance) {
 
       return reply.status(200).send(admin);
     } catch (error) {
-      return handleAdminManageError(reply, error);
+      return handleAuthRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -67,7 +63,7 @@ export default async function (fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleAdminManageError(reply, error);
+        return handleAuthRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -101,7 +97,7 @@ export default async function (fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleAdminManageError(reply, error);
+        return handleAuthRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -129,7 +125,7 @@ export default async function (fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleAdminManageError(reply, error);
+        return handleAuthRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
       }
     }
   );

@@ -1,23 +1,15 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../../shared/guard/require-auth';
 import { requireAdmin } from '../access/require-admin';
 import { validateBody } from '../../../../lib/common/http/validate-body';
 import { validateParams } from '../../../../lib/common/http/validate-params';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import {
   adminProfileUpdateSchema,
   type AdminProfileUpdateInput,
 } from '../../schemas/admin/admin-profile-fields.schema';
 import { getAdminProfile, updateAdminProfile } from './services/profile.service';
-
-const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Admin profil işlemi sırasında bir hata oluştu' });
-};
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 
@@ -31,7 +23,7 @@ export default async function (fastify: FastifyInstance) {
       const profile = await getAdminProfile(req.adminRole, req.auth!.userId);
       return reply.status(200).send(profile);
     } catch (error) {
-      return handleError(reply, error);
+      return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -56,7 +48,7 @@ export default async function (fastify: FastifyInstance) {
           ...profile,
         });
       } catch (error) {
-        return handleError(reply, error);
+        return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -90,7 +82,7 @@ export default async function (fastify: FastifyInstance) {
           ...profile,
         });
       } catch (error) {
-        return handleError(reply, error);
+        return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
       }
     }
   );

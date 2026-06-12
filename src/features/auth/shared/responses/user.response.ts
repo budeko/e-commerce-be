@@ -1,4 +1,4 @@
-import { getAdminRole } from '../../admin/access/role';
+import { getAdminRole } from '../queries/admin-role';
 import { Seller, type AdminRole, type SellerApprovalStatus } from '../../../../db';
 import { AuthError } from '../errors';
 

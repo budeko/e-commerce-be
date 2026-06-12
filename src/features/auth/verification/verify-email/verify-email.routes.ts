@@ -1,17 +1,9 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '../../../../lib/common/http/validate-body';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { buildAuthUserFields } from '../../shared/responses/user.response';
-import { AuthError } from '../../shared/errors';
 import { verifyEmail } from './services/verify-email.service';
 import { verifyEmailSchema, type VerifyEmailInput } from '../../schemas/verification/verify-email.schema';
-
-const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'E-posta doğrulanırken bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(verifyEmailSchema) }, async (req, reply) => {
@@ -26,7 +18,7 @@ export default async function (fastify: FastifyInstance) {
         token,
       });
     } catch (error) {
-      return handleError(reply, error);
+      return handleAuthRouteError(reply, error, 'E-posta doğrulanırken bir hata oluştu');
     }
   });
 }

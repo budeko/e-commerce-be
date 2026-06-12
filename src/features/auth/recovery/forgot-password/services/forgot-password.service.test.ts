@@ -13,7 +13,7 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-vi.mock('../../../../../lib/auth/otp/otp', () => ({
+vi.mock('../../../shared/otp/otp', () => ({
   createAuthOtp: (...args: unknown[]) => mockCreateAuthOtp(...args),
   invalidateAuthOtp: (...args: unknown[]) => mockInvalidateAuthOtp(...args),
 }));
@@ -26,9 +26,9 @@ vi.mock('../../../../../lib/auth/mail/send', () => ({
   sendPasswordResetEmail: (...args: unknown[]) => mockSendPasswordResetEmail(...args),
 }));
 
-vi.mock('../../../../../lib/auth/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('../../../../../lib/auth/mail/cooldown')>(
-    '../../../../../lib/auth/mail/cooldown'
+vi.mock('../../../shared/mail/cooldown', async () => {
+  const actual = await vi.importActual<typeof import('../../../shared/mail/cooldown')>(
+    '../../../shared/mail/cooldown'
   );
 
   return {
@@ -38,7 +38,7 @@ vi.mock('../../../../../lib/auth/mail/cooldown', async () => {
   };
 });
 
-import { EmailCooldownError } from '../../../../../lib/auth/mail/cooldown';
+import { EmailCooldownError } from '../../../shared/mail/cooldown';
 import { forgotPassword } from './forgot-password.service';
 
 describe('forgotPassword', () => {

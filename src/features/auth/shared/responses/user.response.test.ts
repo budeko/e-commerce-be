@@ -9,7 +9,7 @@ vi.mock('../../../../db', () => ({
   },
 }));
 
-vi.mock('../../admin/access/role', () => ({
+vi.mock('../queries/admin-role', () => ({
   getAdminRole: (...args: unknown[]) => mockGetAdminRole(...args),
 }));
 

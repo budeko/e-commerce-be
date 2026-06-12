@@ -2,6 +2,7 @@ import {
   canAssignAdminRole,
   canCreateAdminRole,
   canDeleteAdmin,
+  canListAdmins,
   canUpdateAdminRole,
   canViewAdmin,
 } from '../../access/permissions';
@@ -75,7 +76,11 @@ export const updateAdmin = async (
   return formatAdminResponse(targetAdmin, targetUser);
 };
 
-export const listAdmins = async () => {
+export const listAdmins = async (actorRole: AdminRole) => {
+  if (!canListAdmins(actorRole)) {
+    throw new AuthError(403, 'Admin listesini görüntüleme yetkin yok');
+  }
+
   const admins = await Admin.find().sort({ createdAt: -1 }).lean();
   const userIds = admins.map((admin) => admin.userId);
   const users = await User.find({ _id: { $in: userIds } })

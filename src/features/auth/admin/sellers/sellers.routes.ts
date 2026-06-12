@@ -1,22 +1,14 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/auth/guard/require-auth';
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../../shared/guard/require-auth';
 import { requireAdmin } from '../access/require-admin';
 import { validateBody } from '../../../../lib/common/http/validate-body';
 import { validateParams } from '../../../../lib/common/http/validate-params';
 import { validateQuery } from '../../../../lib/common/http/validate-query';
 import { userIdParamSchema } from '../../../../lib/common/validation/param-schemas';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { listSellersQuerySchema, type ListSellersQuery } from '../../schemas/admin/list-sellers.schema';
 import { rejectSellerSchema, type RejectSellerInput } from '../../schemas/admin/reject-seller.schema';
 import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from './services/sellers.service';
-
-const handleSellerAdminError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Satıcı işlemi sırasında bir hata oluştu' });
-};
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {
@@ -33,7 +25,7 @@ export default async function (fastify: FastifyInstance) {
         const sellers = await listSellers(status);
         return reply.status(200).send({ sellers });
       } catch (error) {
-        return handleSellerAdminError(reply, error);
+        return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -44,7 +36,7 @@ export default async function (fastify: FastifyInstance) {
       const seller = await getSellerByUserId(userId);
       return reply.status(200).send(seller);
     } catch (error) {
-      return handleSellerAdminError(reply, error);
+      return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -62,7 +54,7 @@ export default async function (fastify: FastifyInstance) {
         ...result,
       });
     } catch (error) {
-      return handleSellerAdminError(reply, error);
+      return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -91,7 +83,7 @@ export default async function (fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleSellerAdminError(reply, error);
+        return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
       }
     }
   );

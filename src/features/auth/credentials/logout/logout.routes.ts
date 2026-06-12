@@ -1,15 +1,7 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../../../../lib/auth/guard/require-auth';
-import { AuthError } from '../../shared/errors';
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '../../shared/guard/require-auth';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { logout, logoutAllSessions } from './services/logout.service';
-
-const handleLogoutError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Çıkış sırasında bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: requireAuth }, async (req, reply) => {
@@ -20,7 +12,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Çıkış başarılı',
       });
     } catch (error) {
-      return handleLogoutError(reply, error);
+      return handleAuthRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
     }
   });
 
@@ -32,7 +24,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Tüm oturumlar sonlandırıldı',
       });
     } catch (error) {
-      return handleLogoutError(reply, error);
+      return handleAuthRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
     }
   });
 }

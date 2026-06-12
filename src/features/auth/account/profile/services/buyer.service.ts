@@ -56,5 +56,5 @@ export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdat
     isBuyerProfileComplete(updatedBuyer.toObject())
   );
 
-  return { profile: updatedBuyer, isActive };
+  return { profile: updatedBuyer.toObject(), isActive };
 };

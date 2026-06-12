@@ -19,7 +19,7 @@ vi.mock('../../../credentials/register/helpers/unverified-user', () => ({
   deleteUnverifiedUser: (...args: unknown[]) => mockDeleteUnverifiedUser(...args),
 }));
 
-vi.mock('../../../../../lib/auth/otp/otp', async () => {
+vi.mock('../../../shared/otp/otp', async () => {
   class OtpError extends Error {
     constructor(
       public statusCode: number,
@@ -36,7 +36,7 @@ vi.mock('../../../../../lib/auth/otp/otp', async () => {
   };
 });
 
-import { OtpError } from '../../../../../lib/auth/otp/otp';
+import { OtpError } from '../../../shared/otp/otp';
 import { verifyEmail } from './verify-email.service';
 
 const userId = '507f1f77bcf86cd799439011';

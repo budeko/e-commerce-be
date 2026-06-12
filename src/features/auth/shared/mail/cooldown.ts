@@ -1,4 +1,4 @@
-import { AuthEmailCooldown, User } from '../../../db';
+import { AuthEmailCooldown, User } from '../../../../db';
 
 export const EMAIL_COOLDOWN_MS = 60_000;
 

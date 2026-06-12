@@ -8,9 +8,11 @@ vi.mock('../../../../../db', () => ({
   Admin: {
     findOne: (...args: unknown[]) => mockFindOne(...args),
     countDocuments: (...args: unknown[]) => mockCountDocuments(...args),
+    find: vi.fn(),
   },
   User: {
     findById: (...args: unknown[]) => mockFindById(...args),
+    find: vi.fn(),
   },
 }));
 
@@ -18,7 +20,7 @@ const chainFindById = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
 });
 
-import { getAdminByUserId, updateAdmin } from './admins.service';
+import { getAdminByUserId, listAdmins, updateAdmin } from './admins.service';
 
 const ownerId = '507f1f77bcf86cd799439011';
 const helperId = '507f1f77bcf86cd799439012';
@@ -79,6 +81,15 @@ describe('updateAdmin', () => {
       updateAdmin('owner', ownerId, ownerId, { adminRole: 'helper' })
     ).rejects.toMatchObject({
       statusCode: 403,
+    });
+  });
+});
+
+describe('listAdmins', () => {
+  it('helper admin listesini alamaz', async () => {
+    await expect(listAdmins('helper')).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'Admin listesini görüntüleme yetkin yok',
     });
   });
 });

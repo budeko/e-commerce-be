@@ -10,7 +10,15 @@ const getResendApiKey = () => {
   return apiKey;
 };
 
-export const resend = new Resend(getResendApiKey());
+let resendClient: Resend | null = null;
+
+export const getResend = (): Resend => {
+  if (!resendClient) {
+    resendClient = new Resend(getResendApiKey());
+  }
+
+  return resendClient;
+};
 
 export const getMailFrom = () => {
   const from = process.env.SMTP_FROM;

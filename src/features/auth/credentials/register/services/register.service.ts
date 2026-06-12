@@ -1,16 +1,16 @@
 import { createLogger } from '../../../../../lib/common/logger';
-import { sendUserVerificationEmail } from '../../../../../lib/auth/mail/send-verification';
+import { sendUserVerificationEmail } from '../../../shared/mail/send-verification';
 import {
   assertRegisterEmailCooldown,
   EmailCooldownError,
   markRegisterEmailCooldown,
   markVerificationEmailSent,
-} from '../../../../../lib/auth/mail/cooldown';
+} from '../../../shared/mail/cooldown';
 import {
   deleteUnverifiedUser,
   getVerificationExpiresAt,
 } from '../helpers/unverified-user';
-import { invalidateAuthOtp } from '../../../../../lib/auth/otp/otp';
+import { invalidateAuthOtp } from '../../../shared/otp/otp';
 import { hashPassword } from '../../../../../lib/common/password';
 import { User, Buyer, Seller } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';

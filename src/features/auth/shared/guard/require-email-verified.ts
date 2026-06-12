@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { User } from '../../../db';
+import { User } from '../../../../db';
 
 export const requireEmailVerified = async (
   request: FastifyRequest,

@@ -1,16 +1,8 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '../../../../lib/common/http/validate-body';
-import { AuthError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { resetPassword } from './services/reset-password.service';
 import { resetPasswordSchema, type ResetPasswordInput } from '../../schemas/recovery/reset-password.schema';
-
-const handleError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  return reply.status(500).send({ message: 'Şifre sıfırlanırken bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(resetPasswordSchema) }, async (req, reply) => {
@@ -21,7 +13,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Şifre başarıyla sıfırlandı',
       });
     } catch (error) {
-      return handleError(reply, error);
+      return handleAuthRouteError(reply, error, 'Şifre sıfırlanırken bir hata oluştu');
     }
   });
 }

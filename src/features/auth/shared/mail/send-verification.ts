@@ -1,6 +1,6 @@
-import { signEmailVerificationToken } from '../token/email-token';
+import { signEmailVerificationToken } from '../../../../lib/auth/token/email-token';
 import { createAuthOtp } from '../otp/otp';
-import { sendVerificationEmail } from './send';
+import { sendVerificationEmail } from '../../../../lib/auth/mail/send';
 
 export const sendUserVerificationEmail = async (userId: string, email: string) => {
   const token = signEmailVerificationToken(userId);

@@ -1,13 +1,13 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
-import { verifyAuthToken, type AuthTokenPayload } from '../token/access-token';
-import { isTokenRevoked } from '../session/revoke-token';
+import { verifyAuthToken, type AuthTokenPayload } from '../../../../lib/auth/token/access-token';
+import { User } from '../../../../db';
 import {
   isTokenIssuedBefore,
   PASSWORD_CHANGED_MESSAGE,
   SESSIONS_REVOKED_MESSAGE,
 } from '../session/invalidate-all';
-import { User } from '../../../db';
+import { isTokenRevoked } from '../session/revoke-token';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -35,8 +35,16 @@ export const requireAuth = async (request: FastifyRequest, reply: FastifyReply) 
 
     const decoded = jwt.decode(token) as jwt.JwtPayload | null;
     const user = await User.findById(request.auth.userId).select(
-      'passwordChangedAt sessionsRevokedAt'
+      'passwordChangedAt sessionsRevokedAt role'
     );
+
+    if (!user) {
+      return reply.status(401).send({ message: 'Oturum geçersiz, tekrar giriş yapın' });
+    }
+
+    if (user.role !== request.auth.role) {
+      return reply.status(401).send({ message: 'Oturum geçersiz, tekrar giriş yapın' });
+    }
 
     if (isTokenIssuedBefore(decoded?.iat, user?.passwordChangedAt ?? null)) {
       return reply.status(401).send({ message: PASSWORD_CHANGED_MESSAGE });

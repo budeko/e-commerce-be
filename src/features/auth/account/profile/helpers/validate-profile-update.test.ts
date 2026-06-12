@@ -70,4 +70,17 @@ describe('validateProfileUpdate', () => {
     expect(reply.statusCode).toBe(200);
     expect(request.body).toEqual({ firstName: 'Ali' });
   });
+
+  it('tehlikeli operatör keylerini bodyden temizler', async () => {
+    const reply = createReply();
+    const request = {
+      auth: { userId: '507f1f77bcf86cd799439011', role: 'buyer' },
+      body: { firstName: 'Ali', $set: { role: 'admin' } },
+    } as FastifyRequest;
+
+    await validateProfileUpdate(request, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(request.body).toEqual({ firstName: 'Ali' });
+  });
 });

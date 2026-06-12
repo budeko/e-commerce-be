@@ -3,10 +3,10 @@ import {
   assertEmailCooldown,
   EmailCooldownError,
   markPasswordResetEmailSent,
-} from '../../../../../lib/auth/mail/cooldown';
+} from '../../../shared/mail/cooldown';
 import { signPasswordResetToken } from '../../../../../lib/auth/token/email-token';
 import { sendPasswordResetEmail } from '../../../../../lib/auth/mail/send';
-import { createAuthOtp, invalidateAuthOtp } from '../../../../../lib/auth/otp/otp';
+import { createAuthOtp, invalidateAuthOtp } from '../../../shared/otp/otp';
 import { User } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';
 

@@ -1,8 +1,15 @@
 import type { AuthTokenPayload } from '../../../../../lib/auth/token/access-token';
 import { HttpError } from '../../../../../lib/common/errors';
-import { uploadToSellerStorage } from '../../../../../lib/storage/supabase';
+import {
+  deleteFromSellerStorage,
+  getSupabaseConfig,
+  parseStorageObjectPathFromPublicUrl,
+  uploadToSellerStorage,
+} from '../../../../../lib/storage/supabase';
+import { Seller } from '../../../../../db';
 import { AuthError } from '../../../shared/errors';
 import {
+  buildSellerDocumentObjectPath,
   isSellerDocumentType,
   resolveAcceptedMimeType,
   resolveDocumentExtension,
@@ -47,13 +54,30 @@ export const uploadSellerDocument = async (
     throw new AuthError(400, 'Dosya boyutu limiti aşıldı');
   }
 
+  const seller = await Seller.findOne({ userId: auth.userId }).lean();
+
+  if (!seller) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
   const extension = resolveDocumentExtension(mimeType, docType);
-  const objectPath = `${auth.userId}/${docType}-${Date.now()}.${extension}`;
+  const objectPath = buildSellerDocumentObjectPath(auth.userId, docType, extension);
+  const profileField = SELLER_DOCUMENT_FIELD_MAP[docType];
+  const oldUrl = seller[profileField as keyof typeof seller];
+
+  if (typeof oldUrl === 'string' && oldUrl.trim()) {
+    const { bucket } = getSupabaseConfig();
+    const oldObjectPath = parseStorageObjectPathFromPublicUrl(oldUrl, bucket);
+
+    if (oldObjectPath && oldObjectPath !== objectPath) {
+      await deleteFromSellerStorage(oldObjectPath);
+    }
+  }
 
   let url: string;
 
   try {
-    url = await uploadToSellerStorage(auth.userId, objectPath, input.buffer, mimeType);
+    url = await uploadToSellerStorage(objectPath, input.buffer, mimeType);
   } catch (error) {
     if (error instanceof HttpError) {
       throw new AuthError(error.statusCode, error.message);
@@ -62,7 +86,6 @@ export const uploadSellerDocument = async (
     throw error;
   }
 
-  const profileField = SELLER_DOCUMENT_FIELD_MAP[docType];
   const profileUpdate = { [profileField]: url } as SellerProfileUpdateInput;
   const result = await updateSellerProfile(auth.userId, profileUpdate);
 

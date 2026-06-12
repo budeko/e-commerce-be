@@ -1,10 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUpload = vi.fn();
+const mockDelete = vi.fn();
 const mockUpdateSellerProfile = vi.fn();
+const mockSellerFindOne = vi.fn();
 
 vi.mock('../../../../../lib/storage/supabase', () => ({
   uploadToSellerStorage: (...args: unknown[]) => mockUpload(...args),
+  deleteFromSellerStorage: (...args: unknown[]) => mockDelete(...args),
+  getSupabaseConfig: () => ({ bucket: 'seller-documents' }),
+  parseStorageObjectPathFromPublicUrl: (url: string, bucket: string) => {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const index = url.indexOf(marker);
+    return index === -1 ? null : url.slice(index + marker.length);
+  },
+}));
+
+vi.mock('../../../../../db', () => ({
+  Seller: {
+    findOne: (...args: unknown[]) => mockSellerFindOne(...args),
+  },
 }));
 
 vi.mock('./seller.service', () => ({
@@ -19,7 +34,12 @@ const pdfBuffer = Buffer.from('%PDF-1.4 test');
 describe('uploadSellerDocument', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUpload.mockResolvedValue('https://xxx.supabase.co/storage/v1/object/public/seller-documents/a.pdf');
+    mockSellerFindOne.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ taxCertificateUrl: null }),
+    });
+    mockUpload.mockResolvedValue(
+      `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/taxCertificate.pdf`
+    );
     mockUpdateSellerProfile.mockResolvedValue({
       approvalStatus: 'draft',
       profile: { taxCertificateUrl: 'https://xxx.supabase.co/...' },
@@ -44,12 +64,38 @@ describe('uploadSellerDocument', () => {
       { docType: 'taxCertificate', mimeType: 'application/pdf', buffer: pdfBuffer }
     );
 
-    expect(mockUpload).toHaveBeenCalled();
+    expect(mockUpload).toHaveBeenCalledWith(
+      `${userId}/taxCertificate.pdf`,
+      pdfBuffer,
+      'application/pdf'
+    );
     expect(mockUpdateSellerProfile).toHaveBeenCalledWith(userId, {
-      taxCertificateUrl: 'https://xxx.supabase.co/storage/v1/object/public/seller-documents/a.pdf',
+      taxCertificateUrl: `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/taxCertificate.pdf`,
     });
     expect(result.field).toBe('taxCertificateUrl');
     expect(result.url).toContain('supabase.co');
+  });
+
+  it('aynı belge tipinde sabit path kullanır (üzerine yazar)', async () => {
+    mockSellerFindOne.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({
+        companyLogoUrl: `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/companyLogo.png`,
+      }),
+    });
+
+    const jpegBuffer = Buffer.from([0xff, 0xd8, 0xff, 0x00]);
+
+    await uploadSellerDocument(
+      { userId, role: 'seller' },
+      { docType: 'companyLogo', mimeType: 'image/jpeg', buffer: jpegBuffer }
+    );
+
+    expect(mockDelete).toHaveBeenCalledWith(`${userId}/companyLogo.png`);
+    expect(mockUpload).toHaveBeenCalledWith(
+      `${userId}/companyLogo.jpg`,
+      expect.any(Buffer),
+      'image/jpeg'
+    );
   });
 
   it('pdf olmayan vergi levhasını reddeder', async () => {

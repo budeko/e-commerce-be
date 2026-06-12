@@ -25,9 +25,9 @@ vi.mock('../../../../../db', () => ({
   },
 }));
 
-vi.mock('../../../../../lib/auth/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('../../../../../lib/auth/mail/cooldown')>(
-    '../../../../../lib/auth/mail/cooldown'
+vi.mock('../../../shared/mail/cooldown', async () => {
+  const actual = await vi.importActual<typeof import('../../../shared/mail/cooldown')>(
+    '../../../shared/mail/cooldown'
   );
   return {
     ...actual,
@@ -37,7 +37,7 @@ vi.mock('../../../../../lib/auth/mail/cooldown', async () => {
   };
 });
 
-vi.mock('../../../../../lib/auth/otp/otp', () => ({
+vi.mock('../../../shared/otp/otp', () => ({
   invalidateAuthOtp: (...args: unknown[]) => mockInvalidateAuthOtp(...args),
 }));
 
@@ -46,7 +46,7 @@ vi.mock('../helpers/unverified-user', () => ({
   getVerificationExpiresAt: () => new Date(Date.now() + 86_400_000),
 }));
 
-vi.mock('../../../../../lib/auth/mail/send-verification', () => ({
+vi.mock('../../../shared/mail/send-verification', () => ({
   sendUserVerificationEmail: (...args: unknown[]) => mockSendVerification(...args),
 }));
 
@@ -91,7 +91,7 @@ describe('register', () => {
   });
 
   it('cooldown aktifken 429 döner', async () => {
-    const { EmailCooldownError } = await import('../../../../../lib/auth/mail/cooldown');
+    const { EmailCooldownError } = await import('../../../shared/mail/cooldown');
 
     mockAssertRegisterEmailCooldown.mockRejectedValue(
       new EmailCooldownError(429, 'E-posta gönderimleri arasında bekleme süresi var')

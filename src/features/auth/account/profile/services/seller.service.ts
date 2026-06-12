@@ -52,5 +52,8 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
     await updatedSeller.save();
   }
 
-  return { profile: updatedSeller, approvalStatus: updatedSeller.approvalStatus };
+  return {
+    profile: updatedSeller.toObject(),
+    approvalStatus: updatedSeller.approvalStatus,
+  };
 };

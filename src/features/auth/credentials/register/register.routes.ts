@@ -1,21 +1,9 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '../../../../lib/common/http/validate-body';
-import { registerSchema, type RegisterInput } from '../../schemas/credentials/register.schema';
-import { AuthError, isDuplicateKeyError } from '../../shared/errors';
+import { handleAuthRouteError } from '../../shared/handle-route-error';
 import { buildAuthUserFields } from '../../shared/responses/user.response';
+import { registerSchema, type RegisterInput } from '../../schemas/credentials/register.schema';
 import { register } from './services/register.service';
-
-const handleAuthError = (reply: FastifyReply, error: unknown) => {
-  if (error instanceof AuthError) {
-    return reply.status(error.statusCode).send({ message: error.message });
-  }
-
-  if (isDuplicateKeyError(error)) {
-    return reply.status(409).send({ message: 'Bu e-posta adresi zaten kayıtlı' });
-  }
-
-  return reply.status(500).send({ message: 'Kayıt sırasında bir hata oluştu' });
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: validateBody(registerSchema) }, async (req, reply) => {
@@ -29,7 +17,9 @@ export default async function (fastify: FastifyInstance) {
         isEmailVerified: user.isEmailVerified,
       });
     } catch (error) {
-      return handleAuthError(reply, error);
+      return handleAuthRouteError(reply, error, 'Kayıt sırasında bir hata oluştu', {
+        duplicateKeyMessage: 'Bu e-posta adresi zaten kayıtlı',
+      });
     }
   });
 }

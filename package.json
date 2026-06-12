@@ -2,7 +2,7 @@
   "name": "e-commerce-be",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "ts-node src/app.ts",
     "build": "tsc",
@@ -10,7 +10,8 @@
     "start": "node dist/app.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:owner": "ts-node src/scripts/seed/seed-owner.ts"
+    "seed:owner": "ts-node src/scripts/seed/seed-owner.ts",
+    "seed:products": "ts-node src/scripts/seed/seed-products.ts"
   },
   "repository": {
     "type": "git",
