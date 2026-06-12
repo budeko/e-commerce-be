@@ -29,7 +29,11 @@ export const buildApp = async (): Promise<FastifyInstance> => {
     reply.status(statusCode).send({ message });
   });
 
-  await app.register(cors, { origin: true });
+  await app.register(cors, {
+    origin: true,
+    // Default is GET,HEAD,POST only — PATCH/PUT/DELETE blocked in browser preflight
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
 
   await app.register(rateLimit, {
     global: true,
