@@ -44,8 +44,8 @@ describe('canListAdmins', () => {
 });
 
 describe('canViewAdmin', () => {
-  const actorId = '507f1f77bcf86cd799439011';
-  const otherId = '507f1f77bcf86cd799439012';
+  const actorId = '550e8400-e29b-41d4-a716-446655440000';
+  const otherId = '550e8400-e29b-41d4-a716-446655440001';
 
   it('her admin kendi profilini görebilir', () => {
     expect(canViewAdmin('owner', actorId, actorId)).toBe(true);
@@ -62,8 +62,8 @@ describe('canViewAdmin', () => {
 });
 
 describe('canUpdateAdminRole', () => {
-  const actorId = '507f1f77bcf86cd799439011';
-  const otherId = '507f1f77bcf86cd799439012';
+  const actorId = '550e8400-e29b-41d4-a716-446655440000';
+  const otherId = '550e8400-e29b-41d4-a716-446655440001';
 
   it('kimse kendi rolünü bu endpoint ile değiştiremez', () => {
     expect(canUpdateAdminRole('owner', actorId, actorId)).toBe(false);
@@ -80,8 +80,8 @@ describe('canUpdateAdminRole', () => {
 });
 
 describe('canUpdateAdminProfile', () => {
-  const actorId = '507f1f77bcf86cd799439011';
-  const otherId = '507f1f77bcf86cd799439012';
+  const actorId = '550e8400-e29b-41d4-a716-446655440000';
+  const otherId = '550e8400-e29b-41d4-a716-446655440001';
 
   it('her admin kendi profilini güncelleyebilir', () => {
     expect(canUpdateAdminProfile('owner', actorId, actorId)).toBe(true);

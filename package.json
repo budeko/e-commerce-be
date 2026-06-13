@@ -9,9 +9,7 @@
     "typecheck": "tsc -p tsconfig.check.json",
     "start": "node dist/app.js",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "seed:owner": "ts-node src/scripts/seed/seed-owner.ts",
-    "seed:products": "ts-node src/scripts/seed/seed-products.ts"
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindOne = vi.fn();
-const mockFindById = vi.fn();
-const mockFindOneAndUpdate = vi.fn();
+const mockAdminFindById = vi.fn();
+const mockUserFindById = vi.fn();
+const mockFindByIdAndUpdate = vi.fn();
 
 const chainFindById = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
@@ -10,21 +10,21 @@ const chainFindById = (value: unknown) => ({
 
 vi.mock('../../../../../db', () => ({
   Admin: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
-    findOneAndUpdate: (...args: unknown[]) => mockFindOneAndUpdate(...args),
+    findById: (...args: unknown[]) => mockAdminFindById(...args),
+    findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),
   },
   User: {
-    findById: (...args: unknown[]) => mockFindById(...args),
+    findById: (...args: unknown[]) => mockUserFindById(...args),
   },
 }));
 
 import { updateAdminProfile } from '@/features/auth/admin/profile/services/profile.service';
 
-const ownerId = '507f1f77bcf86cd799439011';
-const helperId = '507f1f77bcf86cd799439012';
+const ownerId = '550e8400-e29b-41d4-a716-446655440000';
+const helperId = '550e8400-e29b-41d4-a716-446655440001';
 
 const helperAdmin = {
-  userId: helperId,
+  _id: helperId,
   adminRole: 'helper',
   firstName: null,
   lastName: null,
@@ -41,9 +41,9 @@ const helperUser = {
 describe('updateAdminProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindOne.mockResolvedValue(helperAdmin);
-    mockFindById.mockReturnValue(chainFindById(helperUser));
-    mockFindOneAndUpdate.mockResolvedValue({
+    mockAdminFindById.mockResolvedValue(helperAdmin);
+    mockUserFindById.mockReturnValue(chainFindById(helperUser));
+    mockFindByIdAndUpdate.mockResolvedValue({
       ...helperAdmin,
       firstName: 'Ali',
       lastName: 'Veli',
@@ -57,14 +57,14 @@ describe('updateAdminProfile', () => {
     });
 
     expect(result.profile.firstName).toBe('Ali');
-    expect(mockFindOneAndUpdate).toHaveBeenCalled();
+    expect(mockFindByIdAndUpdate).toHaveBeenCalled();
   });
 
   it('owner başka admin profilini güncelleyebilir', async () => {
     await updateAdminProfile('owner', ownerId, helperId, { firstName: 'Ali' });
 
-    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
-      { userId: helperId },
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
+      helperId,
       { $set: { firstName: 'Ali' } },
       { returnDocument: 'after' }
     );
@@ -77,6 +77,6 @@ describe('updateAdminProfile', () => {
       statusCode: 403,
     });
 
-    expect(mockFindOneAndUpdate).not.toHaveBeenCalled();
+    expect(mockFindByIdAndUpdate).not.toHaveBeenCalled();
   });
 });

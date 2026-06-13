@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockSellerFindOne = vi.fn();
+const mockSellerFindById = vi.fn();
 const mockGetAdminRole = vi.fn();
 
 vi.mock('../../../../db', () => ({
   Seller: {
-    findOne: (...args: unknown[]) => mockSellerFindOne(...args),
+    findById: (...args: unknown[]) => mockSellerFindById(...args),
   },
 }));
 
@@ -15,7 +15,7 @@ vi.mock('../queries/admin-role', () => ({
 
 import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('buildAuthUserFields', () => {
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('buildAuthUserFields', () => {
   });
 
   it('seller için approvalStatus döner', async () => {
-    mockSellerFindOne.mockReturnValue({
+    mockSellerFindById.mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({ approvalStatus: 'approved' }),
       }),
@@ -60,7 +60,7 @@ describe('buildAuthUserFields', () => {
   });
 
   it('seller kaydı yoksa draft döner', async () => {
-    mockSellerFindOne.mockReturnValue({
+    mockSellerFindById.mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue(null),
       }),

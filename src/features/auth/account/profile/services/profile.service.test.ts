@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUserFindById = vi.fn();
-const mockBuyerFindOne = vi.fn();
-const mockSellerFindOne = vi.fn();
+const mockBuyerFindById = vi.fn();
+const mockSellerFindById = vi.fn();
 const mockUpdateBuyerProfile = vi.fn();
 const mockUpdateSellerProfile = vi.fn();
 
@@ -11,10 +11,10 @@ vi.mock('../../../../../db', () => ({
     findById: (...args: unknown[]) => mockUserFindById(...args),
   },
   Buyer: {
-    findOne: (...args: unknown[]) => mockBuyerFindOne(...args),
+    findById: (...args: unknown[]) => mockBuyerFindById(...args),
   },
   Seller: {
-    findOne: (...args: unknown[]) => mockSellerFindOne(...args),
+    findById: (...args: unknown[]) => mockSellerFindById(...args),
   },
 }));
 
@@ -48,7 +48,7 @@ vi.mock('../../../shared/responses/user.response', () => ({
 
 import { getProfile, updateProfile } from '@/features/auth/account/profile/services/profile.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 const chainSelect = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
@@ -89,7 +89,7 @@ describe('getProfile', () => {
         isEmailVerified: true,
       })
     );
-    mockBuyerFindOne.mockReturnValue(chainLean({ userId, firstName: 'Ali' }));
+    mockBuyerFindById.mockReturnValue(chainLean({ _id: userId, firstName: 'Ali' }));
 
     const result = await getProfile({ userId, role: 'buyer' });
 
@@ -110,9 +110,9 @@ describe('getProfile', () => {
         isEmailVerified: true,
       })
     );
-    mockSellerFindOne.mockReturnValue(
+    mockSellerFindById.mockReturnValue(
       chainLean({
-        userId,
+        _id: userId,
         approvalStatus: 'pending',
         rejectionReason: null,
       })

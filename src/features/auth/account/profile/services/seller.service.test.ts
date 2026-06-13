@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockSellerFindOne = vi.fn();
-const mockSellerFindOneAndUpdate = vi.fn();
+const mockSellerFindById = vi.fn();
+const mockSellerFindByIdAndUpdate = vi.fn();
 
 vi.mock('../../../../../db', () => ({
   Seller: {
-    findOne: (...args: unknown[]) => mockSellerFindOne(...args),
-    findOneAndUpdate: (...args: unknown[]) => mockSellerFindOneAndUpdate(...args),
+    findById: (...args: unknown[]) => mockSellerFindById(...args),
+    findByIdAndUpdate: (...args: unknown[]) => mockSellerFindByIdAndUpdate(...args),
   },
 }));
 
 import { updateSellerProfile } from '@/features/auth/account/profile/services/seller.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 const completeBireyselSeller = {
   sellerType: 'bireysel',
@@ -40,7 +40,7 @@ describe('updateSellerProfile', () => {
   });
 
   it('satıcı profili yoksa 404 döner', async () => {
-    mockSellerFindOne.mockResolvedValue(null);
+    mockSellerFindById.mockResolvedValue(null);
 
     await expect(updateSellerProfile(userId, { firstName: 'Ali' })).rejects.toMatchObject({
       statusCode: 404,
@@ -49,7 +49,7 @@ describe('updateSellerProfile', () => {
   });
 
   it('onay beklerken profil güncellenemez', async () => {
-    mockSellerFindOne.mockResolvedValue({ approvalStatus: 'pending' });
+    mockSellerFindById.mockResolvedValue({ approvalStatus: 'pending' });
 
     await expect(updateSellerProfile(userId, { firstName: 'Ali' })).rejects.toMatchObject({
       statusCode: 403,
@@ -58,20 +58,20 @@ describe('updateSellerProfile', () => {
   });
 
   it('onaylı satıcıda kritik alan değişince pending olur', async () => {
-    mockSellerFindOne.mockResolvedValue({
+    mockSellerFindById.mockResolvedValue({
       approvalStatus: 'approved',
       companyName: 'Eski Şirket',
       toObject: () => ({ approvalStatus: 'approved', companyName: 'Eski Şirket' }),
     });
-    mockSellerFindOneAndUpdate.mockResolvedValue({
+    mockSellerFindByIdAndUpdate.mockResolvedValue({
       approvalStatus: 'pending',
       toObject: () => ({ approvalStatus: 'pending', ...completeBireyselSeller }),
     });
 
     const result = await updateSellerProfile(userId, { companyName: 'Yeni Şirket' });
 
-    expect(mockSellerFindOneAndUpdate).toHaveBeenCalledWith(
-      { userId },
+    expect(mockSellerFindByIdAndUpdate).toHaveBeenCalledWith(
+      userId,
       {
         $set: expect.objectContaining({
           companyName: 'Yeni Şirket',
@@ -86,11 +86,11 @@ describe('updateSellerProfile', () => {
 
   it('draft profil tamamlanınca pending olur', async () => {
     const save = vi.fn();
-    mockSellerFindOne.mockResolvedValue({
+    mockSellerFindById.mockResolvedValue({
       approvalStatus: 'draft',
       toObject: () => ({ approvalStatus: 'draft' }),
     });
-    mockSellerFindOneAndUpdate.mockResolvedValue({
+    mockSellerFindByIdAndUpdate.mockResolvedValue({
       approvalStatus: 'draft',
       rejectionReason: null,
       save,

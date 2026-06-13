@@ -50,15 +50,25 @@ vi.mock('../../../shared/mail/send-verification', () => ({
   sendUserVerificationEmail: (...args: unknown[]) => mockSendVerification(...args),
 }));
 
+const mockCreateUserId = vi.fn();
+
+vi.mock('../../../../../lib/common/user-id', () => ({
+  createUserId: () => mockCreateUserId(),
+}));
+
 vi.mock('../../../../../lib/common/password', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
 }));
 
 import { register } from '@/features/auth/credentials/register/services/register.service';
 
+const existingUserId = '550e8400-e29b-41d4-a716-446655440000';
+const newUserId = '550e8400-e29b-41d4-a716-446655440001';
+
 describe('register', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateUserId.mockReturnValue(newUserId);
     mockBuyerCreate.mockResolvedValue({});
     mockAssertRegisterEmailCooldown.mockResolvedValue(undefined);
     mockMarkRegisterEmailCooldown.mockResolvedValue(undefined);
@@ -69,11 +79,11 @@ describe('register', () => {
 
   it('doğrulanmamış eski kaydı silip yeniden kayıt oluşturur', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: existingUserId,
       isEmailVerified: false,
     });
     mockCreate.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439012',
+      _id: newUserId,
       email: 'user@example.com',
       role: 'buyer',
       isEmailVerified: false,
@@ -85,7 +95,7 @@ describe('register', () => {
       role: 'buyer',
     });
 
-    expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+    expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith(existingUserId);
     expect(mockMarkRegisterEmailCooldown).toHaveBeenCalledWith('user@example.com');
     expect(result.user.isEmailVerified).toBe(false);
   });
@@ -111,7 +121,7 @@ describe('register', () => {
   it('mail gönderilemezse kaydı siler ve 503 döner', async () => {
     mockFindOne.mockResolvedValue(null);
     mockCreate.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439012',
+      _id: newUserId,
       email: 'user@example.com',
       role: 'buyer',
       isEmailVerified: false,
@@ -129,12 +139,12 @@ describe('register', () => {
       message: 'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin',
     });
 
-    expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith('507f1f77bcf86cd799439012');
+    expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith(newUserId);
   });
 
   it('doğrulanmış e-postada 409 döner', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: existingUserId,
       isEmailVerified: true,
     });
 

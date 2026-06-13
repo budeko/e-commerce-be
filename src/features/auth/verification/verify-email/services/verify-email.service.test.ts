@@ -39,7 +39,7 @@ vi.mock('../../../shared/otp/otp', async () => {
 import { OtpError } from '@/features/auth/shared/otp/otp';
 import { verifyEmail } from '@/features/auth/verification/verify-email/services/verify-email.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 const unverifiedUser = {
   _id: userId,

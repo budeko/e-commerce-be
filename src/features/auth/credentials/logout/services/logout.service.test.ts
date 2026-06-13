@@ -17,10 +17,10 @@ describe('logoutAllSessions', () => {
   });
 
   it('sessionsRevokedAt günceller', async () => {
-    await logoutAllSessions('507f1f77bcf86cd799439011');
+    await logoutAllSessions('550e8400-e29b-41d4-a716-446655440000');
 
     expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
+      '550e8400-e29b-41d4-a716-446655440000',
       { sessionsRevokedAt: expect.any(Date) }
     );
   });

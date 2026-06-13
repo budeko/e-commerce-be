@@ -3,6 +3,7 @@ import { validateEmail } from '@/db/shared/validators';
 
 const userSchema = new Schema(
   {
+    _id: { type: String, required: true },
     email: {
       type: String,
       required: true,

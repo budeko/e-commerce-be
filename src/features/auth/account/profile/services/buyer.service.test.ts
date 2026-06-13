@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockBuyerFindOne = vi.fn();
-const mockBuyerFindOneAndUpdate = vi.fn();
+const mockBuyerFindById = vi.fn();
+const mockBuyerFindByIdAndUpdate = vi.fn();
 const mockUserFindByIdAndUpdate = vi.fn();
 
 vi.mock('../../../../../db', () => ({
   Buyer: {
-    findOne: (...args: unknown[]) => mockBuyerFindOne(...args),
-    findOneAndUpdate: (...args: unknown[]) => mockBuyerFindOneAndUpdate(...args),
+    findById: (...args: unknown[]) => mockBuyerFindById(...args),
+    findByIdAndUpdate: (...args: unknown[]) => mockBuyerFindByIdAndUpdate(...args),
   },
   User: {
     findByIdAndUpdate: (...args: unknown[]) => mockUserFindByIdAndUpdate(...args),
@@ -16,7 +16,7 @@ vi.mock('../../../../../db', () => ({
 
 import { updateBuyerProfile } from '@/features/auth/account/profile/services/buyer.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 const completeBuyer = {
   firstName: 'Ali',
@@ -37,7 +37,7 @@ describe('updateBuyerProfile', () => {
   });
 
   it('alıcı profili yoksa 404 döner', async () => {
-    mockBuyerFindOne.mockResolvedValue(null);
+    mockBuyerFindById.mockResolvedValue(null);
 
     await expect(updateBuyerProfile(userId, { firstName: 'Ali' })).rejects.toMatchObject({
       statusCode: 404,
@@ -46,12 +46,12 @@ describe('updateBuyerProfile', () => {
   });
 
   it('tam profilde isActive true olur', async () => {
-    mockBuyerFindOne.mockResolvedValue({
+    mockBuyerFindById.mockResolvedValue({
       billingSameAsDelivery: true,
       deliveryAddress: 'Adres',
       toObject: () => completeBuyer,
     });
-    mockBuyerFindOneAndUpdate.mockResolvedValue({
+    mockBuyerFindByIdAndUpdate.mockResolvedValue({
       toObject: () => completeBuyer,
     });
 
@@ -62,18 +62,18 @@ describe('updateBuyerProfile', () => {
   });
 
   it('billingSameAsDelivery true iken fatura adresini teslimat adresine eşitler', async () => {
-    mockBuyerFindOne.mockResolvedValue({
+    mockBuyerFindById.mockResolvedValue({
       billingSameAsDelivery: true,
       deliveryAddress: 'Eski adres',
     });
-    mockBuyerFindOneAndUpdate.mockResolvedValue({
+    mockBuyerFindByIdAndUpdate.mockResolvedValue({
       toObject: () => ({ ...completeBuyer, deliveryAddress: 'Yeni adres' }),
     });
 
     await updateBuyerProfile(userId, { deliveryAddress: 'Yeni adres' });
 
-    expect(mockBuyerFindOneAndUpdate).toHaveBeenCalledWith(
-      { userId },
+    expect(mockBuyerFindByIdAndUpdate).toHaveBeenCalledWith(
+      userId,
       {
         $set: expect.objectContaining({
           deliveryAddress: 'Yeni adres',

@@ -54,7 +54,7 @@ export const uploadSellerDocument = async (
     throw new AuthError(400, 'Dosya boyutu limiti aşıldı');
   }
 
-  const seller = await Seller.findOne({ userId: auth.userId }).lean();
+  const seller = await Seller.findById(auth.userId).lean();
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');

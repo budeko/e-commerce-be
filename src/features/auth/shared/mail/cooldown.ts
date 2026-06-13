@@ -1,4 +1,4 @@
-import { AuthEmailCooldown, User } from '@/db';
+import { AuthEmailCooldown, User, buildAuthEmailCooldownId } from '@/db';
 
 export const EMAIL_COOLDOWN_MS = 60_000;
 
@@ -43,7 +43,9 @@ export const markPasswordResetEmailSent = async (userId: string) => {
 
 export const assertRegisterEmailCooldown = async (email: string) => {
   const normalized = email.toLowerCase();
-  const record = await AuthEmailCooldown.findOne({ email: normalized, purpose: 'register' });
+  const record = await AuthEmailCooldown.findById(
+    buildAuthEmailCooldownId(normalized, 'register')
+  );
   assertEmailCooldown(record?.sentAt);
 
   const user = await User.findOne({ email: normalized }).select(
@@ -56,9 +58,15 @@ export const assertRegisterEmailCooldown = async (email: string) => {
 };
 
 export const markRegisterEmailCooldown = async (email: string) => {
+  const normalized = email.toLowerCase();
+  const id = buildAuthEmailCooldownId(normalized, 'register');
+
   await AuthEmailCooldown.findOneAndUpdate(
-    { email: email.toLowerCase(), purpose: 'register' },
-    { sentAt: new Date() },
+    { _id: id },
+    {
+      $set: { sentAt: new Date() },
+      $setOnInsert: { _id: id },
+    },
     { upsert: true }
   );
 };

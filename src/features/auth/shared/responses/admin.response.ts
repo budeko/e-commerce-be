@@ -1,7 +1,7 @@
 import type { AdminRole } from '@/db';
 
 type AdminRecord = {
-  userId: unknown;
+  _id: unknown;
   adminRole: AdminRole;
   firstName?: string | null;
   lastName?: string | null;
@@ -17,7 +17,7 @@ type AdminUserRecord = {
 };
 
 export const formatAdminResponse = (admin: AdminRecord, user?: AdminUserRecord | null) => ({
-  userId: admin.userId,
+  userId: admin._id,
   email: user?.email,
   isEmailVerified: user?.isEmailVerified,
   adminRole: admin.adminRole,

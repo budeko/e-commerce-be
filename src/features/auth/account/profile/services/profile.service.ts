@@ -20,7 +20,7 @@ export const getProfile = async (auth: AuthTokenPayload) => {
   const statusFields = await buildAuthUserFields(user);
 
   if (auth.role === 'buyer') {
-    const profile = await Buyer.findOne({ userId: auth.userId }).lean();
+    const profile = await Buyer.findById(auth.userId).lean();
 
     if (!profile) {
       throw new AuthError(404, 'Alıcı profili bulunamadı');
@@ -34,7 +34,7 @@ export const getProfile = async (auth: AuthTokenPayload) => {
   }
 
   if (auth.role === 'seller') {
-    const profile = await Seller.findOne({ userId: auth.userId }).lean();
+    const profile = await Seller.findById(auth.userId).lean();
 
     if (!profile) {
       throw new AuthError(404, 'Satıcı profili bulunamadı');

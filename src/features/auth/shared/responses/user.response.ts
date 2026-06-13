@@ -31,7 +31,7 @@ export type AdminAuthFields = {
 };
 
 const getSellerApprovalStatus = async (userId: string): Promise<SellerApprovalStatus> => {
-  const seller = await Seller.findOne({ userId }).select('approvalStatus').lean();
+  const seller = await Seller.findById(userId).select('approvalStatus').lean();
   return seller?.approvalStatus ?? 'draft';
 };
 

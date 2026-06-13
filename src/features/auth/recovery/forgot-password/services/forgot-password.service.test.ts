@@ -60,14 +60,14 @@ describe('forgotPassword', () => {
 
   it('mail giderse OTP oluşturup mail gönderir', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
     });
 
     await forgotPassword('user@example.com');
 
     expect(mockCreateAuthOtp).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
+      '550e8400-e29b-41d4-a716-446655440000',
       'password_reset'
     );
     expect(mockSendPasswordResetEmail).toHaveBeenCalledWith(
@@ -75,12 +75,12 @@ describe('forgotPassword', () => {
       'reset-token',
       '482913'
     );
-    expect(mockMarkPasswordResetEmailSent).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+    expect(mockMarkPasswordResetEmailSent).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
   });
 
   it('cooldown içinde 429 döner', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
       passwordResetEmailSentAt: new Date(),
     });
@@ -97,7 +97,7 @@ describe('forgotPassword', () => {
 
   it('mail gitmezse OTP iptal eder ve 503 döner', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
     });
     mockSendPasswordResetEmail.mockRejectedValue(new Error('Resend hatası'));
@@ -108,7 +108,7 @@ describe('forgotPassword', () => {
     });
 
     expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
+      '550e8400-e29b-41d4-a716-446655440000',
       'password_reset'
     );
   });

@@ -33,7 +33,7 @@ describe('validateProfileUpdate', () => {
   it('admin 403 alır', async () => {
     const reply = createReply();
     const request = {
-      auth: { userId: '507f1f77bcf86cd799439011', role: 'admin' },
+      auth: { userId: '550e8400-e29b-41d4-a716-446655440000', role: 'admin' },
       body: { firstName: 'Ali' },
     } as FastifyRequest;
 
@@ -48,7 +48,7 @@ describe('validateProfileUpdate', () => {
   it('geçersiz buyer gövdesinde 400 döner', async () => {
     const reply = createReply();
     const request = {
-      auth: { userId: '507f1f77bcf86cd799439011', role: 'buyer' },
+      auth: { userId: '550e8400-e29b-41d4-a716-446655440000', role: 'buyer' },
       body: {},
     } as FastifyRequest;
 
@@ -61,7 +61,7 @@ describe('validateProfileUpdate', () => {
   it('geçerli buyer gövdesini parse eder', async () => {
     const reply = createReply();
     const request = {
-      auth: { userId: '507f1f77bcf86cd799439011', role: 'buyer' },
+      auth: { userId: '550e8400-e29b-41d4-a716-446655440000', role: 'buyer' },
       body: { firstName: 'Ali' },
     } as FastifyRequest;
 
@@ -74,7 +74,7 @@ describe('validateProfileUpdate', () => {
   it('tehlikeli operatör keylerini bodyden temizler', async () => {
     const reply = createReply();
     const request = {
-      auth: { userId: '507f1f77bcf86cd799439011', role: 'buyer' },
+      auth: { userId: '550e8400-e29b-41d4-a716-446655440000', role: 'buyer' },
       body: { firstName: 'Ali', $set: { role: 'admin' } },
     } as FastifyRequest;
 

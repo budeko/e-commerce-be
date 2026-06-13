@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindOne = vi.fn();
-const mockFindById = vi.fn();
+const mockAdminFindById = vi.fn();
+const mockUserFindById = vi.fn();
 const mockCountDocuments = vi.fn();
 
 vi.mock('../../../../../db', () => ({
   Admin: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
+    findById: (...args: unknown[]) => mockAdminFindById(...args),
     countDocuments: (...args: unknown[]) => mockCountDocuments(...args),
     find: vi.fn(),
   },
   User: {
-    findById: (...args: unknown[]) => mockFindById(...args),
+    findById: (...args: unknown[]) => mockUserFindById(...args),
     find: vi.fn(),
   },
 }));
@@ -22,11 +22,11 @@ const chainFindById = (value: unknown) => ({
 
 import { getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/services/admins.service';
 
-const ownerId = '507f1f77bcf86cd799439011';
-const helperId = '507f1f77bcf86cd799439012';
+const ownerId = '550e8400-e29b-41d4-a716-446655440000';
+const helperId = '550e8400-e29b-41d4-a716-446655440001';
 
 const helperAdmin = {
-  userId: helperId,
+  _id: helperId,
   adminRole: 'helper' as const,
   createdBy: ownerId,
   save: vi.fn(),
@@ -43,8 +43,8 @@ const helperUser = {
 describe('getAdminByUserId', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindOne.mockResolvedValue(helperAdmin);
-    mockFindById.mockReturnValue(chainFindById(helperUser));
+    mockAdminFindById.mockResolvedValue(helperAdmin);
+    mockUserFindById.mockReturnValue(chainFindById(helperUser));
   });
 
   it('helper başka admini göremez', async () => {
@@ -57,8 +57,11 @@ describe('getAdminByUserId', () => {
 describe('updateAdmin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindOne.mockResolvedValue({ ...helperAdmin, save: vi.fn().mockResolvedValue(undefined) });
-    mockFindById.mockReturnValue(chainFindById(helperUser));
+    mockAdminFindById.mockResolvedValue({
+      ...helperAdmin,
+      save: vi.fn().mockResolvedValue(undefined),
+    });
+    mockUserFindById.mockReturnValue(chainFindById(helperUser));
     mockCountDocuments.mockResolvedValue(2);
   });
 

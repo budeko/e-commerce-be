@@ -12,6 +12,7 @@ import {
 } from '@/features/auth/credentials/register/helpers/unverified-user';
 import { invalidateAuthOtp } from '@/features/auth/shared/otp/otp';
 import { hashPassword } from '@/lib/common/password';
+import { createUserId } from '@/lib/common/user-id';
 import { User, Buyer, Seller } from '@/db';
 import { AuthError } from '@/features/auth/shared/errors';
 import type { RegisterInput } from '@/features/auth/schemas/credentials/register.schema';
@@ -29,7 +30,7 @@ const resolveEmailForRegister = async (email: string) => {
     throw new AuthError(409, 'Bu e-posta adresi zaten kayıtlı');
   }
 
-  await deleteUnverifiedUser(existing._id.toString());
+  await deleteUnverifiedUser(String(existing._id));
 };
 
 const createUserWithProfile = async (
@@ -38,8 +39,10 @@ const createUserWithProfile = async (
   role: 'buyer' | 'seller'
 ) => {
   const hashedPassword = await hashPassword(password);
+  const userId = createUserId();
 
   const user = await User.create({
+    _id: userId,
     email,
     password: hashedPassword,
     role,
@@ -50,24 +53,24 @@ const createUserWithProfile = async (
 
   try {
     if (role === 'buyer') {
-      await Buyer.create({ userId: user._id });
+      await Buyer.create({ _id: userId });
     } else {
-      await Seller.create({ userId: user._id });
+      await Seller.create({ _id: userId });
     }
   } catch {
-    await deleteUnverifiedUser(user._id.toString());
+    await deleteUnverifiedUser(userId);
     throw new AuthError(500, 'Kayıt tamamlanamadı, lütfen tekrar deneyin');
   }
 
   try {
-    await sendUserVerificationEmail(user._id.toString(), email);
+    await sendUserVerificationEmail(userId, email);
     await markRegisterEmailCooldown(email);
-    await markVerificationEmailSent(user._id.toString());
+    await markVerificationEmailSent(userId);
   } catch (error) {
-    log.error({ err: error, userId: user._id.toString(), email }, 'Doğrulama e-postası gönderilemedi');
+    log.error({ err: error, userId, email }, 'Doğrulama e-postası gönderilemedi');
     await markRegisterEmailCooldown(email);
-    await invalidateAuthOtp(user._id.toString(), 'email_verify');
-    await deleteUnverifiedUser(user._id.toString());
+    await invalidateAuthOtp(userId, 'email_verify');
+    await deleteUnverifiedUser(userId);
     throw new AuthError(
       503,
       'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin'

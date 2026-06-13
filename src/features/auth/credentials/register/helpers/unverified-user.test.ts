@@ -2,36 +2,43 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUserFindById = vi.fn();
 const mockUserFindByIdAndDelete = vi.fn();
-const mockAuthOtpDeleteMany = vi.fn();
-const mockBuyerDeleteOne = vi.fn();
-const mockSellerDeleteOne = vi.fn();
+const mockDeleteAuthOtpsForUser = vi.fn();
+const mockBuyerFindByIdAndDelete = vi.fn();
+const mockSellerFindByIdAndDelete = vi.fn();
 
 vi.mock('../../../../../db', () => ({
   User: {
     findById: (...args: unknown[]) => mockUserFindById(...args),
     findByIdAndDelete: (...args: unknown[]) => mockUserFindByIdAndDelete(...args),
   },
-  AuthOtp: {
-    deleteMany: (...args: unknown[]) => mockAuthOtpDeleteMany(...args),
-  },
   Buyer: {
-    deleteOne: (...args: unknown[]) => mockBuyerDeleteOne(...args),
+    findByIdAndDelete: (...args: unknown[]) => mockBuyerFindByIdAndDelete(...args),
   },
   Seller: {
-    deleteOne: (...args: unknown[]) => mockSellerDeleteOne(...args),
+    findByIdAndDelete: (...args: unknown[]) => mockSellerFindByIdAndDelete(...args),
   },
 }));
 
+vi.mock('../../../shared/otp/otp', async () => {
+  const actual = await vi.importActual<typeof import('@/features/auth/shared/otp/otp')>(
+    '../../../shared/otp/otp'
+  );
+  return {
+    ...actual,
+    deleteAuthOtpsForUser: (...args: unknown[]) => mockDeleteAuthOtpsForUser(...args),
+  };
+});
+
 import { deleteUnverifiedUser, getVerificationExpiresAt } from '@/features/auth/credentials/register/helpers/unverified-user';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('unverified-user helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAuthOtpDeleteMany.mockResolvedValue(undefined);
-    mockBuyerDeleteOne.mockResolvedValue(undefined);
-    mockSellerDeleteOne.mockResolvedValue(undefined);
+    mockDeleteAuthOtpsForUser.mockResolvedValue(undefined);
+    mockBuyerFindByIdAndDelete.mockResolvedValue(undefined);
+    mockSellerFindByIdAndDelete.mockResolvedValue(undefined);
     mockUserFindByIdAndDelete.mockResolvedValue(undefined);
   });
 
@@ -53,9 +60,9 @@ describe('unverified-user helpers', () => {
 
     await deleteUnverifiedUser(userId);
 
-    expect(mockAuthOtpDeleteMany).toHaveBeenCalledWith({ userId });
-    expect(mockBuyerDeleteOne).toHaveBeenCalledWith({ userId });
-    expect(mockSellerDeleteOne).toHaveBeenCalledWith({ userId });
+    expect(mockDeleteAuthOtpsForUser).toHaveBeenCalledWith(userId);
+    expect(mockBuyerFindByIdAndDelete).toHaveBeenCalledWith(userId);
+    expect(mockSellerFindByIdAndDelete).toHaveBeenCalledWith(userId);
     expect(mockUserFindByIdAndDelete).toHaveBeenCalledWith(userId);
   });
 

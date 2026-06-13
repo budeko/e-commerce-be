@@ -5,7 +5,7 @@ import { signAuthToken } from '@/lib/auth/token/access-token';
 
 const mockUserFindOne = vi.fn();
 const mockUserFindById = vi.fn();
-const mockSellerFindOne = vi.fn();
+const mockSellerFindById = vi.fn();
 const mockRevokedTokenExists = vi.fn();
 
 vi.mock('../db', async (importOriginal) => {
@@ -19,7 +19,7 @@ vi.mock('../db', async (importOriginal) => {
     },
     Seller: {
       ...actual.Seller,
-      findOne: (...args: unknown[]) => mockSellerFindOne(...args),
+      findById: (...args: unknown[]) => mockSellerFindById(...args),
     },
     RevokedToken: {
       ...actual.RevokedToken,
@@ -30,12 +30,12 @@ vi.mock('../db', async (importOriginal) => {
 
 import { buildApp } from '@/app/build-app';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 const sellerEmail = 'seller@test.com';
 const sellerPassword = 'Test1234!';
 
 const mockSellerProfile = (approvalStatus: 'draft' | 'approved' = 'draft') => {
-  mockSellerFindOne.mockReturnValue({
+  mockSellerFindById.mockReturnValue({
     select: vi.fn().mockReturnValue({
       lean: vi.fn().mockResolvedValue({ approvalStatus }),
     }),

@@ -1,10 +1,10 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 const stringField = { type: String, trim: true, maxlength: 500 };
 
 const buyerSchema = new Schema(
   {
-    userId: { type: Types.ObjectId, ref: 'User', required: true, unique: true },
+    _id: { type: String, required: true },
     firstName: stringField,
     lastName: stringField,
     phone: { ...stringField, maxlength: 20 },

@@ -9,6 +9,8 @@ export {
   AuthEmailCooldown,
   AUTH_OTP_PURPOSES,
   AUTH_EMAIL_COOLDOWN_PURPOSES,
+  buildAuthOtpId,
+  buildAuthEmailCooldownId,
   ADMIN_ROLES,
   SELLER_APPROVAL_STATUSES,
 } from '@/db/auth';

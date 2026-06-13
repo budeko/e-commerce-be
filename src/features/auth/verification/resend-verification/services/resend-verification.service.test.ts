@@ -48,7 +48,7 @@ describe('resendVerificationEmail', () => {
 
   it('doğrulanmamış kullanıcıya mail gönderir', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
       isEmailVerified: false,
       verificationEmailSentAt: null,
@@ -58,12 +58,12 @@ describe('resendVerificationEmail', () => {
 
     expect(mockAssertEmailCooldown).toHaveBeenCalled();
     expect(mockSendVerification).toHaveBeenCalled();
-    expect(mockMarkVerificationEmailSent).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+    expect(mockMarkVerificationEmailSent).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
   });
 
   it('cooldown içinde 429 döner', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
       isEmailVerified: false,
       verificationEmailSentAt: new Date(),
@@ -81,7 +81,7 @@ describe('resendVerificationEmail', () => {
 
   it('mail gitmezse OTP iptal eder ve 503 döner', async () => {
     mockFindOne.mockResolvedValue({
-      _id: '507f1f77bcf86cd799439011',
+      _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
       isEmailVerified: false,
     });
@@ -93,7 +93,7 @@ describe('resendVerificationEmail', () => {
     });
 
     expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
+      '550e8400-e29b-41d4-a716-446655440000',
       'email_verify'
     );
   });

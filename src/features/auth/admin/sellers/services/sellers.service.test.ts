@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindOne = vi.fn();
-const mockFindById = vi.fn();
+const mockUserFindById = vi.fn();
+const mockSellerFindById = vi.fn();
 const mockSendApproved = vi.fn();
 const mockSendRejected = vi.fn();
 
@@ -13,10 +13,10 @@ const chainFindById = (value: unknown) => ({
 
 vi.mock('../../../../../db', () => ({
   User: {
-    findById: (...args: unknown[]) => mockFindById(...args),
+    findById: (...args: unknown[]) => mockUserFindById(...args),
   },
   Seller: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
+    findById: (...args: unknown[]) => mockSellerFindById(...args),
   },
 }));
 
@@ -27,12 +27,20 @@ vi.mock('../../mail/send-seller-notifications', () => ({
 
 import { approveSeller, rejectSeller } from '@/features/auth/admin/sellers/services/sellers.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
+
+const mockPendingSeller = (save: ReturnType<typeof vi.fn>) => ({
+  _id: userId,
+  approvalStatus: 'pending',
+  companyName: 'Test A.Ş.',
+  rejectionReason: null,
+  save,
+});
 
 describe('sellers.service bildirimleri', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindById.mockReturnValue(
+    mockUserFindById.mockReturnValue(
       chainFindById({
         role: 'seller',
         email: 'seller@example.com',
@@ -44,13 +52,7 @@ describe('sellers.service bildirimleri', () => {
 
   it('onay sonrası satıcıya mail gönderir', async () => {
     const save = vi.fn();
-    mockFindOne.mockResolvedValue({
-      userId,
-      approvalStatus: 'pending',
-      companyName: 'Test A.Ş.',
-      rejectionReason: null,
-      save,
-    });
+    mockSellerFindById.mockResolvedValue(mockPendingSeller(save));
 
     await approveSeller('owner', userId);
 
@@ -60,13 +62,7 @@ describe('sellers.service bildirimleri', () => {
 
   it('red sonrası sebeple birlikte mail gönderir', async () => {
     const save = vi.fn();
-    mockFindOne.mockResolvedValue({
-      userId,
-      approvalStatus: 'pending',
-      companyName: 'Test A.Ş.',
-      rejectionReason: null,
-      save,
-    });
+    mockSellerFindById.mockResolvedValue(mockPendingSeller(save));
 
     await rejectSeller('owner', userId, 'Vergi levhası okunamıyor');
 
@@ -80,13 +76,7 @@ describe('sellers.service bildirimleri', () => {
 
   it('mail gönderilemese bile onay işlemi tamamlanır', async () => {
     const save = vi.fn();
-    mockFindOne.mockResolvedValue({
-      userId,
-      approvalStatus: 'pending',
-      companyName: 'Test A.Ş.',
-      rejectionReason: null,
-      save,
-    });
+    mockSellerFindById.mockResolvedValue(mockPendingSeller(save));
     mockSendApproved.mockRejectedValue(new Error('Resend hatası'));
 
     const result = await approveSeller('owner', userId);

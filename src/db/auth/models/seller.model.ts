@@ -1,4 +1,4 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 export const SELLER_APPROVAL_STATUSES = ['draft', 'pending', 'approved', 'rejected'] as const;
 export type SellerApprovalStatus = (typeof SELLER_APPROVAL_STATUSES)[number];
@@ -8,7 +8,7 @@ const urlField = { type: String, trim: true, maxlength: 2048 };
 
 const sellerSchema = new Schema(
   {
-    userId: { type: Types.ObjectId, ref: 'User', required: true, unique: true },
+    _id: { type: String, required: true },
     approvalStatus: {
       type: String,
       enum: SELLER_APPROVAL_STATUSES,

@@ -5,7 +5,7 @@ import { hasCriticalSellerFieldChanges } from '@/features/auth/account/profile/h
 import type { SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
 
 export const updateSellerProfile = async (userId: string, data: SellerProfileUpdateInput) => {
-  const seller = await Seller.findOne({ userId });
+  const seller = await Seller.findById(userId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -19,8 +19,8 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
     seller.approvalStatus === 'approved' &&
     hasCriticalSellerFieldChanges(seller.toObject(), data);
 
-  const updatedSeller = await Seller.findOneAndUpdate(
-    { userId },
+  const updatedSeller = await Seller.findByIdAndUpdate(
+    userId,
     {
       $set: {
         ...data,

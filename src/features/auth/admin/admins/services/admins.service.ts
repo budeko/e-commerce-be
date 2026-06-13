@@ -8,13 +8,14 @@ import {
 } from '@/features/auth/admin/access/permissions';
 import { formatAdminResponse } from '@/features/auth/shared/responses/admin.response';
 import { hashPassword } from '@/lib/common/password';
+import { createUserId } from '@/lib/common/user-id';
 import { Admin, User, type AdminRole } from '@/db';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/shared/errors';
 import type { CreateAdminInput } from '@/features/auth/schemas/admin/create-admin.schema';
 import type { UpdateAdminInput } from '@/features/auth/schemas/admin/update-admin.schema';
 
 const findAdminRecord = async (targetUserId: string) => {
-  const targetAdmin = await Admin.findOne({ userId: targetUserId });
+  const targetAdmin = await Admin.findById(targetUserId);
 
   if (!targetAdmin) {
     throw new AuthError(404, 'Admin bulunamadı');
@@ -82,7 +83,7 @@ export const listAdmins = async (actorRole: AdminRole) => {
   }
 
   const admins = await Admin.find().sort({ createdAt: -1 }).lean();
-  const userIds = admins.map((admin) => admin.userId);
+  const userIds = admins.map((admin) => admin._id);
   const users = await User.find({ _id: { $in: userIds } })
     .select('email isEmailVerified createdAt')
     .lean();
@@ -90,7 +91,7 @@ export const listAdmins = async (actorRole: AdminRole) => {
   const usersById = new Map(users.map((user) => [String(user._id), user]));
 
   return admins.map((admin) => {
-    const user = usersById.get(String(admin.userId));
+    const user = usersById.get(String(admin._id));
     return formatAdminResponse(admin, user);
   });
 };
@@ -112,8 +113,11 @@ export const createAdmin = async (
 
   const hashedPassword = await hashPassword(data.password);
 
+  const userId = createUserId();
+
   try {
     const user = await User.create({
+      _id: userId,
       email: data.email,
       password: hashedPassword,
       role: 'admin',
@@ -122,7 +126,7 @@ export const createAdmin = async (
     });
 
     const admin = await Admin.create({
-      userId: user._id,
+      _id: userId,
       adminRole: data.adminRole,
       createdBy: creatorUserId,
       ...(data.firstName !== undefined ? { firstName: data.firstName } : {}),
@@ -145,7 +149,7 @@ export const deleteAdmin = async (actorRole: AdminRole, targetUserId: string) =>
     throw new AuthError(403, 'Admin silme yetkisi sadece owner\'da');
   }
 
-  const targetAdmin = await Admin.findOne({ userId: targetUserId });
+  const targetAdmin = await Admin.findById(targetUserId);
 
   if (!targetAdmin) {
     throw new AuthError(404, 'Admin bulunamadı');
@@ -165,7 +169,7 @@ export const deleteAdmin = async (actorRole: AdminRole, targetUserId: string) =>
     }
   }
 
-  await Admin.deleteOne({ userId: targetUserId });
+  await Admin.findByIdAndDelete(targetUserId);
   await User.findByIdAndDelete(targetUserId);
 
   return { userId: targetUserId };

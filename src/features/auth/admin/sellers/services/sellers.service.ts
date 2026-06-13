@@ -22,7 +22,7 @@ export const listSellers = async (status?: SellerApprovalStatus) => {
     .sort({ _id: -1 })
     .lean();
 
-  const userIds = sellers.map((seller) => seller.userId);
+  const userIds = sellers.map((seller) => seller._id);
   const users = await User.find({ _id: { $in: userIds } })
     .select('email isEmailVerified createdAt')
     .lean();
@@ -30,10 +30,10 @@ export const listSellers = async (status?: SellerApprovalStatus) => {
   const usersById = new Map(users.map((user) => [String(user._id), user]));
 
   return sellers.map((seller) => {
-    const user = usersById.get(String(seller.userId));
+    const user = usersById.get(String(seller._id));
 
     return {
-      userId: seller.userId,
+      userId: seller._id,
       email: user?.email,
       isEmailVerified: user?.isEmailVerified,
       createdAt: user?.createdAt,
@@ -55,7 +55,7 @@ export const getSellerByUserId = async (userId: string) => {
     throw new AuthError(404, 'Satıcı bulunamadı');
   }
 
-  const profile = await Seller.findOne({ userId }).lean();
+  const profile = await Seller.findById(userId).lean();
 
   if (!profile) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -80,7 +80,7 @@ export const rejectSeller = async (adminRole: AdminRole, userId: string, reason:
     throw new AuthError(404, 'Satıcı bulunamadı');
   }
 
-  const seller = await Seller.findOne({ userId });
+  const seller = await Seller.findById(userId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -101,7 +101,7 @@ export const rejectSeller = async (adminRole: AdminRole, userId: string, reason:
   }
 
   return {
-    userId: seller.userId,
+    userId: seller._id,
     approvalStatus: seller.approvalStatus,
     rejectionReason: seller.rejectionReason,
   };
@@ -115,7 +115,7 @@ export const approveSeller = async (adminRole: AdminRole, userId: string) => {
     throw new AuthError(404, 'Satıcı bulunamadı');
   }
 
-  const seller = await Seller.findOne({ userId });
+  const seller = await Seller.findById(userId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -136,7 +136,7 @@ export const approveSeller = async (adminRole: AdminRole, userId: string) => {
   }
 
   return {
-    userId: seller.userId,
+    userId: seller._id,
     approvalStatus: seller.approvalStatus,
   };
 };

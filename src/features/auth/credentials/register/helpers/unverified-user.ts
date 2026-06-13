@@ -1,4 +1,5 @@
-import { AuthOtp, Buyer, Seller, User } from '@/db';
+import { Buyer, Seller, User } from '@/db';
+import { deleteAuthOtpsForUser } from '@/features/auth/shared/otp/otp';
 
 export const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -12,9 +13,9 @@ export const deleteUnverifiedUser = async (userId: string) => {
   }
 
   await Promise.all([
-    AuthOtp.deleteMany({ userId }),
-    Buyer.deleteOne({ userId }),
-    Seller.deleteOne({ userId }),
+    deleteAuthOtpsForUser(userId),
+    Buyer.findByIdAndDelete(userId),
+    Seller.findByIdAndDelete(userId),
   ]);
   await User.findByIdAndDelete(userId);
 };

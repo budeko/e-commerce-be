@@ -22,7 +22,7 @@ import { changePassword } from '@/features/auth/credentials/change-password/serv
 describe('changePassword', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindById.mockResolvedValue({ _id: '507f1f77bcf86cd799439011', password: 'hash' });
+    mockFindById.mockResolvedValue({ _id: '550e8400-e29b-41d4-a716-446655440000', password: 'hash' });
     mockComparePassword.mockResolvedValue(true);
     mockHashPassword.mockResolvedValue('new-hash');
     mockFindByIdAndUpdate.mockResolvedValue({});
@@ -30,12 +30,12 @@ describe('changePassword', () => {
 
   it('şifreyi günceller ve passwordChangedAt yazar', async () => {
     await changePassword(
-      { userId: '507f1f77bcf86cd799439011', role: 'buyer' },
+      { userId: '550e8400-e29b-41d4-a716-446655440000', role: 'buyer' },
       { currentPassword: 'OldPass1', newPassword: 'NewPass1' }
     );
 
     expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
+      '550e8400-e29b-41d4-a716-446655440000',
       expect.objectContaining({
         password: 'new-hash',
         passwordChangedAt: expect.any(Date),

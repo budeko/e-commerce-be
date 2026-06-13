@@ -6,7 +6,8 @@ const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 
 export const isTokenRevoked = async (token: string) => {
-  const revoked = await RevokedToken.exists({ tokenHash: hashToken(token) });
+  const tokenHash = hashToken(token);
+  const revoked = await RevokedToken.exists({ _id: tokenHash });
   return Boolean(revoked);
 };
 
@@ -23,9 +24,14 @@ export const revokeToken = async (token: string) => {
     return;
   }
 
+  const tokenHash = hashToken(token);
+
   await RevokedToken.updateOne(
-    { tokenHash: hashToken(token) },
-    { tokenHash: hashToken(token), expiresAt },
+    { _id: tokenHash },
+    {
+      $set: { expiresAt },
+      $setOnInsert: { _id: tokenHash },
+    },
     { upsert: true }
   );
 };

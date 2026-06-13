@@ -5,7 +5,7 @@ import { AuthError } from '@/features/auth/shared/errors';
 import type { AdminProfileUpdateInput } from '@/features/auth/schemas/admin/admin-profile-fields.schema';
 
 const findAdminWithUser = async (targetUserId: string) => {
-  const admin = await Admin.findOne({ userId: targetUserId });
+  const admin = await Admin.findById(targetUserId);
 
   if (!admin) {
     throw new AuthError(404, 'Admin bulunamadı');
@@ -49,8 +49,8 @@ export const updateAdminProfile = async (
 
   await findAdminWithUser(targetUserId);
 
-  const updatedAdmin = await Admin.findOneAndUpdate(
-    { userId: targetUserId },
+  const updatedAdmin = await Admin.findByIdAndUpdate(
+    targetUserId,
     { $set: data },
     { returnDocument: 'after' }
   );

@@ -33,7 +33,7 @@ const resolveBuyerBilling = (
 };
 
 export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdateInput) => {
-  const buyer = await Buyer.findOne({ userId });
+  const buyer = await Buyer.findById(userId);
 
   if (!buyer) {
     throw new AuthError(404, 'Alıcı profili bulunamadı');
@@ -41,8 +41,8 @@ export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdat
 
   const billingUpdate = resolveBuyerBilling(buyer, data);
 
-  const updatedBuyer = await Buyer.findOneAndUpdate(
-    { userId },
+  const updatedBuyer = await Buyer.findByIdAndUpdate(
+    userId,
     { $set: { ...data, ...billingUpdate } },
     { returnDocument: 'after' }
   );

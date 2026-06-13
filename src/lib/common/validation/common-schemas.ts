@@ -5,7 +5,12 @@ const hasMongoOperator = (value: string) => /^\$/.test(value) || value.includes(
 export const objectIdSchema = z
   .string()
   .trim()
-  .regex(/^[a-f\d]{24}$/i, 'Geçersiz kullanıcı kimliği');
+  .regex(/^[a-f\d]{24}$/i, 'Geçersiz kimlik');
+
+export const uuidSchema = z
+  .string()
+  .trim()
+  .uuid('Geçersiz kullanıcı kimliği');
 
 export const safeString = (options: {
   min: number;

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockUpload = vi.fn();
 const mockDelete = vi.fn();
 const mockUpdateSellerProfile = vi.fn();
-const mockSellerFindOne = vi.fn();
+const mockSellerFindById = vi.fn();
 
 vi.mock('../../../../../lib/storage/supabase', () => ({
   uploadToSellerStorage: (...args: unknown[]) => mockUpload(...args),
@@ -18,7 +18,7 @@ vi.mock('../../../../../lib/storage/supabase', () => ({
 
 vi.mock('../../../../../db', () => ({
   Seller: {
-    findOne: (...args: unknown[]) => mockSellerFindOne(...args),
+    findById: (...args: unknown[]) => mockSellerFindById(...args),
   },
 }));
 
@@ -28,13 +28,13 @@ vi.mock('./seller.service', () => ({
 
 import { uploadSellerDocument } from '@/features/auth/account/profile/services/documents.service';
 
-const userId = '507f1f77bcf86cd799439011';
+const userId = '550e8400-e29b-41d4-a716-446655440000';
 const pdfBuffer = Buffer.from('%PDF-1.4 test');
 
 describe('uploadSellerDocument', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSellerFindOne.mockReturnValue({
+    mockSellerFindById.mockReturnValue({
       lean: vi.fn().mockResolvedValue({ taxCertificateUrl: null }),
     });
     mockUpload.mockResolvedValue(
@@ -77,7 +77,7 @@ describe('uploadSellerDocument', () => {
   });
 
   it('aynı belge tipinde sabit path kullanır (üzerine yazar)', async () => {
-    mockSellerFindOne.mockReturnValue({
+    mockSellerFindById.mockReturnValue({
       lean: vi.fn().mockResolvedValue({
         companyLogoUrl: `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/companyLogo.png`,
       }),

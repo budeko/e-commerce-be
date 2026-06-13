@@ -5,7 +5,11 @@ export type { SellerApprovalStatus } from '@/db/auth/models/seller.model';
 export { Admin, ADMIN_ROLES } from '@/db/auth/models/admin.model';
 export type { AdminRole } from '@/db/auth/models/admin.model';
 export { RevokedToken } from '@/db/auth/models/revoked-token.model';
-export { AuthOtp, AUTH_OTP_PURPOSES } from '@/db/auth/models/auth-otp.model';
+export { AuthOtp, AUTH_OTP_PURPOSES, buildAuthOtpId } from '@/db/auth/models/auth-otp.model';
 export type { AuthOtpPurpose } from '@/db/auth/models/auth-otp.model';
-export { AuthEmailCooldown, AUTH_EMAIL_COOLDOWN_PURPOSES } from '@/db/auth/models/auth-email-cooldown.model';
+export {
+  AuthEmailCooldown,
+  AUTH_EMAIL_COOLDOWN_PURPOSES,
+  buildAuthEmailCooldownId,
+} from '@/db/auth/models/auth-email-cooldown.model';
 export type { AuthEmailCooldownPurpose } from '@/db/auth/models/auth-email-cooldown.model';
