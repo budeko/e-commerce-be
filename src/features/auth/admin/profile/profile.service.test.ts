@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
 const mockAdminFindById = vi.fn();
 const mockUserFindById = vi.fn();
 const mockFindByIdAndUpdate = vi.fn();
+const mockGetRoleSummariesByIds = vi.fn();
 
 const chainFindById = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
@@ -18,21 +21,44 @@ vi.mock('@/db', () => ({
   },
 }));
 
+vi.mock('@/features/auth/admin/roles/roles.service', () => ({
+  getRoleSummariesByIds: (...args: unknown[]) => mockGetRoleSummariesByIds(...args),
+}));
+
 import { updateAdminProfile } from '@/features/auth/admin/profile/profile.service';
 
 const ownerId = '550e8400-e29b-41d4-a716-446655440000';
-const helperId = '550e8400-e29b-41d4-a716-446655440001';
+const limitedId = '550e8400-e29b-41d4-a716-446655440001';
+const limitedRoleId = '660e8400-e29b-41d4-a716-446655440001';
 
-const helperAdmin = {
-  _id: helperId,
-  adminRole: 'helper',
+const ownerCtx: AdminAccessContext = {
+  userId: ownerId,
+  roleId: '660e8400-e29b-41d4-a716-446655440000',
+  roleSlug: 'owner',
+  roleName: 'Owner',
+  permissions: new Set(Object.values(PERMISSIONS)),
+  isOwner: true,
+};
+
+const limitedCtx: AdminAccessContext = {
+  userId: limitedId,
+  roleId: limitedRoleId,
+  roleSlug: 'limited',
+  roleName: 'Limited',
+  permissions: new Set([PERMISSIONS.SELLERS_READ]),
+  isOwner: false,
+};
+
+const limitedAdmin = {
+  _id: limitedId,
+  roleId: limitedRoleId,
   firstName: null,
   lastName: null,
   phone: null,
 };
 
-const helperUser = {
-  email: 'helper@example.com',
+const limitedUser = {
+  email: 'limited@example.com',
   role: 'admin',
   isEmailVerified: true,
   createdAt: new Date(),
@@ -41,17 +67,25 @@ const helperUser = {
 describe('updateAdminProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAdminFindById.mockResolvedValue(helperAdmin);
-    mockUserFindById.mockReturnValue(chainFindById(helperUser));
+    mockAdminFindById.mockResolvedValue(limitedAdmin);
+    mockUserFindById.mockReturnValue(chainFindById(limitedUser));
     mockFindByIdAndUpdate.mockResolvedValue({
-      ...helperAdmin,
+      ...limitedAdmin,
       firstName: 'Ali',
       lastName: 'Veli',
     });
+    mockGetRoleSummariesByIds.mockResolvedValue(
+      new Map([
+        [
+          limitedRoleId,
+          { roleId: limitedRoleId, name: 'Limited', slug: 'limited' },
+        ],
+      ])
+    );
   });
 
-  it('helper kendi profilini güncelleyebilir', async () => {
-    const result = await updateAdminProfile('helper', helperId, helperId, {
+  it('admin kendi profilini güncelleyebilir', async () => {
+    const result = await updateAdminProfile(limitedCtx, limitedId, limitedId, {
       firstName: 'Ali',
       lastName: 'Veli',
     });
@@ -61,18 +95,18 @@ describe('updateAdminProfile', () => {
   });
 
   it('owner başka admin profilini güncelleyebilir', async () => {
-    await updateAdminProfile('owner', ownerId, helperId, { firstName: 'Ali' });
+    await updateAdminProfile(ownerCtx, ownerId, limitedId, { firstName: 'Ali' });
 
     expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
-      helperId,
+      limitedId,
       { $set: { firstName: 'Ali' } },
       { returnDocument: 'after' }
     );
   });
 
-  it('helper başka admin profilini güncelleyemez', async () => {
+  it('admins.write olmadan başka admin profili güncellenemez', async () => {
     await expect(
-      updateAdminProfile('helper', helperId, ownerId, { firstName: 'Ali' })
+      updateAdminProfile(limitedCtx, limitedId, ownerId, { firstName: 'Ali' })
     ).rejects.toMatchObject({
       statusCode: 403,
     });

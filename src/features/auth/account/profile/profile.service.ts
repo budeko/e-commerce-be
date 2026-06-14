@@ -34,7 +34,9 @@ export const getProfile = async (auth: AuthTokenPayload) => {
   }
 
   if (auth.role === 'seller') {
-    const profile = await Seller.findById(auth.userId).lean();
+    const profile = await Seller.findById(
+      'companyId' in statusFields ? statusFields.companyId : auth.userId
+    ).lean();
 
     if (!profile) {
       throw new AuthError(404, 'Satıcı profili bulunamadı');

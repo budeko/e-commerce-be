@@ -1,5 +1,8 @@
-import { getAdminRole } from '@/features/auth/core/queries/admin-role';
-import { Seller, type AdminRole, type SellerApprovalStatus } from '@/db';
+import { getAdminContext } from '@/features/auth/core/queries/admin-context';
+import { getSellerContext } from '@/features/auth/core/queries/seller-context';
+import { Seller } from '@/db';
+import type { PermissionKey } from '@/features/auth/admin/access/permission-keys';
+import type { SellerPermissionKey } from '@/features/auth/seller/access/permission-keys';
 import { AuthError } from '@/features/auth/core/errors';
 
 type AuthUserLike = {
@@ -20,19 +23,31 @@ export type SellerAuthFields = {
   userId: unknown;
   role: string;
   isEmailVerified?: boolean;
-  approvalStatus: SellerApprovalStatus;
+  companyId: string;
+  companyName: string | null;
+  sellerType: 'bireysel' | 'kurumsal' | null;
+  approvalStatus: string;
+  roleId: string;
+  roleSlug: string;
+  roleName: string;
+  permissions: SellerPermissionKey[];
+  isOwner: boolean;
+  member: {
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+  };
 };
 
 export type AdminAuthFields = {
   userId: unknown;
   role: string;
   isEmailVerified?: boolean;
-  adminRole: AdminRole;
-};
-
-const getSellerApprovalStatus = async (userId: string): Promise<SellerApprovalStatus> => {
-  const seller = await Seller.findById(userId).select('approvalStatus').lean();
-  return seller?.approvalStatus ?? 'draft';
+  roleId: string;
+  roleSlug: string;
+  roleName: string;
+  permissions: PermissionKey[];
+  isOwner: boolean;
 };
 
 export const buildAuthUserFields = async (
@@ -45,9 +60,42 @@ export const buildAuthUserFields = async (
   };
 
   if (user.role === 'seller') {
+    const sellerContext = await getSellerContext(String(user._id));
+
+    if (!sellerContext) {
+      const legacySeller = await Seller.findById(String(user._id)).select('approvalStatus').lean();
+
+      return {
+        ...base,
+        companyId: String(user._id),
+        companyName: null,
+        sellerType: null,
+        approvalStatus: legacySeller?.approvalStatus ?? 'draft',
+        roleId: '',
+        roleSlug: '',
+        roleName: '',
+        permissions: [],
+        isOwner: true,
+        member: {
+          firstName: null,
+          lastName: null,
+          phone: null,
+        },
+      };
+    }
+
     return {
       ...base,
-      approvalStatus: await getSellerApprovalStatus(String(user._id)),
+      companyId: sellerContext.companyId,
+      companyName: sellerContext.companyName,
+      sellerType: sellerContext.sellerType,
+      approvalStatus: sellerContext.approvalStatus,
+      roleId: sellerContext.roleId,
+      roleSlug: sellerContext.roleSlug,
+      roleName: sellerContext.roleName,
+      permissions: [...sellerContext.permissions],
+      isOwner: sellerContext.isOwner,
+      member: sellerContext.member,
     };
   }
 
@@ -58,14 +106,18 @@ export const buildAuthUserFields = async (
     };
   }
 
-  const adminRole = await getAdminRole(String(user._id));
+  const adminContext = await getAdminContext(String(user._id));
 
-  if (!adminRole) {
+  if (!adminContext) {
     throw new AuthError(403, 'Admin profili bulunamadı');
   }
 
   return {
     ...base,
-    adminRole,
+    roleId: adminContext.roleId,
+    roleSlug: adminContext.roleSlug,
+    roleName: adminContext.roleName,
+    permissions: [...adminContext.permissions],
+    isOwner: adminContext.isOwner,
   };
 };

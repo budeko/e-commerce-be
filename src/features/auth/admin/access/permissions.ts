@@ -1,21 +1,29 @@
-import type { AdminRole } from '@/db';
+import type { PermissionKey } from '@/features/auth/admin/access/permission-keys';
+import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import { AuthError } from '@/features/auth/core/errors';
 
-export const canManageSellers = (role: AdminRole) => role === 'owner';
+export const hasPermission = (ctx: AdminAccessContext, permission: PermissionKey) =>
+  ctx.isOwner || ctx.permissions.has(permission);
 
-export const canListAdmins = (role: AdminRole) => role === 'owner';
-
-export const canCreateAdminRole = (creatorRole: AdminRole, targetRole: AdminRole) => {
-  if (creatorRole === 'owner') {
-    return true;
+export const assertPermission = (
+  ctx: AdminAccessContext,
+  permission: PermissionKey,
+  message: string
+) => {
+  if (!hasPermission(ctx, permission)) {
+    throw new AuthError(403, message);
   }
-
-  return creatorRole === 'helper' && targetRole === 'helper';
 };
 
-export const canDeleteAdmin = (actorRole: AdminRole) => actorRole === 'owner';
+export const assertIsOwner = (ctx: AdminAccessContext, message: string) => {
+  if (!ctx.isOwner) {
+    throw new AuthError(403, message);
+  }
+};
 
 export const canViewAdmin = (
-  actorRole: AdminRole,
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string
 ) => {
@@ -23,11 +31,23 @@ export const canViewAdmin = (
     return true;
   }
 
-  return actorRole === 'owner';
+  return hasPermission(ctx, PERMISSIONS.ADMINS_READ);
 };
 
-export const canUpdateAdminRole = (
-  actorRole: AdminRole,
+export const canUpdateAdminProfile = (
+  ctx: AdminAccessContext,
+  actorUserId: string,
+  targetUserId: string
+) => {
+  if (actorUserId === targetUserId) {
+    return true;
+  }
+
+  return hasPermission(ctx, PERMISSIONS.ADMINS_WRITE);
+};
+
+export const canUpdateAdminRoleId = (
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string
 ) => {
@@ -35,21 +55,28 @@ export const canUpdateAdminRole = (
     return false;
   }
 
-  return actorRole === 'owner';
+  return ctx.isOwner;
 };
 
-export const canAssignAdminRole = (actorRole: AdminRole, targetRole: AdminRole) => {
-  return canCreateAdminRole(actorRole, targetRole);
-};
+export const canCreateAdmin = (ctx: AdminAccessContext) => ctx.isOwner;
 
-export const canUpdateAdminProfile = (
-  actorRole: AdminRole,
-  actorUserId: string,
-  targetUserId: string
-) => {
-  if (actorUserId === targetUserId) {
-    return true;
-  }
+export const canDeleteAdmin = (ctx: AdminAccessContext) => ctx.isOwner;
 
-  return actorRole === 'owner';
-};
+export const canManageSellerApproval = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.SELLERS_APPROVE);
+
+export const canReadSellers = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.SELLERS_READ);
+
+export const canReadCategories = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.CATEGORIES_READ);
+
+export const canWriteCategories = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.CATEGORIES_WRITE);
+
+export const canReadAdminRoles = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.ADMIN_ROLES_READ);
+
+export const canWriteAdminRoles = (ctx: AdminAccessContext) => ctx.isOwner;
+
+export const canDeleteAdminRoles = (ctx: AdminAccessContext) => ctx.isOwner;

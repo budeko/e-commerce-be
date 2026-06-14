@@ -11,6 +11,7 @@ import resetPasswordRoutes from '@/features/auth/recovery/reset-password/reset-p
 import meRoutes from '@/features/auth/account/me/me.routes';
 import profileRoutes from '@/features/auth/account/profile/profile.routes';
 import adminRoutes from '@/features/auth/admin/admin.routes';
+import sellerRoutes from '@/features/auth/seller/seller.routes';
 
 const PUBLIC_AUTH_RATE_LIMIT = {
   max: 10,
@@ -18,6 +19,11 @@ const PUBLIC_AUTH_RATE_LIMIT = {
 };
 
 const ADMIN_RATE_LIMIT = {
+  max: 60,
+  timeWindow: '1 minute',
+};
+
+const SELLER_TEAM_RATE_LIMIT = {
   max: 60,
   timeWindow: '1 minute',
 };
@@ -42,5 +48,10 @@ export default async function (fastify: FastifyInstance) {
   await fastify.register(async (adminScope) => {
     await adminScope.register(rateLimit, ADMIN_RATE_LIMIT);
     await adminScope.register(adminRoutes, { prefix: '/admin' });
+  });
+
+  await fastify.register(async (sellerScope) => {
+    await sellerScope.register(rateLimit, SELLER_TEAM_RATE_LIMIT);
+    await sellerScope.register(sellerRoutes, { prefix: '/seller' });
   });
 }

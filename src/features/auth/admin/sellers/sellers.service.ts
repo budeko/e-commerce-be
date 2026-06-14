@@ -1,21 +1,30 @@
-import { canManageSellers } from '@/features/auth/admin/access/permissions';
+import { canManageSellerApproval, canReadSellers } from '@/features/auth/admin/access/permissions';
 import {
   sendSellerApprovedEmail,
   sendSellerRejectedEmail,
 } from '@/features/auth/admin/mail/send-seller-notifications';
 import { createLogger } from '@/lib/common/logger';
-import { Seller, User, type AdminRole, type SellerApprovalStatus } from '@/db';
+import { Seller, User, type SellerApprovalStatus } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
+import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
-const assertCanManageSellers = (adminRole: AdminRole) => {
-  if (!canManageSellers(adminRole)) {
-    throw new AuthError(403, 'Satıcı yönetimi için yetkin yok');
+const assertCanManageSellerApproval = (ctx: AdminAccessContext) => {
+  if (!canManageSellerApproval(ctx)) {
+    throw new AuthError(403, 'Satıcı onaylama yetkin yok');
+  }
+};
+
+const assertCanReadSellers = (ctx: AdminAccessContext) => {
+  if (!canReadSellers(ctx)) {
+    throw new AuthError(403, 'Satıcı listesini görüntüleme yetkin yok');
   }
 };
 
 const log = createLogger({ module: 'sellers-admin' });
 
-export const listSellers = async (status?: SellerApprovalStatus) => {
+export const listSellers = async (ctx: AdminAccessContext, status?: SellerApprovalStatus) => {
+  assertCanReadSellers(ctx);
+
   const filter = status ? { approvalStatus: status } : {};
 
   const sellers = await Seller.find(filter)
@@ -48,7 +57,9 @@ export const listSellers = async (status?: SellerApprovalStatus) => {
   });
 };
 
-export const getSellerByUserId = async (userId: string) => {
+export const getSellerByUserId = async (ctx: AdminAccessContext, userId: string) => {
+  assertCanReadSellers(ctx);
+
   const user = await User.findById(userId).select('email role isEmailVerified createdAt').lean();
 
   if (!user || user.role !== 'seller') {
@@ -72,8 +83,13 @@ export const getSellerByUserId = async (userId: string) => {
   };
 };
 
-export const rejectSeller = async (adminRole: AdminRole, userId: string, reason: string) => {
-  assertCanManageSellers(adminRole);
+export const rejectSeller = async (
+  ctx: AdminAccessContext,
+  userId: string,
+  reason: string
+) => {
+  assertCanManageSellerApproval(ctx);
+
   const user = await User.findById(userId).select('role email').lean();
 
   if (!user || user.role !== 'seller') {
@@ -107,8 +123,9 @@ export const rejectSeller = async (adminRole: AdminRole, userId: string, reason:
   };
 };
 
-export const approveSeller = async (adminRole: AdminRole, userId: string) => {
-  assertCanManageSellers(adminRole);
+export const approveSeller = async (ctx: AdminAccessContext, userId: string) => {
+  assertCanManageSellerApproval(ctx);
+
   const user = await User.findById(userId).select('role email').lean();
 
   if (!user || user.role !== 'seller') {

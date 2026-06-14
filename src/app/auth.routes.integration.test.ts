@@ -7,6 +7,11 @@ const mockUserFindOne = vi.fn();
 const mockUserFindById = vi.fn();
 const mockSellerFindById = vi.fn();
 const mockRevokedTokenExists = vi.fn();
+const mockGetSellerContext = vi.fn();
+
+vi.mock('@/features/auth/core/queries/seller-context', () => ({
+  getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
+}));
 
 vi.mock('../db', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/db')>();
@@ -72,6 +77,7 @@ describe('auth routes integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRevokedTokenExists.mockResolvedValue(null);
+    mockGetSellerContext.mockResolvedValue(null);
   });
 
   it('GET /auth/me token olmadan 401 döner', async () => {
@@ -175,6 +181,8 @@ describe('auth routes integration', () => {
       email: sellerEmail,
       role: 'seller',
       approvalStatus: 'draft',
+      companyId: userId,
+      isOwner: true,
     });
   });
 

@@ -1,8 +1,6 @@
-import type { AdminRole } from '@/db';
-
 type AdminRecord = {
   _id: unknown;
-  adminRole: AdminRole;
+  roleId: string;
   firstName?: string | null;
   lastName?: string | null;
   phone?: string | null;
@@ -16,11 +14,22 @@ type AdminUserRecord = {
   createdAt?: Date;
 };
 
-export const formatAdminResponse = (admin: AdminRecord, user?: AdminUserRecord | null) => ({
+type RoleSummary = {
+  roleId: string;
+  name: string;
+  slug: string;
+};
+
+export const formatAdminResponse = (
+  admin: AdminRecord,
+  user?: AdminUserRecord | null,
+  role?: RoleSummary
+) => ({
   userId: admin._id,
   email: user?.email,
   isEmailVerified: user?.isEmailVerified,
-  adminRole: admin.adminRole,
+  roleId: admin.roleId,
+  role: role ?? null,
   createdAt: user?.createdAt ?? admin.createdAt,
   createdBy: admin.createdBy,
   profile: {

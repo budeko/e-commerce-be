@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin } from '@/features/auth/core/guard/require-admin';
+import { requireAdmin, requirePermission } from '@/features/auth/core/guard/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { categoryIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
 import {
   createCategorySchema,
   type CreateCategoryInput,
@@ -27,28 +28,47 @@ const adminWithCategoryId = {
 };
 
 export default async function categoriesAdminRoutes(fastify: FastifyInstance) {
-  fastify.get('/', adminOnly, async (_req, reply) => {
-    try {
-      const categories = await listAdminCategories();
-      return reply.status(200).send({ categories });
-    } catch (error) {
-      return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+  fastify.get(
+    '/',
+    { preHandler: [...adminOnly.preHandler, requirePermission(PERMISSIONS.CATEGORIES_READ)] },
+    async (_req, reply) => {
+      try {
+        const categories = await listAdminCategories();
+        return reply.status(200).send({ categories });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+      }
     }
-  });
+  );
 
-  fastify.get('/:categoryId', adminWithCategoryId, async (req, reply) => {
-    try {
-      const { categoryId } = req.params as { categoryId: string };
-      const category = await getCategoryById(categoryId);
-      return reply.status(200).send({ category });
-    } catch (error) {
-      return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+  fastify.get(
+    '/:categoryId',
+    {
+      preHandler: [
+        ...adminWithCategoryId.preHandler,
+        requirePermission(PERMISSIONS.CATEGORIES_READ),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { categoryId } = req.params as { categoryId: string };
+        const category = await getCategoryById(categoryId);
+        return reply.status(200).send({ category });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+      }
     }
-  });
+  );
 
   fastify.post(
     '/',
-    { preHandler: [...adminOnly.preHandler, validateBody(createCategorySchema)] },
+    {
+      preHandler: [
+        ...adminOnly.preHandler,
+        requirePermission(PERMISSIONS.CATEGORIES_WRITE),
+        validateBody(createCategorySchema),
+      ],
+    },
     async (req, reply) => {
       try {
         const category = await createCategory(req.body as CreateCategoryInput);
@@ -69,6 +89,7 @@ export default async function categoriesAdminRoutes(fastify: FastifyInstance) {
     {
       preHandler: [
         ...adminWithCategoryId.preHandler,
+        requirePermission(PERMISSIONS.CATEGORIES_WRITE),
         validateBody(updateCategorySchema),
       ],
     },
@@ -89,14 +110,23 @@ export default async function categoriesAdminRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.delete('/:categoryId', adminWithCategoryId, async (req, reply) => {
-    try {
-      const { categoryId } = req.params as { categoryId: string };
-      await deleteCategory(categoryId);
+  fastify.delete(
+    '/:categoryId',
+    {
+      preHandler: [
+        ...adminWithCategoryId.preHandler,
+        requirePermission(PERMISSIONS.CATEGORIES_WRITE),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { categoryId } = req.params as { categoryId: string };
+        await deleteCategory(categoryId);
 
-      return reply.status(200).send({ message: 'Kategori silindi' });
-    } catch (error) {
-      return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+        return reply.status(200).send({ message: 'Kategori silindi' });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');
+      }
     }
-  });
+  );
 }

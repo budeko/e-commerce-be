@@ -1,11 +1,33 @@
 import { Seller } from '@/db';
+import { canReadCompanyProfile, canWriteCompanyProfile } from '@/features/auth/seller/access/permissions';
+import { getSellerContext, type SellerAccessContext } from '@/features/auth/core/queries/seller-context';
 import { AuthError } from '@/features/auth/core/errors';
 import { isSellerProfileComplete } from '@/features/auth/core/profile/profile-completion';
 import { hasCriticalSellerFieldChanges } from '@/features/auth/core/profile/seller-critical-fields';
 import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 
+const assertCanReadCompany = (ctx: SellerAccessContext) => {
+  if (!canReadCompanyProfile(ctx)) {
+    throw new AuthError(403, 'Şirket profilini görüntüleme yetkin yok');
+  }
+};
+
+const assertCanWriteCompany = (ctx: SellerAccessContext) => {
+  if (!canWriteCompanyProfile(ctx)) {
+    throw new AuthError(403, 'Şirket profilini güncelleme yetkin yok');
+  }
+};
+
 export const updateSellerProfile = async (userId: string, data: SellerProfileUpdateInput) => {
-  const seller = await Seller.findById(userId);
+  const ctx = await getSellerContext(userId);
+
+  if (!ctx) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
+  assertCanWriteCompany(ctx);
+
+  const seller = await Seller.findById(ctx.companyId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -16,15 +38,25 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
   }
 
   const criticalChanged =
+    !ctx.isOwner &&
+    seller.approvalStatus === 'approved' &&
+    hasCriticalSellerFieldChanges(seller.toObject(), data);
+
+  if (criticalChanged) {
+    throw new AuthError(403, 'Kritik şirket bilgilerini sadece şirket sahibi güncelleyebilir');
+  }
+
+  const ownerCriticalChanged =
+    ctx.isOwner &&
     seller.approvalStatus === 'approved' &&
     hasCriticalSellerFieldChanges(seller.toObject(), data);
 
   const updatedSeller = await Seller.findByIdAndUpdate(
-    userId,
+    ctx.companyId,
     {
       $set: {
         ...data,
-        ...(criticalChanged ? { approvalStatus: 'pending', rejectionReason: null } : {}),
+        ...(ownerCriticalChanged ? { approvalStatus: 'pending', rejectionReason: null } : {}),
       },
     },
     { returnDocument: 'after' }
@@ -56,4 +88,22 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
     profile: updatedSeller.toObject(),
     approvalStatus: updatedSeller.approvalStatus,
   };
+};
+
+export const getSellerCompanyProfile = async (userId: string) => {
+  const ctx = await getSellerContext(userId);
+
+  if (!ctx) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
+  assertCanReadCompany(ctx);
+
+  const profile = await Seller.findById(ctx.companyId).lean();
+
+  if (!profile) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
+  return profile;
 };

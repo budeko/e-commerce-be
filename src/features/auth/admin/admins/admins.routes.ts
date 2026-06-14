@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin } from '@/features/auth/core/guard/require-admin';
+import { requireAdmin, requireOwner } from '@/features/auth/core/guard/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
@@ -17,11 +17,11 @@ const adminWithUserId = {
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', adminOnly, async (req, reply) => {
     try {
-      if (!req.adminRole) {
+      if (!req.adminContext) {
         return reply.status(403).send({ message: 'Admin profili bulunamadı' });
       }
 
-      const admins = await listAdmins(req.adminRole);
+      const admins = await listAdmins(req.adminContext);
       return reply.status(200).send({ admins });
     } catch (error) {
       return handleRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
@@ -30,12 +30,12 @@ export default async function (fastify: FastifyInstance) {
 
   fastify.get('/:userId', adminWithUserId, async (req, reply) => {
     try {
-      if (!req.adminRole) {
+      if (!req.adminContext) {
         return reply.status(403).send({ message: 'Admin profili bulunamadı' });
       }
 
       const { userId } = req.params as { userId: string };
-      const admin = await getAdminByUserId(req.adminRole, req.auth!.userId, userId);
+      const admin = await getAdminByUserId(req.adminContext, req.auth!.userId, userId);
 
       return reply.status(200).send(admin);
     } catch (error) {
@@ -45,18 +45,14 @@ export default async function (fastify: FastifyInstance) {
 
   fastify.post(
     '/',
-    { preHandler: [requireAuth, requireAdmin, validateBody(createAdminSchema)] },
+    { preHandler: [requireAuth, requireAdmin, requireOwner, validateBody(createAdminSchema)] },
     async (req, reply) => {
       try {
-        if (!req.adminRole) {
+        if (!req.adminContext) {
           return reply.status(403).send({ message: 'Admin profili bulunamadı' });
         }
 
-        const result = await createAdmin(
-          req.auth!.userId,
-          req.adminRole,
-          req.body as CreateAdminInput
-        );
+        const result = await createAdmin(req.adminContext, req.body as CreateAdminInput);
 
         return reply.status(201).send({
           message: 'Admin oluşturuldu',
@@ -74,19 +70,20 @@ export default async function (fastify: FastifyInstance) {
       preHandler: [
         requireAuth,
         requireAdmin,
+        requireOwner,
         validateParams(userIdParamSchema),
         validateBody(updateAdminSchema),
       ],
     },
     async (req, reply) => {
       try {
-        if (!req.adminRole) {
+        if (!req.adminContext) {
           return reply.status(403).send({ message: 'Admin profili bulunamadı' });
         }
 
         const { userId } = req.params as { userId: string };
         const result = await updateAdmin(
-          req.adminRole,
+          req.adminContext,
           req.auth!.userId,
           userId,
           req.body as UpdateAdminInput
@@ -105,20 +102,16 @@ export default async function (fastify: FastifyInstance) {
   fastify.delete(
     '/:userId',
     {
-      preHandler: [requireAuth, requireAdmin, validateParams(userIdParamSchema)],
+      preHandler: [requireAuth, requireAdmin, requireOwner, validateParams(userIdParamSchema)],
     },
     async (req, reply) => {
       try {
-        if (!req.adminRole) {
+        if (!req.adminContext) {
           return reply.status(403).send({ message: 'Admin profili bulunamadı' });
         }
 
-        if (req.adminRole !== 'owner') {
-          return reply.status(403).send({ message: 'Bu işlem için owner yetkisi gerekli' });
-        }
-
         const { userId } = req.params as { userId: string };
-        const result = await deleteAdmin(req.adminRole, userId);
+        const result = await deleteAdmin(req.adminContext, userId);
 
         return reply.status(200).send({
           message: 'Admin silindi',

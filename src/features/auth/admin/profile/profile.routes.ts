@@ -16,11 +16,11 @@ const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', adminOnly, async (req, reply) => {
     try {
-      if (!req.adminRole) {
+      if (!req.adminContext) {
         return reply.status(403).send({ message: 'Admin profili bulunamadı' });
       }
 
-      const profile = await getAdminProfile(req.adminRole, req.auth!.userId);
+      const profile = await getAdminProfile(req.adminContext);
       return reply.status(200).send(profile);
     } catch (error) {
       return handleRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
@@ -32,12 +32,12 @@ export default async function (fastify: FastifyInstance) {
     { preHandler: [...adminOnly.preHandler, validateBody(adminProfileUpdateSchema)] },
     async (req, reply) => {
       try {
-        if (!req.adminRole) {
+        if (!req.adminContext) {
           return reply.status(403).send({ message: 'Admin profili bulunamadı' });
         }
 
         const profile = await updateAdminProfile(
-          req.adminRole,
+          req.adminContext,
           req.auth!.userId,
           req.auth!.userId,
           req.body as AdminProfileUpdateInput
@@ -65,13 +65,13 @@ export default async function (fastify: FastifyInstance) {
     },
     async (req, reply) => {
       try {
-        if (!req.adminRole) {
+        if (!req.adminContext) {
           return reply.status(403).send({ message: 'Admin profili bulunamadı' });
         }
 
         const { userId } = req.params as { userId: string };
         const profile = await updateAdminProfile(
-          req.adminRole,
+          req.adminContext,
           req.auth!.userId,
           userId,
           req.body as AdminProfileUpdateInput

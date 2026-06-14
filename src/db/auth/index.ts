@@ -2,8 +2,13 @@ export { User } from '@/db/auth/models/user.model';
 export { Buyer } from '@/db/auth/models/buyer.model';
 export { Seller, SELLER_APPROVAL_STATUSES } from '@/db/auth/models/seller.model';
 export type { SellerApprovalStatus } from '@/db/auth/models/seller.model';
-export { Admin, ADMIN_ROLES } from '@/db/auth/models/admin.model';
-export type { AdminRole } from '@/db/auth/models/admin.model';
+export { SellerMember } from '@/db/auth/models/seller-member.model';
+export {
+  SellerRole,
+  SELLER_SYSTEM_OWNER_ROLE_SLUG,
+} from '@/db/auth/models/seller-role.model';
+export { Admin } from '@/db/auth/models/admin.model';
+export { AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/db/auth/models/admin-role.model';
 export { RevokedToken } from '@/db/auth/models/revoked-token.model';
 export { AuthOtp, AUTH_OTP_PURPOSES, buildAuthOtpId } from '@/db/auth/models/auth-otp.model';
 export type { AuthOtpPurpose } from '@/db/auth/models/auth-otp.model';

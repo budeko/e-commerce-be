@@ -1,9 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getAdminRole } from '@/features/auth/core/queries/admin-role';
+import type { PermissionKey } from '@/features/auth/admin/access/permission-keys';
+import { hasPermission } from '@/features/auth/admin/access/permissions';
+import { getAdminContext, type AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    adminRole?: 'owner' | 'helper';
+    adminContext?: AdminAccessContext;
   }
 }
 
@@ -16,11 +18,61 @@ export const requireAdmin = async (request: FastifyRequest, reply: FastifyReply)
     return reply.status(403).send({ message: 'Bu işlem için admin yetkisi gerekli' });
   }
 
-  const adminRole = await getAdminRole(request.auth.userId);
+  const adminContext = await getAdminContext(request.auth.userId);
 
-  if (!adminRole) {
+  if (!adminContext) {
     return reply.status(403).send({ message: 'Admin profili bulunamadı' });
   }
 
-  request.adminRole = adminRole;
+  request.adminContext = adminContext;
+};
+
+export const requirePermission =
+  (...permissions: PermissionKey[]) =>
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.adminContext) {
+      return reply.status(403).send({ message: 'Admin profili bulunamadı' });
+    }
+
+    if (request.adminContext.isOwner) {
+      return;
+    }
+
+    const allowed = permissions.some((permission) =>
+      hasPermission(request.adminContext!, permission)
+    );
+
+    if (!allowed) {
+      return reply.status(403).send({ message: 'Bu işlem için yetkin yok' });
+    }
+  };
+
+export const requireAllPermissions =
+  (...permissions: PermissionKey[]) =>
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.adminContext) {
+      return reply.status(403).send({ message: 'Admin profili bulunamadı' });
+    }
+
+    if (request.adminContext.isOwner) {
+      return;
+    }
+
+    const allowed = permissions.every((permission) =>
+      hasPermission(request.adminContext!, permission)
+    );
+
+    if (!allowed) {
+      return reply.status(403).send({ message: 'Bu işlem için yetkin yok' });
+    }
+  };
+
+export const requireOwner = async (request: FastifyRequest, reply: FastifyReply) => {
+  if (!request.adminContext) {
+    return reply.status(403).send({ message: 'Admin profili bulunamadı' });
+  }
+
+  if (!request.adminContext.isOwner) {
+    return reply.status(403).send({ message: 'Bu işlem için owner yetkisi gerekli' });
+  }
 };

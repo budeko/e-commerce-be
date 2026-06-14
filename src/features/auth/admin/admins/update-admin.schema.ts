@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { ADMIN_ROLES } from '@/db';
+import { uuidSchema } from '@/lib/common/validation/common-schemas';
 
 export const updateAdminSchema = z.object({
-  adminRole: z.enum(ADMIN_ROLES, { error: 'Geçerli bir admin rolü seçin' }),
+  roleId: uuidSchema,
 });
 
 export type UpdateAdminInput = z.infer<typeof updateAdminSchema>;

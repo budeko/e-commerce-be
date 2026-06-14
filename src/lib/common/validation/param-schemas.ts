@@ -16,3 +16,7 @@ export const productIdParamSchema = z.object({
 export const orderIdParamSchema = z.object({
   orderId: uuidSchema,
 });
+
+export const roleIdParamSchema = z.object({
+  roleId: uuidSchema,
+});

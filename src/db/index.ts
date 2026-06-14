@@ -11,11 +11,14 @@ export {
   AUTH_EMAIL_COOLDOWN_PURPOSES,
   buildAuthOtpId,
   buildAuthEmailCooldownId,
-  ADMIN_ROLES,
+  AdminRole,
+  SYSTEM_OWNER_ROLE_SLUG,
+  SellerRole,
+  SellerMember,
+  SELLER_SYSTEM_OWNER_ROLE_SLUG,
   SELLER_APPROVAL_STATUSES,
 } from '@/db/auth';
 export type {
-  AdminRole,
   SellerApprovalStatus,
   AuthOtpPurpose,
   AuthEmailCooldownPurpose,

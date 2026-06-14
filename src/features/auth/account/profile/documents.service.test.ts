@@ -16,6 +16,12 @@ vi.mock('@/lib/integrations/supabase/supabase', () => ({
   },
 }));
 
+const mockGetSellerContext = vi.fn();
+
+vi.mock('@/features/auth/core/queries/seller-context', () => ({
+  getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
+}));
+
 vi.mock('@/db', () => ({
   Seller: {
     findById: (...args: unknown[]) => mockSellerFindById(...args),
@@ -34,6 +40,19 @@ const pdfBuffer = Buffer.from('%PDF-1.4 test');
 describe('uploadSellerDocument', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetSellerContext.mockResolvedValue({
+      userId,
+      companyId: userId,
+      companyName: 'Test',
+      sellerType: 'kurumsal',
+      approvalStatus: 'draft',
+      roleId: '770e8400-e29b-41d4-a716-446655440000',
+      roleSlug: 'owner',
+      roleName: 'Owner',
+      permissions: new Set(),
+      isOwner: true,
+      member: { firstName: null, lastName: null, phone: null },
+    });
     mockSellerFindById.mockReturnValue({
       lean: vi.fn().mockResolvedValue({ taxCertificateUrl: null }),
     });

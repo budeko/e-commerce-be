@@ -1,16 +1,23 @@
 import {
-  canAssignAdminRole,
-  canCreateAdminRole,
+  canCreateAdmin,
   canDeleteAdmin,
-  canListAdmins,
-  canUpdateAdminRole,
+  canUpdateAdminRoleId,
   canViewAdmin,
 } from '@/features/auth/admin/access/permissions';
+import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import { assertPermission } from '@/features/auth/admin/access/permissions';
+import {
+  assertAssignableRoleId,
+  countOwnerAdmins,
+  getRoleSummariesByIds,
+  isOwnerRoleId,
+} from '@/features/auth/admin/roles/roles.service';
 import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
 import { hashPassword } from '@/lib/common/password';
 import { createUserId } from '@/lib/common/user-id';
-import { Admin, User, type AdminRole } from '@/db';
+import { Admin, User } from '@/db';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
+import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 import type { CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';
 import type { UpdateAdminInput } from '@/features/auth/admin/admins/update-admin.schema';
 
@@ -31,79 +38,82 @@ const findAdminRecord = async (targetUserId: string) => {
 };
 
 export const getAdminByUserId = async (
-  actorRole: AdminRole,
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string
 ) => {
-  if (!canViewAdmin(actorRole, actorUserId, targetUserId)) {
+  if (!canViewAdmin(ctx, actorUserId, targetUserId)) {
     throw new AuthError(403, 'Bu admin profilini görüntüleme yetkin yok');
   }
 
   const { targetAdmin, targetUser } = await findAdminRecord(targetUserId);
-  return formatAdminResponse(targetAdmin, targetUser);
+  const rolesById = await getRoleSummariesByIds([String(targetAdmin.roleId)]);
+
+  return formatAdminResponse(targetAdmin, targetUser, rolesById.get(String(targetAdmin.roleId)));
 };
 
 export const updateAdmin = async (
-  actorRole: AdminRole,
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string,
   data: UpdateAdminInput
 ) => {
-  if (!canUpdateAdminRole(actorRole, actorUserId, targetUserId)) {
-    throw new AuthError(403, 'Bu admin profilini güncelleme yetkin yok');
+  if (!canUpdateAdminRoleId(ctx, actorUserId, targetUserId)) {
+    throw new AuthError(403, 'Bu admin rolünü güncelleme yetkin yok');
   }
 
-  if (!canAssignAdminRole(actorRole, data.adminRole)) {
-    throw new AuthError(403, 'Bu admin rolünü atama yetkin yok');
-  }
+  await assertAssignableRoleId(data.roleId);
 
   const { targetAdmin, targetUser } = await findAdminRecord(targetUserId);
 
-  if (targetAdmin.adminRole === data.adminRole) {
-    return formatAdminResponse(targetAdmin, targetUser);
+  if (String(targetAdmin.roleId) === data.roleId) {
+    const rolesById = await getRoleSummariesByIds([data.roleId]);
+    return formatAdminResponse(targetAdmin, targetUser, rolesById.get(data.roleId));
   }
 
-  if (targetAdmin.adminRole === 'owner' && data.adminRole === 'helper') {
-    const ownerCount = await Admin.countDocuments({ adminRole: 'owner' });
+  const currentlyOwner = await isOwnerRoleId(String(targetAdmin.roleId));
+
+  if (currentlyOwner) {
+    const ownerCount = await countOwnerAdmins();
 
     if (ownerCount <= 1) {
-      throw new AuthError(400, 'Son owner helper yapılamaz');
+      throw new AuthError(400, 'Son owner rolü değiştirilemez');
     }
   }
 
-  targetAdmin.adminRole = data.adminRole;
+  targetAdmin.roleId = data.roleId;
   await targetAdmin.save();
 
-  return formatAdminResponse(targetAdmin, targetUser);
+  const rolesById = await getRoleSummariesByIds([data.roleId]);
+
+  return formatAdminResponse(targetAdmin, targetUser, rolesById.get(data.roleId));
 };
 
-export const listAdmins = async (actorRole: AdminRole) => {
-  if (!canListAdmins(actorRole)) {
-    throw new AuthError(403, 'Admin listesini görüntüleme yetkin yok');
-  }
+export const listAdmins = async (ctx: AdminAccessContext) => {
+  assertPermission(ctx, PERMISSIONS.ADMINS_READ, 'Admin listesini görüntüleme yetkin yok');
 
   const admins = await Admin.find().sort({ createdAt: -1 }).lean();
   const userIds = admins.map((admin) => admin._id);
+  const roleIds = admins.map((admin) => String(admin.roleId));
   const users = await User.find({ _id: { $in: userIds } })
     .select('email isEmailVerified createdAt')
     .lean();
+  const rolesById = await getRoleSummariesByIds(roleIds);
 
   const usersById = new Map(users.map((user) => [String(user._id), user]));
 
   return admins.map((admin) => {
     const user = usersById.get(String(admin._id));
-    return formatAdminResponse(admin, user);
+    return formatAdminResponse(admin, user, rolesById.get(String(admin.roleId)));
   });
 };
 
-export const createAdmin = async (
-  creatorUserId: string,
-  creatorRole: AdminRole,
-  data: CreateAdminInput
-) => {
-  if (!canCreateAdminRole(creatorRole, data.adminRole)) {
-    throw new AuthError(403, 'Bu admin rolünü oluşturma yetkin yok');
+export const createAdmin = async (ctx: AdminAccessContext, data: CreateAdminInput) => {
+  if (!canCreateAdmin(ctx)) {
+    throw new AuthError(403, 'Admin oluşturma yetkisi sadece owner\'da');
   }
+
+  await assertAssignableRoleId(data.roleId);
 
   const existing = await User.findOne({ email: data.email.toLowerCase() });
 
@@ -112,7 +122,6 @@ export const createAdmin = async (
   }
 
   const hashedPassword = await hashPassword(data.password);
-
   const userId = createUserId();
 
   try {
@@ -127,14 +136,16 @@ export const createAdmin = async (
 
     const admin = await Admin.create({
       _id: userId,
-      adminRole: data.adminRole,
-      createdBy: creatorUserId,
+      roleId: data.roleId,
+      createdBy: ctx.userId,
       ...(data.firstName !== undefined ? { firstName: data.firstName } : {}),
       ...(data.lastName !== undefined ? { lastName: data.lastName } : {}),
       ...(data.phone !== undefined ? { phone: data.phone } : {}),
     });
 
-    return formatAdminResponse(admin, user);
+    const rolesById = await getRoleSummariesByIds([data.roleId]);
+
+    return formatAdminResponse(admin, user, rolesById.get(data.roleId));
   } catch (error) {
     if (isDuplicateKeyError(error)) {
       throw new AuthError(409, 'Bu e-posta adresi zaten kayıtlı');
@@ -144,8 +155,8 @@ export const createAdmin = async (
   }
 };
 
-export const deleteAdmin = async (actorRole: AdminRole, targetUserId: string) => {
-  if (!canDeleteAdmin(actorRole)) {
+export const deleteAdmin = async (ctx: AdminAccessContext, targetUserId: string) => {
+  if (!canDeleteAdmin(ctx)) {
     throw new AuthError(403, 'Admin silme yetkisi sadece owner\'da');
   }
 
@@ -161,8 +172,8 @@ export const deleteAdmin = async (actorRole: AdminRole, targetUserId: string) =>
     throw new AuthError(404, 'Admin bulunamadı');
   }
 
-  if (targetAdmin.adminRole === 'owner') {
-    const ownerCount = await Admin.countDocuments({ adminRole: 'owner' });
+  if (await isOwnerRoleId(String(targetAdmin.roleId))) {
+    const ownerCount = await countOwnerAdmins();
 
     if (ownerCount <= 1) {
       throw new AuthError(400, 'Son owner silinemez');

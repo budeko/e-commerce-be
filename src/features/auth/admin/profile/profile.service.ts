@@ -1,7 +1,9 @@
 import { canUpdateAdminProfile, canViewAdmin } from '@/features/auth/admin/access/permissions';
+import { getRoleSummariesByIds } from '@/features/auth/admin/roles/roles.service';
 import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
-import { Admin, User, type AdminRole } from '@/db';
+import { Admin, User } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
+import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 import type { AdminProfileUpdateInput } from '@/features/auth/admin/profile/admin-profile-fields.schema';
 
 const findAdminWithUser = async (targetUserId: string) => {
@@ -20,30 +22,32 @@ const findAdminWithUser = async (targetUserId: string) => {
   return { admin, user };
 };
 
-export const getAdminProfile = async (actorRole: AdminRole, actorUserId: string) => {
-  return getAdminProfileByUserId(actorRole, actorUserId, actorUserId);
+export const getAdminProfile = async (ctx: AdminAccessContext) => {
+  return getAdminProfileByUserId(ctx, ctx.userId, ctx.userId);
 };
 
 export const getAdminProfileByUserId = async (
-  actorRole: AdminRole,
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string
 ) => {
-  if (!canViewAdmin(actorRole, actorUserId, targetUserId)) {
+  if (!canViewAdmin(ctx, actorUserId, targetUserId)) {
     throw new AuthError(403, 'Bu admin profilini görüntüleme yetkin yok');
   }
 
   const { admin, user } = await findAdminWithUser(targetUserId);
-  return formatAdminResponse(admin, user);
+  const rolesById = await getRoleSummariesByIds([String(admin.roleId)]);
+
+  return formatAdminResponse(admin, user, rolesById.get(String(admin.roleId)));
 };
 
 export const updateAdminProfile = async (
-  actorRole: AdminRole,
+  ctx: AdminAccessContext,
   actorUserId: string,
   targetUserId: string,
   data: AdminProfileUpdateInput
 ) => {
-  if (!canUpdateAdminProfile(actorRole, actorUserId, targetUserId)) {
+  if (!canUpdateAdminProfile(ctx, actorUserId, targetUserId)) {
     throw new AuthError(403, 'Bu admin profilini güncelleme yetkin yok');
   }
 
@@ -65,5 +69,11 @@ export const updateAdminProfile = async (
     throw new AuthError(404, 'Admin bulunamadı');
   }
 
-  return formatAdminResponse(updatedAdmin, user);
+  const rolesById = await getRoleSummariesByIds([String(updatedAdmin.roleId)]);
+
+  return formatAdminResponse(
+    updatedAdmin,
+    user,
+    rolesById.get(String(updatedAdmin.roleId))
+  );
 };

@@ -1,0 +1,162 @@
+import { FastifyInstance } from 'fastify';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import {
+  requireAdmin,
+  requireOwner,
+  requirePermission,
+} from '@/features/auth/core/guard/require-admin';
+import { validateBody } from '@/lib/common/http/validate-body';
+import { validateParams } from '@/lib/common/http/validate-params';
+import { roleIdParamSchema } from '@/lib/common/validation/param-schemas';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import {
+  createAdminRole,
+  deleteAdminRole,
+  getAdminRoleById,
+  listAdminRoles,
+  listAssignableRoles,
+  listPermissionRegistry,
+  updateAdminRole,
+} from '@/features/auth/admin/roles/roles.service';
+import {
+  createAdminRoleSchema,
+  updateAdminRoleSchema,
+  type CreateAdminRoleInput,
+  type UpdateAdminRoleInput,
+} from '@/features/auth/admin/roles/create-role.schema';
+
+const adminOnly = { preHandler: [requireAuth, requireAdmin] };
+
+export default async function (fastify: FastifyInstance) {
+  fastify.get(
+    '/permissions',
+    { preHandler: [...adminOnly.preHandler, requirePermission(PERMISSIONS.ADMIN_ROLES_READ)] },
+    async (_req, reply) => {
+      return reply.status(200).send({ permissions: listPermissionRegistry() });
+    }
+  );
+
+  fastify.get(
+    '/assignable',
+    { preHandler: [...adminOnly.preHandler, requireOwner] },
+    async (req, reply) => {
+      try {
+        const roles = await listAssignableRoles(req.adminContext!);
+        return reply.status(200).send({ roles });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.get(
+    '/',
+    { preHandler: [...adminOnly.preHandler, requirePermission(PERMISSIONS.ADMIN_ROLES_READ)] },
+    async (req, reply) => {
+      try {
+        const roles = await listAdminRoles(req.adminContext!);
+        return reply.status(200).send({ roles });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.get(
+    '/:roleId',
+    {
+      preHandler: [
+        requireAuth,
+        requireAdmin,
+        requirePermission(PERMISSIONS.ADMIN_ROLES_READ),
+        validateParams(roleIdParamSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { roleId } = req.params as { roleId: string };
+        const role = await getAdminRoleById(req.adminContext!, roleId);
+        return reply.status(200).send(role);
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.post(
+    '/',
+    {
+      preHandler: [
+        requireAuth,
+        requireAdmin,
+        requireOwner,
+        validateBody(createAdminRoleSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const role = await createAdminRole(req.adminContext!, req.body as CreateAdminRoleInput);
+
+        return reply.status(201).send({
+          message: 'Rol oluşturuldu',
+          ...role,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu', {
+          duplicateKeyMessage: 'Bu slug zaten kullanılıyor',
+        });
+      }
+    }
+  );
+
+  fastify.patch(
+    '/:roleId',
+    {
+      preHandler: [
+        requireAuth,
+        requireAdmin,
+        requireOwner,
+        validateParams(roleIdParamSchema),
+        validateBody(updateAdminRoleSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { roleId } = req.params as { roleId: string };
+        const role = await updateAdminRole(
+          req.adminContext!,
+          roleId,
+          req.body as UpdateAdminRoleInput
+        );
+
+        return reply.status(200).send({
+          message: 'Rol güncellendi',
+          ...role,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.delete(
+    '/:roleId',
+    {
+      preHandler: [requireAuth, requireAdmin, requireOwner, validateParams(roleIdParamSchema)],
+    },
+    async (req, reply) => {
+      try {
+        const { roleId } = req.params as { roleId: string };
+        const result = await deleteAdminRole(req.adminContext!, roleId);
+
+        return reply.status(200).send({
+          message: 'Rol silindi',
+          ...result,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Rol işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+}

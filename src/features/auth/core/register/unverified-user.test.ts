@@ -5,6 +5,8 @@ const mockUserFindByIdAndDelete = vi.fn();
 const mockDeleteAuthOtpsForUser = vi.fn();
 const mockBuyerFindByIdAndDelete = vi.fn();
 const mockSellerFindByIdAndDelete = vi.fn();
+const mockSellerMemberFindByIdAndDelete = vi.fn();
+const mockSellerRoleDeleteMany = vi.fn();
 
 vi.mock('@/db', () => ({
   User: {
@@ -13,6 +15,12 @@ vi.mock('@/db', () => ({
   },
   Buyer: {
     findByIdAndDelete: (...args: unknown[]) => mockBuyerFindByIdAndDelete(...args),
+  },
+  SellerMember: {
+    findByIdAndDelete: (...args: unknown[]) => mockSellerMemberFindByIdAndDelete(...args),
+  },
+  SellerRole: {
+    deleteMany: (...args: unknown[]) => mockSellerRoleDeleteMany(...args),
   },
   Seller: {
     findByIdAndDelete: (...args: unknown[]) => mockSellerFindByIdAndDelete(...args),
@@ -39,6 +47,8 @@ describe('unverified-user helpers', () => {
     mockDeleteAuthOtpsForUser.mockResolvedValue(undefined);
     mockBuyerFindByIdAndDelete.mockResolvedValue(undefined);
     mockSellerFindByIdAndDelete.mockResolvedValue(undefined);
+    mockSellerMemberFindByIdAndDelete.mockResolvedValue(undefined);
+    mockSellerRoleDeleteMany.mockResolvedValue(undefined);
     mockUserFindByIdAndDelete.mockResolvedValue(undefined);
   });
 
@@ -62,6 +72,8 @@ describe('unverified-user helpers', () => {
 
     expect(mockDeleteAuthOtpsForUser).toHaveBeenCalledWith(userId);
     expect(mockBuyerFindByIdAndDelete).toHaveBeenCalledWith(userId);
+    expect(mockSellerMemberFindByIdAndDelete).toHaveBeenCalledWith(userId);
+    expect(mockSellerRoleDeleteMany).toHaveBeenCalledWith({ sellerId: userId });
     expect(mockSellerFindByIdAndDelete).toHaveBeenCalledWith(userId);
     expect(mockUserFindByIdAndDelete).toHaveBeenCalledWith(userId);
   });

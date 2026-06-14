@@ -1,17 +1,30 @@
 ﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-const mockSellerFindById = vi.fn();
+const mockGetSellerContext = vi.fn();
 
-vi.mock('@/db', () => ({
-  Seller: {
-    findById: (...args: unknown[]) => mockSellerFindById(...args),
-  },
+vi.mock('@/features/auth/core/queries/seller-context', () => ({
+  getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 
 import { requireApprovedSeller } from '@/lib/ecommerce/guards/require-approved-seller';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
+const companyId = '660e8400-e29b-41d4-a716-446655440000';
+
+const approvedContext = {
+  userId,
+  companyId,
+  companyName: 'Test A.Ş.',
+  sellerType: 'kurumsal' as const,
+  approvalStatus: 'approved' as const,
+  roleId: '770e8400-e29b-41d4-a716-446655440000',
+  roleSlug: 'owner',
+  roleName: 'Owner',
+  permissions: new Set<string>(),
+  isOwner: true,
+  member: { firstName: null, lastName: null, phone: null },
+};
 
 const createReply = () => {
   const reply = {
@@ -58,9 +71,7 @@ describe('requireApprovedSeller', () => {
   });
 
   it('satıcı profili yoksa 403 döner', async () => {
-    mockSellerFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue(null),
-    });
+    mockGetSellerContext.mockResolvedValue(null);
 
     const request = {
       auth: { userId, role: 'seller' },
@@ -74,8 +85,9 @@ describe('requireApprovedSeller', () => {
   });
 
   it('onaylanmamış satıcı için 403 döner', async () => {
-    mockSellerFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ approvalStatus: 'pending' }),
+    mockGetSellerContext.mockResolvedValue({
+      ...approvedContext,
+      approvalStatus: 'pending',
     });
 
     const request = {
@@ -90,9 +102,7 @@ describe('requireApprovedSeller', () => {
   });
 
   it('onaylı satıcı için geçer', async () => {
-    mockSellerFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ approvalStatus: 'approved' }),
-    });
+    mockGetSellerContext.mockResolvedValue(approvedContext);
 
     const request = {
       auth: { userId, role: 'seller' },
@@ -102,6 +112,6 @@ describe('requireApprovedSeller', () => {
     await requireApprovedSeller(request, reply);
 
     expect(reply.statusCode).toBe(200);
-    expect(reply.body).toBeUndefined();
+    expect(request.sellerContext).toEqual(approvedContext);
   });
 });

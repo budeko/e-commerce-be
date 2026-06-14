@@ -7,6 +7,7 @@ import {
   uploadToSellerStorage,
 } from '@/lib/integrations/supabase/supabase';
 import { Seller } from '@/db';
+import { getSellerContext } from '@/features/auth/core/queries/seller-context';
 import { AuthError } from '@/features/auth/core/errors';
 import {
   buildSellerDocumentObjectPath,
@@ -54,14 +55,24 @@ export const uploadSellerDocument = async (
     throw new AuthError(400, 'Dosya boyutu limiti aşıldı');
   }
 
-  const seller = await Seller.findById(auth.userId).lean();
+  const ctx = await getSellerContext(auth.userId);
+
+  if (!ctx) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
+  if (!ctx.isOwner) {
+    throw new AuthError(403, 'Belge yükleme sadece şirket sahibi tarafından yapılabilir');
+  }
+
+  const seller = await Seller.findById(ctx.companyId).lean();
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
   }
 
   const extension = resolveDocumentExtension(mimeType, docType);
-  const objectPath = buildSellerDocumentObjectPath(auth.userId, docType, extension);
+  const objectPath = buildSellerDocumentObjectPath(ctx.companyId, docType, extension);
   const profileField = SELLER_DOCUMENT_FIELD_MAP[docType];
   const oldUrl = seller[profileField as keyof typeof seller];
 

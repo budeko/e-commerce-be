@@ -1,12 +1,16 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
-import { requireApprovedSeller } from '@/lib/ecommerce/guards/require-approved-seller';
+import {
+  requireApprovedSeller,
+  requireSellerPermission,
+} from '@/lib/ecommerce/guards/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { validateQuery } from '@/lib/common/http/validate-query';
 import { productIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
 import {
   createProductSchema,
   type CreateProductInput,
@@ -28,15 +32,27 @@ import {
   updateProduct,
 } from '@/features/ecommerce/product/product.service';
 
-const sellerWrite = {
+const sellerApproved = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],
 };
 
-const sellerWithProductId = {
+const sellerRead = {
   preHandler: [
-    requireAuth,
-    requireEmailVerified,
-    requireApprovedSeller,
+    ...sellerApproved.preHandler,
+    requireSellerPermission(SELLER_PERMISSIONS.PRODUCTS_READ),
+  ],
+};
+
+const sellerWrite = {
+  preHandler: [
+    ...sellerApproved.preHandler,
+    requireSellerPermission(SELLER_PERMISSIONS.PRODUCTS_WRITE),
+  ],
+};
+
+const sellerWriteWithProductId = {
+  preHandler: [
+    ...sellerWrite.preHandler,
     validateParams(productIdParamSchema),
   ],
 };
@@ -55,9 +71,9 @@ export default async function productRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.get('/mine', sellerWrite, async (req, reply) => {
+  fastify.get('/mine', sellerRead, async (req, reply) => {
     try {
-      const products = await listSellerProducts(req.auth!.userId);
+      const products = await listSellerProducts(req.sellerContext!.companyId);
       return reply.status(200).send({ products });
     } catch (error) {
       return handleRouteError(reply, error, 'Ürün işlemi sırasında bir hata oluştu');
@@ -83,7 +99,10 @@ export default async function productRoutes(fastify: FastifyInstance) {
     { preHandler: [...sellerWrite.preHandler, validateBody(createProductSchema)] },
     async (req, reply) => {
       try {
-        const product = await createProduct(req.auth!.userId, req.body as CreateProductInput);
+        const product = await createProduct(
+          req.sellerContext!.companyId,
+          req.body as CreateProductInput
+        );
 
         return reply.status(201).send({
           message: 'Ürün oluşturuldu',
@@ -100,13 +119,13 @@ export default async function productRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/:productId',
     {
-      preHandler: [...sellerWithProductId.preHandler, validateBody(updateProductSchema)],
+      preHandler: [...sellerWriteWithProductId.preHandler, validateBody(updateProductSchema)],
     },
     async (req, reply) => {
       try {
         const { productId } = req.params as { productId: string };
         const product = await updateProduct(
-          req.auth!.userId,
+          req.sellerContext!.companyId,
           productId,
           req.body as UpdateProductInput
         );
@@ -123,10 +142,10 @@ export default async function productRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.delete('/:productId', sellerWithProductId, async (req, reply) => {
+  fastify.delete('/:productId', sellerWriteWithProductId, async (req, reply) => {
     try {
       const { productId } = req.params as { productId: string };
-      await deleteProduct(req.auth!.userId, productId);
+      await deleteProduct(req.sellerContext!.companyId, productId);
 
       return reply.status(200).send({ message: 'Ürün silindi' });
     } catch (error) {
