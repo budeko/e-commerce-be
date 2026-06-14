@@ -17,3 +17,5 @@ npm-debug.log*
 
 # Dokümantasyon (local / frontend paylaşımı)
 docs/
+
+scripts/
