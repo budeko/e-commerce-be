@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { logout, logoutAllSessions } from '@/features/auth/credentials/logout/services/logout.service';
+import { logout, logoutAllSessions } from '@/features/auth/credentials/logout/logout.service';
 
 export default async function (fastify: FastifyInstance) {
   fastify.post('/', { preHandler: requireAuth }, async (req, reply) => {

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { hashPassword } from '@/lib/common/password';
-import { signAuthToken } from '@/lib/auth/token/access-token';
+import { signAuthToken } from '@/lib/security/access-token';
 
 const mockUserFindOne = vi.fn();
 const mockUserFindById = vi.fn();

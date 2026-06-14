@@ -1,17 +1,17 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
-import { requireApprovedSeller } from '@/lib/ecommerce/guard/require-approved-seller';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
+import { requireApprovedSeller } from '@/lib/ecommerce/guards/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { buyerOnly, buyerWithParams } from '@/lib/ecommerce/routes/buyer-route-guards';
-import { createOrderSchema } from '@/features/ecommerce/schemas/order/create-order.schema';
+import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
+import { createOrderSchema } from '@/features/ecommerce/order/create-order.schema';
 import {
   updateOrderStatusSchema,
   type UpdateOrderStatusInput,
-} from '@/features/ecommerce/schemas/order/update-order-status.schema';
+} from '@/features/ecommerce/order/update-order-status.schema';
 import {
   createOrderFromCart,
   getBuyerOrderById,
@@ -19,7 +19,7 @@ import {
   listBuyerOrders,
   listSellerOrders,
   updateOrderStatus,
-} from '@/features/ecommerce/order/services/order.service';
+} from '@/features/ecommerce/order/order.service';
 
 const buyerWithOrderId = buyerWithParams(orderIdParamSchema);
 

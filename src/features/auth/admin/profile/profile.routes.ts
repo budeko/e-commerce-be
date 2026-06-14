@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireAdmin } from '@/features/auth/admin/access/require-admin';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireAdmin } from '@/features/auth/core/guard/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
@@ -8,8 +8,8 @@ import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import {
   adminProfileUpdateSchema,
   type AdminProfileUpdateInput,
-} from '@/features/auth/schemas/admin/admin-profile-fields.schema';
-import { getAdminProfile, updateAdminProfile } from '@/features/auth/admin/profile/services/profile.service';
+} from '@/features/auth/admin/profile/admin-profile-fields.schema';
+import { getAdminProfile, updateAdminProfile } from '@/features/auth/admin/profile/profile.service';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { listPublicCategories } from '@/features/ecommerce/category/services/category.service';
+import { listPublicCategories } from '@/features/ecommerce/category/category.service';
 
 export default async function categoryRoutes(fastify: FastifyInstance) {
   fastify.get('/', async (_req, reply) => {

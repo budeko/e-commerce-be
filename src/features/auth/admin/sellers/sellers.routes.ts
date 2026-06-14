@@ -1,14 +1,14 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireAdmin } from '@/features/auth/admin/access/require-admin';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireAdmin } from '@/features/auth/core/guard/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { validateQuery } from '@/lib/common/http/validate-query';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/schemas/admin/list-sellers.schema';
-import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/schemas/admin/reject-seller.schema';
-import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from '@/features/auth/admin/sellers/services/sellers.service';
+import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/admin/sellers/list-sellers.schema';
+import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/admin/sellers/reject-seller.schema';
+import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from '@/features/auth/admin/sellers/sellers.service';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {

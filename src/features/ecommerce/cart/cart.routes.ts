@@ -2,22 +2,22 @@ import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { productIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { buyerOnly, buyerWithParams } from '@/lib/ecommerce/routes/buyer-route-guards';
+import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
 import {
   addToCartSchema,
   type AddToCartInput,
-} from '@/features/ecommerce/schemas/cart/add-to-cart.schema';
+} from '@/features/ecommerce/cart/add-to-cart.schema';
 import {
   updateCartItemSchema,
   type UpdateCartItemInput,
-} from '@/features/ecommerce/schemas/cart/update-cart-item.schema';
+} from '@/features/ecommerce/cart/update-cart-item.schema';
 import {
   addToCart,
   clearCart,
   getCart,
   removeCartItem,
   updateCartItem,
-} from '@/features/ecommerce/cart/services/cart.service';
+} from '@/features/ecommerce/cart/cart.service';
 
 const buyerWithProductId = buyerWithParams(productIdParamSchema);
 

@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
-import { requireApprovedSeller } from '@/lib/ecommerce/guard/require-approved-seller';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
+import { requireApprovedSeller } from '@/lib/ecommerce/guards/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { validateQuery } from '@/lib/common/http/validate-query';
@@ -10,15 +10,15 @@ import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import {
   createProductSchema,
   type CreateProductInput,
-} from '@/features/ecommerce/schemas/product/create-product.schema';
+} from '@/features/ecommerce/product/create-product.schema';
 import {
   updateProductSchema,
   type UpdateProductInput,
-} from '@/features/ecommerce/schemas/product/update-product.schema';
+} from '@/features/ecommerce/product/update-product.schema';
 import {
   listProductsQuerySchema,
   type ListProductsQuery,
-} from '@/features/ecommerce/schemas/product/list-products.schema';
+} from '@/features/ecommerce/product/list-products.schema';
 import {
   createProduct,
   deleteProduct,
@@ -26,7 +26,7 @@ import {
   listPublicProducts,
   listSellerProducts,
   updateProduct,
-} from '@/features/ecommerce/product/services/product.service';
+} from '@/features/ecommerce/product/product.service';
 
 const sellerWrite = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],

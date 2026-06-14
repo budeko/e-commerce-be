@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { changePassword } from '@/features/auth/credentials/change-password/services/change-password.service';
-import { changePasswordSchema, type ChangePasswordInput } from '@/features/auth/schemas/credentials/change-password.schema';
+import { changePassword } from '@/features/auth/credentials/change-password/change-password.service';
+import { changePasswordSchema, type ChangePasswordInput } from '@/features/auth/credentials/change-password/change-password.schema';
 
 export default async function (fastify: FastifyInstance) {
   fastify.post(

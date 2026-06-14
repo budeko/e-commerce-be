@@ -1,5 +1,5 @@
-import { sendMail } from '@/lib/auth/mail/send';
-import { getFrontendUrl } from '@/lib/auth/mail/transporter';
+import { sendMail } from '@/lib/integrations/resend/send';
+import { getFrontendUrl } from '@/lib/integrations/resend/transporter';
 import {
   buildSellerApprovedEmailHtml,
   buildSellerRejectedEmailHtml,

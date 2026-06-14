@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireAdmin } from '@/features/auth/admin/access/require-admin';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireAdmin } from '@/features/auth/core/guard/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/services/admins.service';
-import { createAdminSchema, type CreateAdminInput } from '@/features/auth/schemas/admin/create-admin.schema';
-import { updateAdminSchema, type UpdateAdminInput } from '@/features/auth/schemas/admin/update-admin.schema';
+import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/admins.service';
+import { createAdminSchema, type CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';
+import { updateAdminSchema, type UpdateAdminInput } from '@/features/auth/admin/admins/update-admin.schema';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {

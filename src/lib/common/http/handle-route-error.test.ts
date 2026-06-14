@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FastifyReply } from 'fastify';
-import { AuthError } from '@/features/auth/shared/errors';
-import { EcommerceError } from '@/features/ecommerce/shared/errors';
+import { AuthError } from '@/features/auth/core/errors';
+import { EcommerceError } from '@/lib/ecommerce/errors';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
 
 const createReply = () => {

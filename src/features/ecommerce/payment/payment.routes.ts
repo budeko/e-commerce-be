@@ -2,16 +2,16 @@ import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { buyerOnly, buyerWithParams } from '@/lib/ecommerce/routes/buyer-route-guards';
+import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
 import {
   createPaymentSchema,
   type CreatePaymentInput,
-} from '@/features/ecommerce/schemas/payment/create-payment.schema';
+} from '@/features/ecommerce/payment/create-payment.schema';
 import {
   completePaymentFromCheckoutToken,
   createPaymentForOrder,
   getPaymentByOrderId,
-} from '@/features/ecommerce/payment/services/payment.service';
+} from '@/features/ecommerce/payment/payment.service';
 
 const buyerWithOrderId = buyerWithParams(orderIdParamSchema);
 

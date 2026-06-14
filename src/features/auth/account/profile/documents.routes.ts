@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
+import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { uploadSellerDocument } from '@/features/auth/account/profile/services/documents.service';
+import { uploadSellerDocument } from '@/features/auth/account/profile/documents.service';
 
 export default async function documentsRoutes(fastify: FastifyInstance) {
   fastify.post(

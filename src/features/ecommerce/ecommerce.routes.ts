@@ -4,7 +4,7 @@ import cartRoutes from '@/features/ecommerce/cart/cart.routes';
 import orderRoutes from '@/features/ecommerce/order/order.routes';
 import paymentRoutes from '@/features/ecommerce/payment/payment.routes';
 import categoryRoutes from '@/features/ecommerce/category/category.routes';
-import categoriesAdminRoutes from '@/features/ecommerce/category/admin/categories.routes';
+import categoriesAdminRoutes from '@/features/ecommerce/category/admin.routes';
 
 export default async function ecommerceRoutes(fastify: FastifyInstance) {
   await fastify.register(categoryRoutes, { prefix: '/categories' });
