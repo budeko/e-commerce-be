@@ -5,7 +5,7 @@ import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { validateQuery } from '@/lib/common/http/validate-query';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/schemas/admin/list-sellers.schema';
 import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/schemas/admin/reject-seller.schema';
 import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from '@/features/auth/admin/sellers/services/sellers.service';
@@ -25,7 +25,7 @@ export default async function (fastify: FastifyInstance) {
         const sellers = await listSellers(status);
         return reply.status(200).send({ sellers });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+        return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -36,7 +36,7 @@ export default async function (fastify: FastifyInstance) {
       const seller = await getSellerByUserId(userId);
       return reply.status(200).send(seller);
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -54,7 +54,7 @@ export default async function (fastify: FastifyInstance) {
         ...result,
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -83,7 +83,7 @@ export default async function (fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+        return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
       }
     }
   );

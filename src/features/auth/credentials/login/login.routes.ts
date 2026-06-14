@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
 import { login } from '@/features/auth/credentials/login/services/login.service';
 import { loginSchema, type LoginInput } from '@/features/auth/schemas/credentials/login.schema';
@@ -17,7 +17,7 @@ export default async function (fastify: FastifyInstance) {
         token,
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Giriş sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Giriş sırasında bir hata oluştu');
     }
   });
 }

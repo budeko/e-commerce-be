@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
 import { requireAuth } from '@/features/auth/shared/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { getProfile, updateProfile } from '@/features/auth/account/profile/services/profile.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/schemas/profile';
 import { validateProfileUpdate } from '@/features/auth/account/profile/helpers/validate-profile-update';
@@ -23,7 +23,7 @@ export default async function (fastify: FastifyInstance) {
       const result = await getProfile(req.auth!);
       return reply.status(200).send(result);
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Profil işlemi sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Profil işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -44,7 +44,7 @@ export default async function (fastify: FastifyInstance) {
           ...profile,
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Profil işlemi sırasında bir hata oluştu');
+        return handleRouteError(reply, error, 'Profil işlemi sırasında bir hata oluştu');
       }
     }
   );

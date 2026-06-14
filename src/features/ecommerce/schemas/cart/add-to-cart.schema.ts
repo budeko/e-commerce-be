@@ -1,1 +1,12 @@
-// TODO: add to cart Zod schema
+import { z } from 'zod';
+import { uuidSchema } from '@/lib/common/validation/common-schemas';
+
+export const addToCartSchema = z.object({
+  productId: uuidSchema,
+  quantity: z
+    .number()
+    .int('Adet tam sayı olmalı')
+    .min(1, 'Adet en az 1 olmalı'),
+});
+
+export type AddToCartInput = z.infer<typeof addToCartSchema>;

@@ -4,7 +4,7 @@ import { requireAdmin } from '@/features/auth/admin/access/require-admin';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import {
   adminProfileUpdateSchema,
   type AdminProfileUpdateInput,
@@ -23,7 +23,7 @@ export default async function (fastify: FastifyInstance) {
       const profile = await getAdminProfile(req.adminRole, req.auth!.userId);
       return reply.status(200).send(profile);
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
     }
   });
 
@@ -48,7 +48,7 @@ export default async function (fastify: FastifyInstance) {
           ...profile,
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
+        return handleRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
       }
     }
   );
@@ -82,7 +82,7 @@ export default async function (fastify: FastifyInstance) {
           ...profile,
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
+        return handleRouteError(reply, error, 'Admin profil işlemi sırasında bir hata oluştu');
       }
     }
   );

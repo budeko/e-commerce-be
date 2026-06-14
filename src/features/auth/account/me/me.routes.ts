@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { getMe } from '@/features/auth/account/me/services/me.service';
 
 export default async function (fastify: FastifyInstance) {
@@ -9,7 +9,7 @@ export default async function (fastify: FastifyInstance) {
       const result = await getMe(req.auth!);
       return reply.status(200).send(result);
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Kullanıcı bilgisi alınırken bir hata oluştu');
+      return handleRouteError(reply, error, 'Kullanıcı bilgisi alınırken bir hata oluştu');
     }
   });
 }

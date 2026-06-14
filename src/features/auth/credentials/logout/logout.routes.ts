@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/shared/guard/require-auth';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { logout, logoutAllSessions } from '@/features/auth/credentials/logout/services/logout.service';
 
 export default async function (fastify: FastifyInstance) {
@@ -12,7 +12,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Çıkış başarılı',
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
     }
   });
 
@@ -24,7 +24,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Tüm oturumlar sonlandırıldı',
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
+      return handleRouteError(reply, error, 'Çıkış sırasında bir hata oluştu');
     }
   });
 }

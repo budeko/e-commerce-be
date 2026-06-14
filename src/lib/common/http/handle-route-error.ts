@@ -1,16 +1,15 @@
 import { FastifyReply } from 'fastify';
-import { HttpError } from '@/lib/common/errors';
-import { isDuplicateKeyError } from '@/features/auth/shared/errors';
+import { HttpError, isDuplicateKeyError } from '@/lib/common/errors';
 
-type HandleAuthRouteErrorOptions = {
+type HandleRouteErrorOptions = {
   duplicateKeyMessage?: string;
 };
 
-export const handleAuthRouteError = (
+export const handleRouteError = (
   reply: FastifyReply,
   error: unknown,
   fallbackMessage: string,
-  options?: HandleAuthRouteErrorOptions
+  options?: HandleRouteErrorOptions
 ) => {
   if (error instanceof HttpError) {
     return reply.status(error.statusCode).send({ message: error.message });

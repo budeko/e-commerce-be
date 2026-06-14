@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { resetPassword } from '@/features/auth/recovery/reset-password/services/reset-password.service';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/features/auth/schemas/recovery/reset-password.schema';
 
@@ -13,7 +13,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'Şifre başarıyla sıfırlandı',
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Şifre sıfırlanırken bir hata oluştu');
+      return handleRouteError(reply, error, 'Şifre sıfırlanırken bir hata oluştu');
     }
   });
 }

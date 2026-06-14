@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/shared/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
 import { validateBody } from '@/lib/common/http/validate-body';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { changePassword } from '@/features/auth/credentials/change-password/services/change-password.service';
 import { changePasswordSchema, type ChangePasswordInput } from '@/features/auth/schemas/credentials/change-password.schema';
 
@@ -18,7 +18,7 @@ export default async function (fastify: FastifyInstance) {
           message: 'Şifre başarıyla değiştirildi',
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Şifre değiştirilirken bir hata oluştu');
+        return handleRouteError(reply, error, 'Şifre değiştirilirken bir hata oluştu');
       }
     }
   );

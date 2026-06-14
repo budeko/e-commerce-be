@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/services/resend-verification.service';
 import {
   resendVerificationSchema,
@@ -16,7 +16,7 @@ export default async function (fastify: FastifyInstance) {
         message: 'E-posta kayıtlı ve doğrulanmamışsa doğrulama maili gönderildi',
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'E-posta gönderilirken bir hata oluştu');
+      return handleRouteError(reply, error, 'E-posta gönderilirken bir hata oluştu');
     }
   });
 }

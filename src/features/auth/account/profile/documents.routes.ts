@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/shared/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/shared/guard/require-email-verified';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { uploadSellerDocument } from '@/features/auth/account/profile/services/documents.service';
 
 export default async function documentsRoutes(fastify: FastifyInstance) {
@@ -36,7 +36,7 @@ export default async function documentsRoutes(fastify: FastifyInstance) {
           ...result,
         });
       } catch (error) {
-        return handleAuthRouteError(reply, error, 'Belge yüklenirken bir hata oluştu');
+        return handleRouteError(reply, error, 'Belge yüklenirken bir hata oluştu');
       }
     }
   );

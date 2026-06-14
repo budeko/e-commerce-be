@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/lib/common/http/validate-body';
-import { handleAuthRouteError } from '@/features/auth/shared/handle-route-error';
+import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { buildAuthUserFields } from '@/features/auth/shared/responses/user.response';
 import { registerSchema, type RegisterInput } from '@/features/auth/schemas/credentials/register.schema';
 import { register } from '@/features/auth/credentials/register/services/register.service';
@@ -17,7 +17,7 @@ export default async function (fastify: FastifyInstance) {
         isEmailVerified: user.isEmailVerified,
       });
     } catch (error) {
-      return handleAuthRouteError(reply, error, 'Kayıt sırasında bir hata oluştu', {
+      return handleRouteError(reply, error, 'Kayıt sırasında bir hata oluştu', {
         duplicateKeyMessage: 'Bu e-posta adresi zaten kayıtlı',
       });
     }
