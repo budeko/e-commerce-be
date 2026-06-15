@@ -20,6 +20,8 @@ export const initializeIyzicoCheckout = async (
     category1: 'E-commerce',
     itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
     price: formatIyzicoPrice(item.subtotal),
+    subMerchantKey: item.subMerchantKey,
+    subMerchantPrice: formatIyzicoPrice(item.subMerchantPrice),
   }));
 
   const result = await promisifyIyzipay(

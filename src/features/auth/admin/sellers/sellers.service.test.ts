@@ -22,12 +22,17 @@ vi.mock('@/db', () => ({
   },
 }));
 
+vi.mock('@/lib/integrations/iyzico/create-submerchant', () => ({
+  createIyzicoSubMerchant: vi.fn().mockResolvedValue('sandbox-sub-merchant-key'),
+}));
+
 vi.mock('@/features/auth/admin/mail/send-seller-notifications', () => ({
   sendSellerApprovedEmail: (...args: unknown[]) => mockSendApproved(...args),
   sendSellerRejectedEmail: (...args: unknown[]) => mockSendRejected(...args),
 }));
 
 import { approveSeller, rejectSeller } from '@/features/auth/admin/sellers/sellers.service';
+import { createIyzicoSubMerchant } from '@/lib/integrations/iyzico/create-submerchant';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -54,6 +59,16 @@ const mockPendingSeller = (save: ReturnType<typeof vi.fn>) => ({
   approvalStatus: 'pending',
   companyName: 'Test A.Ş.',
   rejectionReason: null,
+  iyzicoSubMerchantKey: null,
+  sellerType: 'kurumsal',
+  companyType: 'ltd',
+  authorizedFirstName: 'Ali',
+  authorizedLastName: 'Veli',
+  companyPhone: '05551234567',
+  companyAddress: 'Test adres',
+  taxNumber: '1234567890',
+  taxOffice: 'Kadıköy',
+  iban: 'TR330006100519786457841326',
   save,
 });
 
@@ -77,6 +92,7 @@ describe('sellers.service bildirimleri', () => {
     await approveSeller(ownerCtx, userId);
 
     expect(save).toHaveBeenCalled();
+    expect(createIyzicoSubMerchant).toHaveBeenCalled();
     expect(mockSendApproved).toHaveBeenCalledWith('seller@example.com', 'Test A.Ş.');
   });
 

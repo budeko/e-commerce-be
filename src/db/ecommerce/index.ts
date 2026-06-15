@@ -17,3 +17,8 @@ export {
   PAYMENT_CURRENCIES,
 } from '@/db/ecommerce/models/payment.model';
 export type { PaymentStatus, PaymentCurrency } from '@/db/ecommerce/models/payment.model';
+export {
+  PaymentSplit,
+  PAYMENT_SPLIT_APPROVAL_STATUSES,
+} from '@/db/ecommerce/models/payment-split.model';
+export type { PaymentSplitApprovalStatus } from '@/db/ecommerce/models/payment-split.model';

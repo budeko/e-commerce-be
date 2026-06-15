@@ -43,6 +43,7 @@ const sellerSchema = new Schema(
     companyDescription: { ...stringField, maxlength: 2000 },
     companyWebsite: urlField,
     socialMediaLinks: [{ ...urlField }],
+    iyzicoSubMerchantKey: { type: String, trim: true, maxlength: 200, default: null },
   },
   { strict: true }
 );

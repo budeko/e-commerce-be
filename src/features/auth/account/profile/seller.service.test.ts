@@ -106,6 +106,21 @@ describe('updateSellerProfile', () => {
     expect(result.approvalStatus).toBe('pending');
   });
 
+  it('kayıtlı IBAN değiştirilemez', async () => {
+    mockSellerFindById.mockResolvedValue({
+      approvalStatus: 'approved',
+      iban: 'TR330006100519786457841326',
+      toObject: () => ({ approvalStatus: 'approved', iban: 'TR330006100519786457841326' }),
+    });
+
+    await expect(
+      updateSellerProfile(userId, { iban: 'TR760006400000100000000000' })
+    ).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'IBAN kaydedildikten sonra değiştirilemez. Değişiklik için destek ile iletişime geçin.',
+    });
+  });
+
   it('draft profil tamamlanınca pending olur', async () => {
     const save = vi.fn();
     mockSellerFindById.mockResolvedValue({

@@ -32,6 +32,10 @@ vi.mock('@/db', () => ({
   },
 }));
 
+vi.mock('@/features/ecommerce/payment/payment-split.service', () => ({
+  approvePaymentSplitsForOrder: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/lib/common/user-id', () => ({
   createUserId: () => '8c9e6679-7425-40de-944b-e07fc1f90ae8',
 }));
@@ -40,6 +44,7 @@ import {
   createOrderFromCart,
   updateOrderStatus,
 } from '@/features/ecommerce/order/order.service';
+import { approvePaymentSplitsForOrder } from '@/features/ecommerce/payment/payment-split.service';
 
 const buyerId = '550e8400-e29b-41d4-a716-446655440000';
 const sellerId = '660e8400-e29b-41d4-a716-446655440001';
@@ -146,10 +151,10 @@ describe('updateOrderStatus', () => {
     vi.clearAllMocks();
   });
 
-  it('pending siparişi shipped yapar', async () => {
+  it('paid siparişi shipped yapar', async () => {
     mockOrderFindOne.mockResolvedValue({
       _id: orderId,
-      status: 'pending',
+      status: 'paid',
       items: [{ sellerId }],
       save: vi.fn().mockResolvedValue(undefined),
       toObject: () => ({
@@ -166,6 +171,29 @@ describe('updateOrderStatus', () => {
     const result = await updateOrderStatus(sellerId, orderId, { status: 'shipped' });
 
     expect(result.status).toBe('shipped');
+  });
+
+  it('shipped siparişi delivered yapınca iyzico approve çağırır', async () => {
+    mockOrderFindOne.mockResolvedValue({
+      _id: orderId,
+      status: 'shipped',
+      items: [{ sellerId }],
+      save: vi.fn().mockResolvedValue(undefined),
+      toObject: () => ({
+        _id: orderId,
+        buyerId,
+        items: [{ sellerId }],
+        totalAmount: 1998,
+        currency: 'TRY',
+        status: 'delivered',
+        shippingAddress: buyerProfile,
+      }),
+    });
+
+    const result = await updateOrderStatus(sellerId, orderId, { status: 'delivered' });
+
+    expect(result.status).toBe('delivered');
+    expect(approvePaymentSplitsForOrder).toHaveBeenCalledWith(orderId);
   });
 
   it('geçersiz geçişte 400 fırlatır', async () => {

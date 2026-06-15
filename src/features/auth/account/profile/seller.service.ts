@@ -4,6 +4,10 @@ import { getSellerContext, type SellerAccessContext } from '@/features/auth/core
 import { AuthError } from '@/features/auth/core/errors';
 import { isSellerProfileComplete } from '@/features/auth/core/profile/profile-completion';
 import { hasCriticalSellerFieldChanges } from '@/features/auth/core/profile/seller-critical-fields';
+import {
+  assertIbanUpdateAllowed,
+  omitUnchangedLockedIban,
+} from '@/features/auth/core/profile/seller-iban-lock';
 import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 
 const assertCanReadCompany = (ctx: SellerAccessContext) => {
@@ -37,10 +41,17 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
     throw new AuthError(403, 'Onay beklenirken profil güncellenemez');
   }
 
+  assertIbanUpdateAllowed(seller.iban, data.iban);
+
+  const updateData = omitUnchangedLockedIban(
+    seller.iban,
+    data as Record<string, unknown>
+  ) as SellerProfileUpdateInput;
+
   const criticalChanged =
     !ctx.isOwner &&
     seller.approvalStatus === 'approved' &&
-    hasCriticalSellerFieldChanges(seller.toObject(), data);
+    hasCriticalSellerFieldChanges(seller.toObject(), updateData);
 
   if (criticalChanged) {
     throw new AuthError(403, 'Kritik şirket bilgilerini sadece şirket sahibi güncelleyebilir');
@@ -49,13 +60,13 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
   const ownerCriticalChanged =
     ctx.isOwner &&
     seller.approvalStatus === 'approved' &&
-    hasCriticalSellerFieldChanges(seller.toObject(), data);
+    hasCriticalSellerFieldChanges(seller.toObject(), updateData);
 
   const updatedSeller = await Seller.findByIdAndUpdate(
     ctx.companyId,
     {
       $set: {
-        ...data,
+        ...updateData,
         ...(ownerCriticalChanged ? { approvalStatus: 'pending', rejectionReason: null } : {}),
       },
     },

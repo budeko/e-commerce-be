@@ -7,9 +7,15 @@ const mockPaymentCreate = vi.fn();
 const mockUserFindById = vi.fn();
 const mockBuyerFindById = vi.fn();
 const mockInitializeIyzicoCheckout = vi.fn();
+const mockBuildPaymentSplitsForOrder = vi.fn();
 
 vi.mock('@/lib/integrations/iyzico/initialize-checkout', () => ({
   initializeIyzicoCheckout: (...args: unknown[]) => mockInitializeIyzicoCheckout(...args),
+}));
+
+vi.mock('@/features/ecommerce/payment/payment-split.service', () => ({
+  buildPaymentSplitsForOrder: (...args: unknown[]) => mockBuildPaymentSplitsForOrder(...args),
+  syncPaymentSplitTransactionIds: vi.fn(),
 }));
 
 vi.mock('@/lib/integrations/iyzico/retrieve-checkout', () => ({
@@ -47,7 +53,7 @@ const pendingOrder = {
   totalAmount: 1998,
   currency: 'TRY',
   status: 'pending',
-  items: [{ productId: 'p1', name: 'Ürün', price: 999, quantity: 2, subtotal: 1998 }],
+  items: [{ productId: 'p1', sellerId: 's1', name: 'Ürün', price: 999, quantity: 2, subtotal: 1998 }],
 };
 
 const userRecord = {
@@ -79,6 +85,24 @@ describe('createPaymentForOrder', () => {
       paymentPageUrl: 'https://sandbox-cpp.iyzipay.com?token=iyzico-token',
       checkoutFormContent: null,
     });
+    mockBuildPaymentSplitsForOrder.mockResolvedValue([
+      {
+        productId: 'p1',
+        sellerId: 's1',
+        subtotal: 1998,
+        commissionAmount: 199.8,
+        sellerShare: 1798.2,
+        checkoutItem: {
+          productId: 'p1',
+          name: 'Ürün',
+          price: 999,
+          quantity: 2,
+          subtotal: 1998,
+          subMerchantKey: 'sub-merchant-key',
+          subMerchantPrice: 1798.2,
+        },
+      },
+    ]);
   });
 
   it('sipariş pending değilse 400 fırlatır', async () => {
@@ -127,6 +151,7 @@ describe('createPaymentForOrder', () => {
 
     const result = await createPaymentForOrder(buyerId, { orderId });
 
+    expect(mockBuildPaymentSplitsForOrder).toHaveBeenCalledWith(orderId, pendingOrder.items);
     expect(mockInitializeIyzicoCheckout).toHaveBeenCalled();
     expect(result.checkout.paymentPageUrl).toContain('iyzico-token');
     expect(result.payment.status).toBe('pending');

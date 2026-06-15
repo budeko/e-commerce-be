@@ -29,11 +29,13 @@ export {
   Cart,
   Order,
   Payment,
+  PaymentSplit,
   PRODUCT_CURRENCIES,
   ORDER_STATUSES,
   ORDER_CURRENCIES,
   PAYMENT_STATUSES,
   PAYMENT_CURRENCIES,
+  PAYMENT_SPLIT_APPROVAL_STATUSES,
 } from '@/db/ecommerce';
 export type {
   ProductCurrency,
@@ -41,4 +43,5 @@ export type {
   OrderCurrency,
   PaymentStatus,
   PaymentCurrency,
+  PaymentSplitApprovalStatus,
 } from '@/db/ecommerce';

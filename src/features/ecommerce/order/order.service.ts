@@ -2,6 +2,7 @@ import { Buyer, Cart, Order, Product, type OrderStatus } from '@/db';
 import { createUserId } from '@/lib/common/user-id';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import { clearCart } from '@/features/ecommerce/cart/cart.service';
+import { approvePaymentSplitsForOrder } from '@/features/ecommerce/payment/payment-split.service';
 import type { UpdateOrderStatusInput } from '@/features/ecommerce/order/update-order-status.schema';
 
 type OrderItemRecord = {
@@ -94,8 +95,8 @@ const getSellerOrder = async (sellerId: string, orderId: string) => {
 };
 
 const assertSellerStatusTransition = (currentStatus: OrderStatus, nextStatus: OrderStatus) => {
-  if (nextStatus === 'shipped' && currentStatus !== 'pending') {
-    throw new EcommerceError(400, 'Sipariş yalnızca pending durumundayken shipped yapılabilir');
+  if (nextStatus === 'shipped' && currentStatus !== 'paid') {
+    throw new EcommerceError(400, 'Sipariş yalnızca paid durumundayken shipped yapılabilir');
   }
 
   if (nextStatus === 'delivered' && currentStatus !== 'shipped') {
@@ -242,6 +243,10 @@ export const updateOrderStatus = async (
   order.status = input.status;
   order.updatedAt = new Date();
   await order.save();
+
+  if (input.status === 'delivered') {
+    await approvePaymentSplitsForOrder(orderId);
+  }
 
   return toOrderResponse(order.toObject() as OrderRecord);
 };

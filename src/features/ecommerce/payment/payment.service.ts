@@ -5,6 +5,10 @@ import { initializeIyzicoCheckout } from '@/lib/integrations/iyzico/initialize-c
 import { completeIyzicoCheckout } from '@/lib/integrations/iyzico/retrieve-checkout';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import type { CreatePaymentInput } from '@/features/ecommerce/payment/create-payment.schema';
+import {
+  buildPaymentSplitsForOrder,
+  syncPaymentSplitTransactionIds,
+} from '@/features/ecommerce/payment/payment-split.service';
 
 type PaymentRecord = {
   _id: unknown;
@@ -103,6 +107,7 @@ export const createPaymentForOrder = async (
   }
 
   const buyerProfile = await loadBuyerPaymentProfile(buyerId);
+  const paymentSplits = await buildPaymentSplitsForOrder(input.orderId, order.items);
   const checkout = await initializeIyzicoCheckout({
     orderId: input.orderId,
     buyerId,
@@ -110,13 +115,7 @@ export const createPaymentForOrder = async (
     currency: order.currency,
     clientIp: options?.clientIp ?? '127.0.0.1',
     buyer: buyerProfile,
-    items: order.items.map((item) => ({
-      productId: item.productId,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      subtotal: item.subtotal,
-    })),
+    items: paymentSplits.map((split) => split.checkoutItem),
   });
 
   const payment =
@@ -169,6 +168,7 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
     payment.externalId = result.externalId;
     payment.updatedAt = new Date();
     await payment.save();
+    await syncPaymentSplitTransactionIds(result.orderId, result.itemTransactions);
     await markOrderPaid(result.orderId);
   }
 

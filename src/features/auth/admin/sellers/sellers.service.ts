@@ -6,6 +6,8 @@ import {
 import { createLogger } from '@/lib/common/logger';
 import { Seller, User, type SellerApprovalStatus } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
+import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { createIyzicoSubMerchant } from '@/lib/integrations/iyzico/create-submerchant';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
 const assertCanManageSellerApproval = (ctx: AdminAccessContext) => {
@@ -140,6 +142,40 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
 
   if (seller.approvalStatus !== 'pending') {
     throw new AuthError(400, 'Sadece onay bekleyen satıcılar onaylanabilir');
+  }
+
+  if (!seller.iyzicoSubMerchantKey) {
+    try {
+      seller.iyzicoSubMerchantKey = await createIyzicoSubMerchant({
+        sellerId: String(seller._id),
+        email: user.email,
+        sellerType: seller.sellerType,
+        companyType: seller.companyType,
+        firstName: seller.firstName,
+        lastName: seller.lastName,
+        authorizedFirstName: seller.authorizedFirstName,
+        authorizedLastName: seller.authorizedLastName,
+        phone: seller.phone,
+        companyPhone: seller.companyPhone,
+        companyName: seller.companyName,
+        taxNumber: seller.taxNumber,
+        taxOffice: seller.taxOffice,
+        companyAddress: seller.companyAddress,
+        iban: seller.iban,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        throw error;
+      }
+
+      if (error instanceof EcommerceError) {
+        throw new AuthError(error.statusCode, error.message);
+      }
+
+      log.error({ err: error, userId }, 'Iyzico alt üye kaydı oluşturulamadı');
+
+      throw new AuthError(502, 'Satıcı Iyzico alt üye kaydı oluşturulamadı');
+    }
   }
 
   seller.approvalStatus = 'approved';
