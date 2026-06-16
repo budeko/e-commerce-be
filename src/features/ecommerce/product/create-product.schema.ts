@@ -19,6 +19,11 @@ export const createProductSchema = productCategoryAssignmentSchema.extend({
     .number({ error: 'Fiyat zorunlu' })
     .min(0, 'Fiyat 0 veya daha büyük olmalı'),
   stock: z.number().int().min(0, 'Stok 0 veya daha büyük olmalı').default(0),
+  minOrderQuantity: z
+    .number()
+    .int('Minimum sipariş adedi tam sayı olmalı')
+    .min(1, 'Minimum sipariş adedi en az 1 olmalı')
+    .default(1),
   isActive: z.boolean().optional(),
   images: z.array(safeUrlSchema).max(10, 'En fazla 10 görsel eklenebilir').optional(),
 });

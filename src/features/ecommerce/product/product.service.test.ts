@@ -13,6 +13,10 @@ vi.mock('@/features/ecommerce/category/category.service', () => ({
   getCategoryDescendantIds: (...args: unknown[]) => mockGetCategoryDescendantIds(...args),
 }));
 
+vi.mock('@/features/ecommerce/product/product-images.service', () => ({
+  deleteProductImagesFromStorage: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/db', () => ({
   Category: {
     countDocuments: (...args: unknown[]) => mockCategoryCountDocuments(...args),
@@ -55,6 +59,7 @@ const productDoc = {
   price: 999,
   currency: 'TRY',
   stock: 5,
+  minOrderQuantity: 1,
   isActive: true,
   images: [],
   createdAt: new Date('2026-01-01T00:00:00.000Z'),

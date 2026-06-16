@@ -4,47 +4,15 @@ import { EcommerceError } from '@/features/ecommerce/core/errors';
 import { getCategoryDescendantIds } from '@/features/ecommerce/category/category.service';
 import { slugify } from '@/features/ecommerce/category/slugify';
 import { resolveProductCategoryAssignment } from '@/features/ecommerce/product/product-category.schema';
+import {
+  toPublicProductResponse,
+  toSellerProductResponse,
+  type ProductRecord,
+} from '@/features/ecommerce/product/product-response';
+import { deleteProductImagesFromStorage } from '@/features/ecommerce/product/product-images.service';
 import type { CreateProductInput } from '@/features/ecommerce/product/create-product.schema';
 import type { ListProductsQuery } from '@/features/ecommerce/product/list-products.schema';
 import type { UpdateProductInput } from '@/features/ecommerce/product/update-product.schema';
-
-type ProductRecord = {
-  _id: unknown;
-  sellerId: string;
-  categoryIds: string[];
-  primaryCategoryId: string;
-  name: string;
-  slug?: string | null;
-  description?: string | null;
-  price: number;
-  currency: string;
-  stock: number;
-  isActive: boolean;
-  images: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-const toPublicProductResponse = (product: ProductRecord) => ({
-  id: String(product._id),
-  sellerId: product.sellerId,
-  categoryIds: product.categoryIds,
-  primaryCategoryId: product.primaryCategoryId,
-  name: product.name,
-  slug: product.slug ?? null,
-  description: product.description ?? null,
-  price: product.price,
-  currency: product.currency,
-  stock: product.stock,
-  images: product.images,
-  createdAt: product.createdAt,
-});
-
-const toSellerProductResponse = (product: ProductRecord) => ({
-  ...toPublicProductResponse(product),
-  isActive: product.isActive,
-  updatedAt: product.updatedAt,
-});
 
 const resolveSlug = (name: string, slug?: string | null) => {
   if (slug === null) {
@@ -149,6 +117,7 @@ export const createProduct = async (sellerId: string, input: CreateProductInput)
     description: input.description ?? null,
     price: input.price,
     stock: input.stock,
+    minOrderQuantity: input.minOrderQuantity,
     isActive: input.isActive ?? true,
     images: input.images ?? [],
   });
@@ -202,6 +171,10 @@ export const updateProduct = async (
     product.stock = input.stock;
   }
 
+  if (input.minOrderQuantity !== undefined) {
+    product.minOrderQuantity = input.minOrderQuantity;
+  }
+
   if (input.isActive !== undefined) {
     product.isActive = input.isActive;
   }
@@ -218,5 +191,6 @@ export const updateProduct = async (
 
 export const deleteProduct = async (sellerId: string, productId: string) => {
   const product = await getOwnedProduct(sellerId, productId);
+  await deleteProductImagesFromStorage(product.images);
   await Product.findByIdAndDelete(product._id);
 };

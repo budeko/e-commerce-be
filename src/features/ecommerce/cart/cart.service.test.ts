@@ -31,6 +31,7 @@ const productDoc = {
   name: 'Kulaklık',
   price: 999,
   stock: 5,
+  minOrderQuantity: 1,
   isActive: true,
   images: [],
 };
@@ -85,6 +86,20 @@ describe('addToCart', () => {
     ).rejects.toMatchObject({
       statusCode: 400,
       message: 'Yetersiz stok',
+    });
+  });
+
+  it('minimum sipariş adedinin altında 400 fırlatır', async () => {
+    mockProductFindOne.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ ...productDoc, minOrderQuantity: 3 }),
+    });
+    mockCartFindById.mockResolvedValue(createCartDoc([]));
+
+    await expect(
+      addToCart(buyerId, { productId, quantity: 2 })
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'Minimum sipariş adedi 3',
     });
   });
 

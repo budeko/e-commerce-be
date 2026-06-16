@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import multipart from '@fastify/multipart';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import {
@@ -31,6 +32,15 @@ import {
   listSellerProducts,
   updateProduct,
 } from '@/features/ecommerce/product/product.service';
+import {
+  deleteProductImage,
+  uploadProductImage,
+} from '@/features/ecommerce/product/product-images.service';
+import {
+  deleteProductImageSchema,
+  type DeleteProductImageInput,
+} from '@/features/ecommerce/product/delete-product-image.schema';
+import { MAX_PRODUCT_IMAGE_BYTES } from '@/features/ecommerce/product/product-image-types';
 
 const sellerApproved = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],
@@ -58,6 +68,13 @@ const sellerWriteWithProductId = {
 };
 
 export default async function productRoutes(fastify: FastifyInstance) {
+  await fastify.register(multipart, {
+    limits: {
+      fileSize: MAX_PRODUCT_IMAGE_BYTES,
+      files: 1,
+    },
+  });
+
   fastify.get(
     '/',
     { preHandler: [validateQuery(listProductsQuerySchema)] },
@@ -138,6 +155,60 @@ export default async function productRoutes(fastify: FastifyInstance) {
         return handleRouteError(reply, error, 'Ürün işlemi sırasında bir hata oluştu', {
           duplicateKeyMessage: 'Bu slug zaten kullanılıyor',
         });
+      }
+    }
+  );
+
+  fastify.post('/:productId/images', sellerWriteWithProductId, async (req, reply) => {
+    try {
+      const { productId } = req.params as { productId: string };
+      const file = await req.file();
+
+      if (!file) {
+        return reply.status(400).send({ message: 'Dosya zorunlu' });
+      }
+
+      const buffer = await file.toBuffer();
+      const result = await uploadProductImage(
+        req.sellerContext!.companyId,
+        productId,
+        file.mimetype,
+        buffer
+      );
+
+      return reply.status(201).send({
+        message: 'Ürün görseli yüklendi',
+        ...result,
+      });
+    } catch (error) {
+      return handleRouteError(reply, error, 'Ürün görseli yüklenirken bir hata oluştu');
+    }
+  });
+
+  fastify.delete(
+    '/:productId/images',
+    {
+      preHandler: [
+        ...sellerWriteWithProductId.preHandler,
+        validateBody(deleteProductImageSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { productId } = req.params as { productId: string };
+        const { url } = req.body as DeleteProductImageInput;
+        const result = await deleteProductImage(
+          req.sellerContext!.companyId,
+          productId,
+          url
+        );
+
+        return reply.status(200).send({
+          message: 'Ürün görseli silindi',
+          ...result,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Ürün görseli silinirken bir hata oluştu');
       }
     }
   );

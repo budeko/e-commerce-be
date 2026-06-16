@@ -1,6 +1,10 @@
 import { Cart, Product } from '@/db';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import type { AddToCartInput } from '@/features/ecommerce/cart/add-to-cart.schema';
+import {
+  assertCartItemQuantity,
+  resolveMinOrderQuantity,
+} from '@/features/ecommerce/product/product-order-quantity';
 
 type CartItemRecord = {
   productId: string;
@@ -13,6 +17,7 @@ type ProductSummary = {
   name: string;
   price: number;
   stock: number;
+  minOrderQuantity?: number;
   isActive: boolean;
   images: string[];
 };
@@ -29,11 +34,16 @@ const toCartItemResponse = (
         name: product.name,
         price: product.price,
         stock: product.stock,
+        minOrderQuantity: resolveMinOrderQuantity(product.minOrderQuantity),
         isActive: product.isActive,
         images: product.images,
       }
     : null,
-  isAvailable: Boolean(product?.isActive && product.stock >= item.quantity),
+  isAvailable: Boolean(
+    product?.isActive &&
+      product.stock >= item.quantity &&
+      item.quantity >= resolveMinOrderQuantity(product.minOrderQuantity)
+  ),
 });
 
 const toCartResponse = (
@@ -75,7 +85,7 @@ const loadProductsForItems = async (items: CartItemRecord[]) => {
   }
 
   const products = await Product.find({ _id: { $in: productIds } })
-    .select('name price stock isActive images')
+    .select('name price stock minOrderQuantity isActive images')
     .lean();
 
   return new Map(products.map((product) => [String(product._id), product as ProductSummary]));
@@ -111,9 +121,7 @@ export const addToCart = async (buyerId: string, input: AddToCartInput) => {
   const nextQuantity =
     existingIndex >= 0 ? items[existingIndex].quantity + input.quantity : input.quantity;
 
-  if (nextQuantity > product.stock) {
-    throw new EcommerceError(400, 'Yetersiz stok');
-  }
+  assertCartItemQuantity(nextQuantity, product);
 
   const nextItem = {
     productId: input.productId,
@@ -154,9 +162,7 @@ export const updateCartItem = async (
     throw new EcommerceError(404, 'Ürün sepette bulunamadı');
   }
 
-  if (quantity > product.stock) {
-    throw new EcommerceError(400, 'Yetersiz stok');
-  }
+  assertCartItemQuantity(quantity, product);
 
   items[existingIndex] = {
     productId,

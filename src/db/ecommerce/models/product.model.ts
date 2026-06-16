@@ -18,6 +18,7 @@ const productSchema = new Schema(
     price: { type: Number, required: true, min: 0 },
     currency: { type: String, enum: PRODUCT_CURRENCIES, default: 'TRY' },
     stock: { type: Number, required: true, min: 0, default: 0 },
+    minOrderQuantity: { type: Number, required: true, min: 1, default: 1 },
     isActive: { type: Boolean, default: true },
     images: { type: [urlField], default: [] },
     createdAt: { type: Date, default: Date.now },

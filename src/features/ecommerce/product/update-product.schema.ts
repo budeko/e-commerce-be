@@ -24,6 +24,11 @@ export const updateProductSchema = z
     }).nullable().optional(),
     price: z.number().min(0, 'Fiyat 0 veya daha büyük olmalı').optional(),
     stock: z.number().int().min(0, 'Stok 0 veya daha büyük olmalı').optional(),
+    minOrderQuantity: z
+      .number()
+      .int('Minimum sipariş adedi tam sayı olmalı')
+      .min(1, 'Minimum sipariş adedi en az 1 olmalı')
+      .optional(),
     isActive: z.boolean().optional(),
     images: z.array(safeUrlSchema).max(10, 'En fazla 10 görsel eklenebilir').optional(),
   })

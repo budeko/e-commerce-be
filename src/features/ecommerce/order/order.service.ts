@@ -2,6 +2,7 @@ import { Buyer, Cart, Order, Product, type OrderStatus } from '@/db';
 import { createUserId } from '@/lib/common/user-id';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import { clearCart } from '@/features/ecommerce/cart/cart.service';
+import { assertCartItemQuantity } from '@/features/ecommerce/product/product-order-quantity';
 import { approvePaymentSplitsForOrder } from '@/features/ecommerce/payment/payment-split.service';
 import type { UpdateOrderStatusInput } from '@/features/ecommerce/order/update-order-status.schema';
 
@@ -134,9 +135,7 @@ export const createOrderFromCart = async (buyerId: string) => {
         throw new EcommerceError(400, 'Sepette geçersiz ürün var');
       }
 
-      if (product.stock < item.quantity) {
-        throw new EcommerceError(400, 'Yetersiz stok');
-      }
+      assertCartItemQuantity(item.quantity, product);
 
       const updatedProduct = await Product.findOneAndUpdate(
         {
