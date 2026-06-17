@@ -31,7 +31,11 @@ vi.mock('@/features/auth/admin/mail/send-seller-notifications', () => ({
   sendSellerRejectedEmail: (...args: unknown[]) => mockSendRejected(...args),
 }));
 
-import { approveSeller, rejectSeller } from '@/features/auth/admin/sellers/sellers.service';
+import {
+  approveSeller,
+  rejectSeller,
+  syncSellerIyzicoSubMerchant,
+} from '@/features/auth/admin/sellers/sellers.service';
 import { createIyzicoSubMerchant } from '@/lib/integrations/iyzico/create-submerchant';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
@@ -131,6 +135,63 @@ describe('sellers.service bildirimleri', () => {
     await expect(rejectSeller(limitedCtx, userId, 'Sebep')).rejects.toMatchObject({
       statusCode: 403,
       message: 'Satıcı onaylama yetkin yok',
+    });
+  });
+});
+
+describe('syncSellerIyzicoSubMerchant', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUserFindById.mockReturnValue(
+      chainFindById({
+        role: 'seller',
+        email: 'seller@example.com',
+      })
+    );
+  });
+
+  it('DBden onaylı ama keysiz satıcı için Iyzico kaydı oluşturur', async () => {
+    const save = vi.fn();
+    mockSellerFindById.mockResolvedValue({
+      ...mockPendingSeller(save),
+      approvalStatus: 'approved',
+      save,
+    });
+
+    const result = await syncSellerIyzicoSubMerchant(ownerCtx, userId);
+
+    expect(createIyzicoSubMerchant).toHaveBeenCalled();
+    expect(save).toHaveBeenCalled();
+    expect(result).toMatchObject({
+      created: true,
+      iyzicoSubMerchantRegistered: true,
+    });
+  });
+
+  it('key zaten varsa yeniden oluşturmaz', async () => {
+    const save = vi.fn();
+    mockSellerFindById.mockResolvedValue({
+      ...mockPendingSeller(save),
+      approvalStatus: 'approved',
+      iyzicoSubMerchantKey: 'existing-key',
+      save,
+    });
+
+    const result = await syncSellerIyzicoSubMerchant(ownerCtx, userId);
+
+    expect(createIyzicoSubMerchant).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      created: false,
+      iyzicoSubMerchantRegistered: true,
+    });
+  });
+
+  it('onaylı olmayan satıcı için 400 fırlatır', async () => {
+    mockSellerFindById.mockResolvedValue(mockPendingSeller(vi.fn()));
+
+    await expect(syncSellerIyzicoSubMerchant(ownerCtx, userId)).rejects.toMatchObject({
+      statusCode: 400,
     });
   });
 });

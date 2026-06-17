@@ -24,6 +24,60 @@ const assertCanReadSellers = (ctx: AdminAccessContext) => {
 
 const log = createLogger({ module: 'sellers-admin' });
 
+const registerSellerIyzicoSubMerchant = async (
+  seller: {
+    _id: unknown;
+    sellerType?: 'bireysel' | 'kurumsal' | null;
+    companyType?: 'ltd' | 'as' | null;
+    authorizedFirstName?: string | null;
+    authorizedLastName?: string | null;
+    companyPhone?: string | null;
+    phone?: string | null;
+    companyName?: string | null;
+    taxNumber?: string | null;
+    taxOffice?: string | null;
+    companyAddress?: string | null;
+    iban?: string | null;
+    iyzicoSubMerchantKey?: string | null;
+  },
+  email: string,
+  userId: string
+): Promise<string> => {
+  if (seller.iyzicoSubMerchantKey) {
+    return seller.iyzicoSubMerchantKey;
+  }
+
+  try {
+    return await createIyzicoSubMerchant({
+      sellerId: String(seller._id),
+      email,
+      sellerType: seller.sellerType,
+      companyType: seller.companyType,
+      authorizedFirstName: seller.authorizedFirstName,
+      authorizedLastName: seller.authorizedLastName,
+      companyPhone: seller.companyPhone,
+      phone: seller.phone,
+      companyName: seller.companyName,
+      taxNumber: seller.taxNumber,
+      taxOffice: seller.taxOffice,
+      companyAddress: seller.companyAddress,
+      iban: seller.iban,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+
+    if (error instanceof EcommerceError) {
+      throw new AuthError(error.statusCode, error.message);
+    }
+
+    log.error({ err: error, userId }, 'Iyzico alt üye kaydı oluşturulamadı');
+
+    throw new AuthError(502, 'Satıcı Iyzico alt üye kaydı oluşturulamadı');
+  }
+};
+
 export const listSellers = async (ctx: AdminAccessContext, status?: SellerApprovalStatus) => {
   assertCanReadSellers(ctx);
 
@@ -55,6 +109,7 @@ export const listSellers = async (ctx: AdminAccessContext, status?: SellerApprov
       taxNumber: seller.taxNumber,
       country: seller.country,
       city: seller.city,
+      iyzicoSubMerchantRegistered: Boolean(seller.iyzicoSubMerchantKey),
     };
   });
 };
@@ -144,37 +199,11 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
     throw new AuthError(400, 'Sadece onay bekleyen satıcılar onaylanabilir');
   }
 
-  if (!seller.iyzicoSubMerchantKey) {
-    try {
-      seller.iyzicoSubMerchantKey = await createIyzicoSubMerchant({
-        sellerId: String(seller._id),
-        email: user.email,
-        sellerType: seller.sellerType,
-        companyType: seller.companyType,
-        authorizedFirstName: seller.authorizedFirstName,
-        authorizedLastName: seller.authorizedLastName,
-        companyPhone: seller.companyPhone,
-        phone: seller.phone,
-        companyName: seller.companyName,
-        taxNumber: seller.taxNumber,
-        taxOffice: seller.taxOffice,
-        companyAddress: seller.companyAddress,
-        iban: seller.iban,
-      });
-    } catch (error) {
-      if (error instanceof AuthError) {
-        throw error;
-      }
-
-      if (error instanceof EcommerceError) {
-        throw new AuthError(error.statusCode, error.message);
-      }
-
-      log.error({ err: error, userId }, 'Iyzico alt üye kaydı oluşturulamadı');
-
-      throw new AuthError(502, 'Satıcı Iyzico alt üye kaydı oluşturulamadı');
-    }
-  }
+  seller.iyzicoSubMerchantKey = await registerSellerIyzicoSubMerchant(
+    seller,
+    user.email,
+    userId
+  );
 
   seller.approvalStatus = 'approved';
   seller.rejectionReason = null;
@@ -189,5 +218,46 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
   return {
     userId: seller._id,
     approvalStatus: seller.approvalStatus,
+  };
+};
+
+export const syncSellerIyzicoSubMerchant = async (ctx: AdminAccessContext, userId: string) => {
+  assertCanManageSellerApproval(ctx);
+
+  const user = await User.findById(userId).select('role email').lean();
+
+  if (!user || user.role !== 'seller') {
+    throw new AuthError(404, 'Satıcı bulunamadı');
+  }
+
+  const seller = await Seller.findById(userId);
+
+  if (!seller) {
+    throw new AuthError(404, 'Satıcı profili bulunamadı');
+  }
+
+  if (seller.approvalStatus !== 'approved') {
+    throw new AuthError(400, 'Yalnızca onaylı satıcılar için Iyzico kaydı oluşturulabilir');
+  }
+
+  if (seller.iyzicoSubMerchantKey) {
+    return {
+      userId: seller._id,
+      iyzicoSubMerchantRegistered: true,
+      created: false as const,
+    };
+  }
+
+  seller.iyzicoSubMerchantKey = await registerSellerIyzicoSubMerchant(
+    seller,
+    user.email,
+    userId
+  );
+  await seller.save();
+
+  return {
+    userId: seller._id,
+    iyzicoSubMerchantRegistered: true,
+    created: true as const,
   };
 };

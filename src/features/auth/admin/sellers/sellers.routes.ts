@@ -9,7 +9,13 @@ import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
 import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/admin/sellers/list-sellers.schema';
 import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/admin/sellers/reject-seller.schema';
-import { approveSeller, getSellerByUserId, listSellers, rejectSeller } from '@/features/auth/admin/sellers/sellers.service';
+import {
+  approveSeller,
+  getSellerByUserId,
+  listSellers,
+  rejectSeller,
+  syncSellerIyzicoSubMerchant,
+} from '@/features/auth/admin/sellers/sellers.service';
 
 const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {
@@ -75,6 +81,31 @@ export default async function (fastify: FastifyInstance) {
         });
       } catch (error) {
         return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.post(
+    '/:userId/iyzico-sync',
+    {
+      preHandler: [
+        ...adminWithUserId.preHandler,
+        requirePermission(PERMISSIONS.SELLERS_APPROVE),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { userId } = req.params as { userId: string };
+        const result = await syncSellerIyzicoSubMerchant(req.adminContext!, userId);
+
+        return reply.status(200).send({
+          message: result.created
+            ? 'Iyzico alt üye kaydı oluşturuldu'
+            : 'Satıcının Iyzico alt üye kaydı zaten mevcut',
+          ...result,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Iyzico kaydı sırasında bir hata oluştu');
       }
     }
   );
