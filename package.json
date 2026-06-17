@@ -10,6 +10,7 @@
     "start": "node dist/app/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run -c vitest.e2e.config.ts",
     "seed:owner": "ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scripts/seed-owner.ts"
   },
   "repository": {
