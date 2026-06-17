@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { uuidSchema } from '@/lib/common/validation/common-schemas';
 
 export const MAX_PRODUCT_CATEGORIES = 20;
+/** categoryIds içinde en fazla kaç kök (parentId=null) kategori olabilir */
+export const MAX_PRODUCT_PRIMARY_CATEGORIES = 10;
 
 export const productCategoryAssignmentSchema = z
   .object({

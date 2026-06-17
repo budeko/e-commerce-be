@@ -3,7 +3,10 @@ import { createUserId } from '@/lib/common/user-id';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import { getCategoryDescendantIds } from '@/features/ecommerce/category/category.service';
 import { slugify } from '@/features/ecommerce/category/slugify';
-import { resolveProductCategoryAssignment } from '@/features/ecommerce/product/product-category.schema';
+import {
+  MAX_PRODUCT_PRIMARY_CATEGORIES,
+  resolveProductCategoryAssignment,
+} from '@/features/ecommerce/product/product-category.schema';
 import {
   toPublicProductResponse,
   toSellerProductResponse,
@@ -32,13 +35,24 @@ const resolveSlug = (name: string, slug?: string | null) => {
 const assertActiveCategories = async (categoryIds: string[]) => {
   const uniqueIds = [...new Set(categoryIds)];
 
-  const activeCount = await Category.countDocuments({
+  const categories = await Category.find({
     _id: { $in: uniqueIds },
     isActive: true,
-  });
+  })
+    .select('_id parentId')
+    .lean();
 
-  if (activeCount !== uniqueIds.length) {
+  if (categories.length !== uniqueIds.length) {
     throw new EcommerceError(400, 'Geçersiz kategori');
+  }
+
+  const primaryCategoryCount = categories.filter((category) => category.parentId == null).length;
+
+  if (primaryCategoryCount > MAX_PRODUCT_PRIMARY_CATEGORIES) {
+    throw new EcommerceError(
+      400,
+      `En fazla ${MAX_PRODUCT_PRIMARY_CATEGORIES} ana kategori seçilebilir`
+    );
   }
 };
 
