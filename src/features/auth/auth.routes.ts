@@ -1,5 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
+import {
+  AUTH_ADMIN_RATE_LIMIT,
+  AUTH_PUBLIC_RATE_LIMIT,
+  AUTH_SELLER_RATE_LIMIT,
+} from '@/config/constants';
 import registerRoutes from '@/features/auth/credentials/register/register.routes';
 import loginRoutes from '@/features/auth/credentials/login/login.routes';
 import logoutRoutes from '@/features/auth/credentials/logout/logout.routes';
@@ -13,24 +18,9 @@ import profileRoutes from '@/features/auth/account/profile/profile.routes';
 import adminRoutes from '@/features/auth/admin/admin.routes';
 import sellerRoutes from '@/features/auth/seller/seller.routes';
 
-const PUBLIC_AUTH_RATE_LIMIT = {
-  max: 10,
-  timeWindow: '15 minutes',
-};
-
-const ADMIN_RATE_LIMIT = {
-  max: 60,
-  timeWindow: '1 minute',
-};
-
-const SELLER_TEAM_RATE_LIMIT = {
-  max: 60,
-  timeWindow: '1 minute',
-};
-
 export default async function (fastify: FastifyInstance) {
   await fastify.register(async (publicAuth) => {
-    await publicAuth.register(rateLimit, PUBLIC_AUTH_RATE_LIMIT);
+    await publicAuth.register(rateLimit, AUTH_PUBLIC_RATE_LIMIT);
 
     await publicAuth.register(registerRoutes, { prefix: '/register' });
     await publicAuth.register(loginRoutes, { prefix: '/login' });
@@ -46,12 +36,12 @@ export default async function (fastify: FastifyInstance) {
   await fastify.register(logoutRoutes, { prefix: '/logout' });
 
   await fastify.register(async (adminScope) => {
-    await adminScope.register(rateLimit, ADMIN_RATE_LIMIT);
+    await adminScope.register(rateLimit, AUTH_ADMIN_RATE_LIMIT);
     await adminScope.register(adminRoutes, { prefix: '/admin' });
   });
 
   await fastify.register(async (sellerScope) => {
-    await sellerScope.register(rateLimit, SELLER_TEAM_RATE_LIMIT);
+    await sellerScope.register(rateLimit, AUTH_SELLER_RATE_LIMIT);
     await sellerScope.register(sellerRoutes, { prefix: '/seller' });
   });
 }

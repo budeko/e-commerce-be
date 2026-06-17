@@ -1,19 +1,9 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-if (!process.env.RAILWAY_ENVIRONMENT) {
-  dotenv.config();
-}
-
-const getMongoUri = () =>
-  process.env.MONGO_URI ||
-  process.env.MONGO_URL ||
-  process.env.MONGODB_URI ||
-  process.env.DATABASE_URL;
+import { env } from '@/config/env';
 
 export const connectDB = async () => {
   try {
-    const mongoUri = getMongoUri();
+    const mongoUri = env.mongoUri;
 
     if (!mongoUri) {
       throw new Error(

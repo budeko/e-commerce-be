@@ -6,11 +6,19 @@ const mockListen = vi.fn();
 const mockLoggerInfo = vi.fn();
 const mockLoggerError = vi.fn();
 
+vi.mock('@/config/env', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/config/env')>();
+  return {
+    ...actual,
+    validateEnvAtStartup: vi.fn(),
+  };
+});
+
 vi.mock('@/db', () => ({
   connectDB: (...args: unknown[]) => mockConnectDB(...args),
 }));
 
-vi.mock('@/app/server/build-app', () => ({
+vi.mock('@/app/app', () => ({
   buildApp: (...args: unknown[]) => mockBuildApp(...args),
 }));
 
@@ -21,7 +29,7 @@ vi.mock('@/lib/common/logger', () => ({
   },
 }));
 
-import { getPort, start } from '@/app/server/server';
+import { getPort, start } from '@/app/server';
 
 describe('getPort', () => {
   const originalPort = process.env.PORT;

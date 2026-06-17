@@ -15,7 +15,7 @@ vi.mock('../session/revoke-token', () => ({
   isTokenRevoked: (...args: unknown[]) => mockIsTokenRevoked(...args),
 }));
 
-vi.mock('@/lib/security/access-token', () => ({
+vi.mock('@/features/auth/core/security/access-token', () => ({
   verifyAuthToken: (...args: unknown[]) => mockVerifyAuthToken(...args),
 }));
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { signEmailVerificationToken } from '@/lib/security/email-token';
+import { signEmailVerificationToken } from '@/features/auth/core/security/email-token';
 import { AuthError } from '@/features/auth/core/errors';
 
 const mockFindOne = vi.fn();

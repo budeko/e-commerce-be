@@ -195,7 +195,10 @@ describe('listPublicProducts', () => {
   it('sadece aktif ürünleri listeler', async () => {
     const result = await listPublicProducts({ page: 1, limit: 20 });
 
-    expect(mockProductFind).toHaveBeenCalledWith({ isActive: true });
+    expect(mockProductFind).toHaveBeenCalledWith({
+      isActive: true,
+      categoryId: { $ne: null },
+    });
     expect(result.products).toHaveLength(1);
     expect(result.pagination.total).toBe(1);
   });

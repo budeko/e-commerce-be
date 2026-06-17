@@ -12,7 +12,7 @@ import {
   getSellerRoleSummariesByIds,
   isOwnerSellerRoleId,
 } from '@/features/auth/seller/roles/roles.service';
-import { SellerMember } from '@/db/auth/models/seller-member.model';
+import { SellerMember } from '@/db/models/auth/seller-member.model';
 import { User } from '@/db';
 import { hashPassword } from '@/lib/common/password';
 import { createUserId } from '@/lib/common/user-id';

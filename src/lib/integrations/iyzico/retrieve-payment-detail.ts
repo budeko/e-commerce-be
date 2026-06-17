@@ -2,7 +2,7 @@ import Iyzipay from 'iyzipay';
 import { getIyzicoClient } from '@/lib/integrations/iyzico/client';
 import { promisifyIyzipay } from '@/lib/integrations/iyzico/promisify';
 import type { IyzicoItemTransaction } from '@/lib/integrations/iyzico/types';
-import { EcommerceError } from '@/lib/ecommerce/errors';
+import { HttpError } from '@/lib/common/errors';
 
 export const retrieveIyzicoPaymentItemTransactions = async (
   paymentId: string,
@@ -20,7 +20,7 @@ export const retrieveIyzicoPaymentItemTransactions = async (
   );
 
   if (result.status !== 'success') {
-    throw new EcommerceError(
+    throw new HttpError(
       502,
       result.errorMessage ?? 'Iyzico ödeme detayı alınamadı'
     );

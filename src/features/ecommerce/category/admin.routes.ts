@@ -128,11 +128,18 @@ export default async function categoriesAdminRoutes(fastify: FastifyInstance) {
     async (req, reply) => {
       try {
         const { categoryId } = req.params as { categoryId: string };
-        const category = await linkCategory(categoryId, req.body as LinkCategoryInput);
+        const { category, orphanedProductCount } = await linkCategory(
+          categoryId,
+          req.body as LinkCategoryInput
+        );
 
         return reply.status(200).send({
-          message: 'Kategori bağlantısı eklendi',
+          message:
+            orphanedProductCount > 0
+              ? 'Kategori bağlantısı eklendi; bağlı ürünlerin kategorisi sıfırlandı, satıcı güncellemeli'
+              : 'Kategori bağlantısı eklendi',
           category,
+          orphanedProductCount,
         });
       } catch (error) {
         return handleRouteError(reply, error, 'Kategori işlemi sırasında bir hata oluştu');

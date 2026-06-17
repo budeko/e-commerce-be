@@ -1,4 +1,4 @@
-import type { AuthTokenPayload } from '@/lib/security/access-token';
+import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
 import { hashPassword, comparePassword } from '@/lib/common/password';
 import { User } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';

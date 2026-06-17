@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { validateEmail } from '@/db/shared/validators';
+import { validateEmail } from '@/db/validators';
 
 const userSchema = new Schema(
   {

@@ -4,7 +4,7 @@ import {
   EmailCooldownError,
   markPasswordResetEmailSent,
 } from '@/features/auth/core/mail/cooldown';
-import { signPasswordResetToken } from '@/lib/security/email-token';
+import { signPasswordResetToken } from '@/features/auth/core/security/email-token';
 import { sendPasswordResetEmail } from '@/lib/integrations/resend/send';
 import { createAuthOtp, invalidateAuthOtp } from '@/features/auth/core/otp/otp';
 import { User } from '@/db';

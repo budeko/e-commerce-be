@@ -1,4 +1,4 @@
-import { signAuthToken } from '@/lib/security/access-token';
+import { signAuthToken } from '@/features/auth/core/security/access-token';
 import { comparePassword } from '@/lib/common/password';
 import { User } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';

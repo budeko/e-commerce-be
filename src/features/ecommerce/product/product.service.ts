@@ -41,7 +41,10 @@ const getOwnedProduct = async (sellerId: string, productId: string) => {
 };
 
 const buildPublicFilter = async (query: ListProductsQuery) => {
-  const filter: Record<string, unknown> = { isActive: true };
+  const filter: Record<string, unknown> = {
+    isActive: true,
+    categoryId: { $ne: null },
+  };
 
   if (query.categoryId) {
     const leafCategoryIds = await getCategoryProductFilterIds(query.categoryId);
@@ -76,7 +79,11 @@ export const listPublicProducts = async (query: ListProductsQuery) => {
 };
 
 export const getPublicProductById = async (productId: string) => {
-  const product = await Product.findOne({ _id: productId, isActive: true }).lean();
+  const product = await Product.findOne({
+    _id: productId,
+    isActive: true,
+    categoryId: { $ne: null },
+  }).lean();
 
   if (!product) {
     throw new EcommerceError(404, 'Ürün bulunamadı');

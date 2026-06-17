@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { env } from '@/config/env';
 import { HttpError } from '@/lib/common/errors';
 import { logger } from '@/lib/common/logger';
 
@@ -11,9 +12,9 @@ type SupabaseConfig = {
 let client: SupabaseClient | null = null;
 
 export const getSupabaseConfig = (): SupabaseConfig => {
-  const url = process.env.SUPABASE_URL?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET?.trim() || 'seller-documents';
+  const url = env.supabaseUrl;
+  const serviceRoleKey = env.supabaseServiceRoleKey;
+  const bucket = env.supabaseStorageBucket;
 
   if (!url || !serviceRoleKey) {
     throw new HttpError(

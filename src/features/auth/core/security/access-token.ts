@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { env } from '@/config/env';
 
 const TOKEN_EXPIRES = {
   default: '1d',
@@ -12,13 +13,7 @@ export type AuthTokenPayload = {
   role: UserRole;
 };
 
-const getSecret = () => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET tanımlanmamış');
-  }
-  return secret;
-};
+const getSecret = () => env.jwtSecret;
 
 export const signAuthToken = (
   userId: string,

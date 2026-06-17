@@ -1,6 +1,6 @@
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
-import { requireActiveBuyer } from '@/lib/ecommerce/guards/require-active-buyer';
+import { requireActiveBuyer } from '@/features/ecommerce/core/guard/require-active-buyer';
 import { validateParams } from '@/lib/common/http/validate-params';
 import type { ZodTypeAny } from 'zod';
 

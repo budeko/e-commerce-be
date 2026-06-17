@@ -4,7 +4,7 @@ import { getIyzicoClient } from '@/lib/integrations/iyzico/client';
 import { formatIyzicoDate, formatIyzicoPhone, formatIyzicoPrice } from '@/lib/integrations/iyzico/format';
 import { promisifyIyzipay } from '@/lib/integrations/iyzico/promisify';
 import type { InitializeCheckoutInput, InitializeCheckoutResult } from '@/lib/integrations/iyzico/types';
-import { EcommerceError } from '@/lib/ecommerce/errors';
+import { HttpError } from '@/lib/common/errors';
 
 export const initializeIyzicoCheckout = async (
   input: InitializeCheckoutInput
@@ -67,7 +67,7 @@ export const initializeIyzicoCheckout = async (
   );
 
   if (result.status !== 'success' || !result.token) {
-    throw new EcommerceError(
+    throw new HttpError(
       502,
       result.errorMessage ?? 'Iyzico ödeme formu oluşturulamadı'
     );

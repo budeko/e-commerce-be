@@ -3,7 +3,7 @@ import { getIyzicoClient } from '@/lib/integrations/iyzico/client';
 import { promisifyIyzipay } from '@/lib/integrations/iyzico/promisify';
 import { retrieveIyzicoPaymentItemTransactions } from '@/lib/integrations/iyzico/retrieve-payment-detail';
 import type { CompleteCheckoutResult } from '@/lib/integrations/iyzico/types';
-import { EcommerceError } from '@/lib/ecommerce/errors';
+import { HttpError } from '@/lib/common/errors';
 
 export const completeIyzicoCheckout = async (token: string): Promise<CompleteCheckoutResult> => {
   const client = getIyzicoClient();
@@ -14,13 +14,13 @@ export const completeIyzicoCheckout = async (token: string): Promise<CompleteChe
   });
 
   if (result.status !== 'success') {
-    throw new EcommerceError(502, result.errorMessage ?? 'Iyzico ödeme doğrulanamadı');
+    throw new HttpError(502, result.errorMessage ?? 'Iyzico ödeme doğrulanamadı');
   }
 
   const orderId = result.basketId ?? result.conversationId;
 
   if (!orderId) {
-    throw new EcommerceError(502, 'Iyzico yanıtında sipariş bilgisi bulunamadı');
+    throw new HttpError(502, 'Iyzico yanıtında sipariş bilgisi bulunamadı');
   }
 
   if (result.paymentStatus !== 'SUCCESS') {
@@ -32,7 +32,7 @@ export const completeIyzicoCheckout = async (token: string): Promise<CompleteChe
   }
 
   if (!result.paymentId) {
-    throw new EcommerceError(502, 'Iyzico yanıtında ödeme kimliği bulunamadı');
+    throw new HttpError(502, 'Iyzico yanıtında ödeme kimliği bulunamadı');
   }
 
   const inlineTransactions =

@@ -10,7 +10,7 @@ const productSchema = new Schema(
   {
     _id: { type: String, required: true },
     sellerId: { type: String, required: true },
-    categoryId: { type: String, required: true },
+    categoryId: { type: String, default: null },
     name: { ...stringField, required: true, maxlength: 200 },
     slug: { ...stringField, maxlength: 200, lowercase: true, default: null },
     description: { ...stringField, maxlength: 5000, default: null },

@@ -1,6 +1,6 @@
 import { Admin, AdminRole } from '@/db';
 import type { PermissionKey } from '@/features/auth/admin/access/permission-keys';
-import { SYSTEM_OWNER_ROLE_SLUG } from '@/db/auth/models/admin-role.model';
+import { SYSTEM_OWNER_ROLE_SLUG } from '@/db/models/auth/admin-role.model';
 
 export type AdminAccessContext = {
   userId: string;

@@ -1,19 +1,13 @@
 import { connectDB } from '@/db';
-import { buildApp } from '@/app/server/build-app';
+import { buildApp } from '@/app/app';
+import { env, validateEnvAtStartup } from '@/config/env';
 import { logger } from '@/lib/common/logger';
 
-export const getPort = (): number => {
-  const port = process.env.PORT ? Number(process.env.PORT) : 8080;
-
-  if (Number.isNaN(port)) {
-    throw new Error('PORT geçersiz bir sayı');
-  }
-
-  return port;
-};
+export const getPort = (): number => env.port;
 
 export const start = async (): Promise<void> => {
   try {
+    validateEnvAtStartup();
     await connectDB();
     logger.info('MongoDB bağlantısı başarılı');
 

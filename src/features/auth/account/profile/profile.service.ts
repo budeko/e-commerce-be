@@ -1,4 +1,4 @@
-import type { AuthTokenPayload } from '@/lib/security/access-token';
+import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
 import { User, Buyer, Seller } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
 import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';

@@ -1,4 +1,4 @@
-import { signEmailVerificationToken } from '@/lib/security/email-token';
+import { signEmailVerificationToken } from '@/features/auth/core/security/email-token';
 import { createAuthOtp } from '@/features/auth/core/otp/otp';
 import { sendVerificationEmail } from '@/lib/integrations/resend/send';
 

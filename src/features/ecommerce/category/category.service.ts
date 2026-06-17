@@ -118,7 +118,7 @@ const addLink = async (parentId: string, childId: string) => {
   const childIds = normalizeIds(parent.childIds);
 
   if (parentIds.includes(parentId) && childIds.includes(childId)) {
-    return;
+    return { orphanedProductCount: 0 };
   }
 
   const graphNodes = await loadAllGraphNodes();
@@ -135,11 +135,25 @@ const addLink = async (parentId: string, childId: string) => {
     throw new EcommerceError(400, `En fazla ${MAX_CHILDREN_PER_NODE} alt kategori bağlanabilir`);
   }
 
+  const parentWasLeaf = childIds.length === 0;
+
   child.parentIds = uniqueIds([...parentIds, parentId]);
   parent.childIds = uniqueIds([...childIds, childId]);
   parent.isLeaf = false;
 
+  let orphanedProductCount = 0;
+
+  if (parentWasLeaf) {
+    const result = await Product.updateMany(
+      { categoryId: parentId },
+      { $set: { categoryId: null } }
+    );
+    orphanedProductCount = result.modifiedCount;
+  }
+
   await Promise.all([parent.save(), child.save(), refreshLeafFlag(childId)]);
+
+  return { orphanedProductCount };
 };
 
 const removeLink = async (parentId: string, childId: string) => {
@@ -286,17 +300,24 @@ export const updateCategory = async (categoryId: string, input: UpdateCategoryIn
 export const linkCategory = async (categoryId: string, input: LinkCategoryInput) => {
   await assertCategoryExists(categoryId, 'Kategori');
 
+  let orphanedProductCount = 0;
+
   if (input.parentId) {
-    await addLink(input.parentId, categoryId);
+    const result = await addLink(input.parentId, categoryId);
+    orphanedProductCount += result.orphanedProductCount;
   }
 
   if (input.childId) {
-    await addLink(categoryId, input.childId);
+    const result = await addLink(categoryId, input.childId);
+    orphanedProductCount += result.orphanedProductCount;
   }
 
   const category = await Category.findById(categoryId).lean();
 
-  return toCategoryResponse(category!);
+  return {
+    category: toCategoryResponse(category!),
+    orphanedProductCount,
+  };
 };
 
 export const unlinkCategory = async (categoryId: string, input: LinkCategoryInput) => {

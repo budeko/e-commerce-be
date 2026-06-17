@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { env } from '@/config/env';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';
@@ -72,7 +73,7 @@ export default async function paymentRoutes(fastify: FastifyInstance) {
       }
 
       const result = await completePaymentFromCheckoutToken(token);
-      const frontendUrl = process.env.FRONTEND_URL?.replace(/\/+$/, '') ?? 'http://localhost:3000';
+      const frontendUrl = env.frontendUrlOrDefault.replace(/\/+$/, '');
 
       if (!result.success) {
         const redirectUrl = `${frontendUrl}/orders/${result.payment.orderId}?payment=failed`;

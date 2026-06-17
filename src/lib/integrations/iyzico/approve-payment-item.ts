@@ -1,7 +1,7 @@
 import Iyzipay from 'iyzipay';
 import { getIyzicoClient } from '@/lib/integrations/iyzico/client';
 import { promisifyIyzipay } from '@/lib/integrations/iyzico/promisify';
-import { EcommerceError } from '@/lib/ecommerce/errors';
+import { HttpError } from '@/lib/common/errors';
 
 export const approveIyzicoPaymentItem = async (
   paymentTransactionId: string,
@@ -19,7 +19,7 @@ export const approveIyzicoPaymentItem = async (
   );
 
   if (result.status !== 'success') {
-    throw new EcommerceError(
+    throw new HttpError(
       502,
       result.errorMessage ?? 'Iyzico ödeme onayı gönderilemedi'
     );

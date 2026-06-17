@@ -1,15 +1,10 @@
 import jwt from 'jsonwebtoken';
+import { env } from '@/config/env';
 
 const EMAIL_VERIFY_EXPIRES_IN = '24h';
 const PASSWORD_RESET_EXPIRES_IN = '1h';
 
-const getSecret = () => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET tanımlanmamış');
-  }
-  return secret;
-};
+const getSecret = () => env.jwtSecret;
 
 export const signEmailVerificationToken = (userId: string): string => {
   return jwt.sign({ purpose: 'email_verify' }, getSecret(), {

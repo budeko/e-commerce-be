@@ -4,7 +4,7 @@ import { requireEmailVerified } from '@/features/auth/core/guard/require-email-v
 import {
   requireApprovedSeller,
   requireSellerPermission,
-} from '@/lib/ecommerce/guards/require-approved-seller';
+} from '@/features/ecommerce/core/guard/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';

@@ -6,7 +6,7 @@ import {
   requireSellerOwner,
   requireSellerPermission,
   requireKurumsalSeller,
-} from '@/lib/ecommerce/guards/require-approved-seller';
+} from '@/features/ecommerce/core/guard/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { userIdParamSchema } from '@/lib/common/validation/param-schemas';

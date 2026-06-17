@@ -1,4 +1,4 @@
-import type { AuthTokenPayload } from '@/lib/security/access-token';
+import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
 import { HttpError } from '@/lib/common/errors';
 import {
   deleteFromSellerStorage,

@@ -5,9 +5,9 @@ import {
   ALL_SELLER_PERMISSIONS,
   BIREYSEL_SELLER_PERMISSIONS,
 } from '@/features/auth/seller/access/permission-keys';
-import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/db/auth/models/seller-role.model';
-import { SellerMember } from '@/db/auth/models/seller-member.model';
-import { SellerRole } from '@/db/auth/models/seller-role.model';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/db/models/auth/seller-role.model';
+import { SellerMember } from '@/db/models/auth/seller-member.model';
+import { SellerRole } from '@/db/models/auth/seller-role.model';
 import { ensureSellerMember } from '@/features/auth/seller/access/system-roles';
 
 export type SellerAccessContext = {

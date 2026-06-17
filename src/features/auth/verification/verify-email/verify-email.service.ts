@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { signAuthToken, type UserRole } from '@/lib/security/access-token';
-import { verifyEmailVerificationToken } from '@/lib/security/email-token';
+import { signAuthToken, type UserRole } from '@/features/auth/core/security/access-token';
+import { verifyEmailVerificationToken } from '@/features/auth/core/security/email-token';
 import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/core/otp/otp';
 import { deleteUnverifiedUser } from '@/features/auth/core/register/unverified-user';
 import { User } from '@/db';

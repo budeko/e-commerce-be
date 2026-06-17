@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const mockUserFindById = vi.fn();
@@ -9,7 +9,7 @@ vi.mock('@/db', () => ({
   },
 }));
 
-import { requireActiveBuyer } from '@/lib/ecommerce/guards/require-active-buyer';
+import { requireActiveBuyer } from '@/features/ecommerce/core/guard/require-active-buyer';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 

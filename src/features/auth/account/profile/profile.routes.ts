@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify';
-import multipart from '@fastify/multipart';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
@@ -9,13 +8,6 @@ import { validateProfileUpdate } from '@/features/auth/core/profile/validate-pro
 import documentsRoutes from '@/features/auth/account/profile/documents.routes';
 
 export default async function (fastify: FastifyInstance) {
-  await fastify.register(multipart, {
-    limits: {
-      fileSize: 5 * 1024 * 1024,
-      files: 1,
-    },
-  });
-
   await fastify.register(documentsRoutes, { prefix: '/documents' });
 
   fastify.get('/', { preHandler: [requireAuth, requireEmailVerified] }, async (req, reply) => {

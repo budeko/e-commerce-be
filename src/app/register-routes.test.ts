@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import fastify, { type FastifyInstance } from 'fastify';
-import { registerRoutes } from '@/app/routes/register-routes';
+import { registerRoutes } from '@/app/register-routes';
 
 describe('registerRoutes', () => {
   let app: FastifyInstance;

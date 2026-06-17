@@ -1,11 +1,10 @@
 import { FastifyInstance } from 'fastify';
-import multipart from '@fastify/multipart';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import {
   requireApprovedSeller,
   requireSellerPermission,
-} from '@/lib/ecommerce/guards/require-approved-seller';
+} from '@/features/ecommerce/core/guard/require-approved-seller';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { validateParams } from '@/lib/common/http/validate-params';
 import { validateQuery } from '@/lib/common/http/validate-query';
@@ -37,7 +36,6 @@ import {
   deleteProductImageSchema,
   type DeleteProductImageInput,
 } from '@/features/ecommerce/product/delete-product-image.schema';
-import { MAX_PRODUCT_IMAGE_BYTES, MAX_PRODUCT_IMAGES } from '@/features/ecommerce/product/product-image-types';
 
 const sellerApproved = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],
@@ -65,13 +63,6 @@ const sellerWriteWithProductId = {
 };
 
 export default async function productRoutes(fastify: FastifyInstance) {
-  await fastify.register(multipart, {
-    limits: {
-      fileSize: MAX_PRODUCT_IMAGE_BYTES,
-      files: MAX_PRODUCT_IMAGES,
-    },
-  });
-
   fastify.get(
     '/',
     { preHandler: [validateQuery(listProductsQuerySchema)] },

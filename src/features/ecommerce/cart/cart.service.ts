@@ -58,7 +58,11 @@ const toCartResponse = (
 });
 
 const getActiveProduct = async (productId: string) => {
-  const product = await Product.findOne({ _id: productId, isActive: true }).lean();
+  const product = await Product.findOne({
+    _id: productId,
+    isActive: true,
+    categoryId: { $ne: null },
+  }).lean();
 
   if (!product) {
     throw new EcommerceError(404, 'Ürün bulunamadı');

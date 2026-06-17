@@ -2,7 +2,7 @@ import Iyzipay from 'iyzipay';
 import { getIyzicoClient } from '@/lib/integrations/iyzico/client';
 import { formatIyzicoPhone } from '@/lib/integrations/iyzico/format';
 import { promisifyIyzipay } from '@/lib/integrations/iyzico/promisify';
-import { EcommerceError } from '@/lib/ecommerce/errors';
+import { HttpError } from '@/lib/common/errors';
 
 type SellerSubMerchantProfile = {
   sellerId: string;
@@ -25,7 +25,7 @@ const resolveContactName = (profile: SellerSubMerchantProfile) => {
   const lastName = profile.authorizedLastName;
 
   if (!firstName || !lastName) {
-    throw new EcommerceError(400, 'Satıcı yetkili ad/soyad bilgisi eksik');
+    throw new HttpError(400, 'Satıcı yetkili ad/soyad bilgisi eksik');
   }
 
   return { contactName: firstName, contactSurname: lastName };
@@ -35,7 +35,7 @@ const resolvePhone = (profile: SellerSubMerchantProfile) => {
   const phone = profile.companyPhone ?? profile.phone;
 
   if (!phone) {
-    throw new EcommerceError(400, 'Satıcı telefon bilgisi eksik');
+    throw new HttpError(400, 'Satıcı telefon bilgisi eksik');
   }
 
   return formatIyzicoPhone(phone);
@@ -43,27 +43,27 @@ const resolvePhone = (profile: SellerSubMerchantProfile) => {
 
 const buildSubMerchantRequest = (profile: SellerSubMerchantProfile) => {
   if (!profile.email) {
-    throw new EcommerceError(400, 'Satıcı e-posta bilgisi eksik');
+    throw new HttpError(400, 'Satıcı e-posta bilgisi eksik');
   }
 
   if (!profile.iban?.trim()) {
-    throw new EcommerceError(400, 'Satıcı IBAN bilgisi eksik');
+    throw new HttpError(400, 'Satıcı IBAN bilgisi eksik');
   }
 
   if (!profile.companyAddress?.trim()) {
-    throw new EcommerceError(400, 'Satıcı adres bilgisi eksik');
+    throw new HttpError(400, 'Satıcı adres bilgisi eksik');
   }
 
   if (!profile.companyName?.trim()) {
-    throw new EcommerceError(400, 'Satıcı ticari unvan bilgisi eksik');
+    throw new HttpError(400, 'Satıcı ticari unvan bilgisi eksik');
   }
 
   if (!profile.taxNumber?.trim()) {
-    throw new EcommerceError(400, 'Satıcı vergi numarası eksik');
+    throw new HttpError(400, 'Satıcı vergi numarası eksik');
   }
 
   if (!profile.taxOffice?.trim()) {
-    throw new EcommerceError(400, 'Satıcı vergi dairesi eksik');
+    throw new HttpError(400, 'Satıcı vergi dairesi eksik');
   }
 
   const { contactName, contactSurname } = resolveContactName(profile);
@@ -92,7 +92,7 @@ const buildSubMerchantRequest = (profile: SellerSubMerchantProfile) => {
   }
 
   if (profile.companyType !== 'ltd' && profile.companyType !== 'as') {
-    throw new EcommerceError(400, 'Kurumsal satıcı için şirket tipi (ltd/as) eksik');
+    throw new HttpError(400, 'Kurumsal satıcı için şirket tipi (ltd/as) eksik');
   }
 
   return {
@@ -114,7 +114,7 @@ export const createIyzicoSubMerchant = async (
   );
 
   if (result.status !== 'success' || !result.subMerchantKey) {
-    throw new EcommerceError(
+    throw new HttpError(
       502,
       result.errorMessage ?? 'Iyzico alt üye kaydı oluşturulamadı'
     );

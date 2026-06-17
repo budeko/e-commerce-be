@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { corsOriginHandler, getAllowedOrigins } from '@/app/config/cors-config';
+import { corsOriginHandler, getAllowedOrigins } from '@/plugins/cors';
 
 describe('getAllowedOrigins', () => {
   const originalEnv = process.env;

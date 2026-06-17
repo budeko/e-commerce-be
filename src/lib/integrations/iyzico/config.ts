@@ -1,3 +1,5 @@
+import { env } from '@/config/env';
+
 export type PaymentConfig = {
   apiKey: string;
   secretKey: string;
@@ -5,30 +7,15 @@ export type PaymentConfig = {
   callbackUrl: string;
 };
 
-const IYZICO_SANDBOX_URI = 'https://sandbox-api.iyzipay.com';
-const IYZICO_PRODUCTION_URI = 'https://api.iyzipay.com';
-
-const resolveIyzicoUri = (explicitUri: string | undefined, apiKey: string): string => {
-  if (explicitUri) {
-    return explicitUri;
-  }
-
-  return apiKey.startsWith('sandbox-') ? IYZICO_SANDBOX_URI : IYZICO_PRODUCTION_URI;
-};
-
 export const getPaymentConfig = (): PaymentConfig => {
-  const apiKey = process.env.IYZIPAY_API_KEY?.trim();
-  const secretKey = process.env.IYZIPAY_SECRET_KEY?.trim();
+  const apiKey = env.iyzipayApiKey;
+  const secretKey = env.iyzipaySecretKey;
 
   if (!apiKey || !secretKey) {
     throw new Error('IYZIPAY_API_KEY ve IYZIPAY_SECRET_KEY tanımlı olmalı');
   }
 
-  const callbackUrl =
-    process.env.IYZIPAY_CALLBACK_URL?.trim() ??
-    (process.env.API_BASE_URL
-      ? `${process.env.API_BASE_URL.replace(/\/+$/, '')}/payments/callback`
-      : undefined);
+  const callbackUrl = env.resolveIyzipayCallbackUrl();
 
   if (!callbackUrl) {
     throw new Error('IYZIPAY_CALLBACK_URL veya API_BASE_URL tanımlı olmalı');
@@ -37,7 +24,7 @@ export const getPaymentConfig = (): PaymentConfig => {
   return {
     apiKey,
     secretKey,
-    uri: resolveIyzicoUri(process.env.IYZIPAY_URI?.trim(), apiKey),
+    uri: env.resolveIyzicoUri(apiKey),
     callbackUrl,
   };
 };

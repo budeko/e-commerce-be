@@ -6,7 +6,7 @@ import {
 import { createLogger } from '@/lib/common/logger';
 import { Seller, User, type SellerApprovalStatus } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { HttpError } from '@/lib/common/errors';
 import { createIyzicoSubMerchant } from '@/lib/integrations/iyzico/create-submerchant';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
@@ -68,7 +68,7 @@ const registerSellerIyzicoSubMerchant = async (
       throw error;
     }
 
-    if (error instanceof EcommerceError) {
+    if (error instanceof HttpError) {
       throw new AuthError(error.statusCode, error.message);
     }
 

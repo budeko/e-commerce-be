@@ -14,7 +14,7 @@ vi.mock('@/lib/common/password', () => ({
   comparePassword: (...args: unknown[]) => mockComparePassword(...args),
 }));
 
-vi.mock('@/lib/security/access-token', () => ({
+vi.mock('@/features/auth/core/security/access-token', () => ({
   signAuthToken: (...args: unknown[]) => mockSignAuthToken(...args),
 }));
 

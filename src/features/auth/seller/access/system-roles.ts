@@ -1,9 +1,9 @@
-import { SellerMember } from '@/db/auth/models/seller-member.model';
+import { SellerMember } from '@/db/models/auth/seller-member.model';
 import {
   SellerRole,
   SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/db/auth/models/seller-role.model';
-import { Seller } from '@/db/auth/models/seller.model';
+} from '@/db/models/auth/seller-role.model';
+import { Seller } from '@/db/models/auth/seller.model';
 import { ALL_SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
 import { createUserId } from '@/lib/common/user-id';
 
