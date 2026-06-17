@@ -65,6 +65,28 @@ describe('addToCart', () => {
     });
   });
 
+  it('kategorisiz (orphan) ürün sepete eklenemez', async () => {
+    mockProductFindOne.mockReturnValue({
+      lean: vi.fn().mockResolvedValue(null),
+    });
+    mockCartFindById.mockResolvedValue(createCartDoc([]));
+
+    await expect(
+      addToCart(buyerId, { productId, quantity: 1 })
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      message: 'Ürün bulunamadı',
+    });
+
+    expect(mockProductFindOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: productId,
+        isActive: true,
+        categoryId: { $ne: null },
+      })
+    );
+  });
+
   it('aktif ürün yoksa 404 fırlatır', async () => {
     mockProductFindOne.mockReturnValue({
       lean: vi.fn().mockResolvedValue(null),

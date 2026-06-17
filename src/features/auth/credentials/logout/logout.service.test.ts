@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFindByIdAndUpdate = vi.fn();
+const mockRevokeToken = vi.fn();
 
 vi.mock('@/db', () => ({
   User: {
@@ -8,7 +9,25 @@ vi.mock('@/db', () => ({
   },
 }));
 
-import { logoutAllSessions } from '@/features/auth/credentials/logout/logout.service';
+vi.mock('@/features/auth/core/session/revoke-token', () => ({
+  revokeToken: (...args: unknown[]) => mockRevokeToken(...args),
+}));
+
+import { logout, logoutAllSessions } from '@/features/auth/credentials/logout/logout.service';
+
+describe('logout', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRevokeToken.mockResolvedValue(undefined);
+    mockFindByIdAndUpdate.mockResolvedValue({});
+  });
+
+  it('token revoke edilir', async () => {
+    await logout('access-token-123');
+
+    expect(mockRevokeToken).toHaveBeenCalledWith('access-token-123');
+  });
+});
 
 describe('logoutAllSessions', () => {
   beforeEach(() => {

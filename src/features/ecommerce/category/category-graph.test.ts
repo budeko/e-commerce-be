@@ -58,6 +58,7 @@ describe('buildCategoryForest', () => {
       parentIds: category.parentIds,
       childIds: category.childIds,
       name: category.name,
+      isActive: category.isActive,
       isLeaf: category.isLeaf,
     }));
 

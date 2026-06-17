@@ -35,10 +35,16 @@ export const AUTH_SELLER_RATE_LIMIT = {
   timeWindow: '1 minute' as const,
 };
 
-/** Global multipart — profil belgeleri (5MB) ve ürün görselleri (10 dosya) üst sınırı. */
-export const MULTIPART_LIMITS = {
-  fileSize: 5 * 1024 * 1024,
+/** Ürün görsel upload — product.routes scope. */
+export const PRODUCT_MULTIPART_LIMITS = {
+  fileSize: 2 * 1024 * 1024,
   files: 10,
+} as const;
+
+/** Satıcı belge upload — profile/documents scope. */
+export const PROFILE_DOCUMENT_MULTIPART_LIMITS = {
+  fileSize: 5 * 1024 * 1024,
+  files: 1,
 } as const;
 
 export const CORS_ALLOWED_METHODS = [

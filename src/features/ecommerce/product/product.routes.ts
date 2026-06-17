@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { registerProductMultipart } from '@/plugins/multipart-product';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import {
@@ -63,6 +64,8 @@ const sellerWriteWithProductId = {
 };
 
 export default async function productRoutes(fastify: FastifyInstance) {
+  await registerProductMultipart(fastify);
+
   fastify.get(
     '/',
     { preHandler: [validateQuery(listProductsQuerySchema)] },

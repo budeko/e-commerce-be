@@ -1,7 +1,7 @@
 export type ProductRecord = {
   _id: unknown;
   sellerId: string;
-  categoryId: string | null;
+  categoryId?: string | null;
   name: string;
   slug?: string | null;
   description?: string | null;
