@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fastify from 'fastify';
 import { HttpError } from '@/lib/common/errors';
-import { registerErrorHandler } from '@/plugins/error-handler';
+import { registerErrorHandler } from '@/plugins/error-handler/register';
 
 describe('registerErrorHandler', () => {
   it('HttpError status ve mesajını döner', async () => {

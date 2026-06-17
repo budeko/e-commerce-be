@@ -1,10 +1,10 @@
 import fastify, { FastifyInstance } from 'fastify';
 import { env } from '@/config/env';
 import { registerRoutes } from '@/app/register-routes';
-import { registerCors } from '@/plugins/cors';
-import { registerErrorHandler } from '@/plugins/error-handler';
-import { registerFormBody } from '@/plugins/formbody';
-import { registerRateLimit } from '@/plugins/rate-limit';
+import { registerCors } from '@/plugins/cors/register';
+import { registerErrorHandler } from '@/plugins/error-handler/register';
+import { registerFormBody } from '@/plugins/formbody/register';
+import { registerGlobalRateLimit } from '@/plugins/rate-limit/register-global';
 
 export const buildApp = async (): Promise<FastifyInstance> => {
   const app = fastify({
@@ -16,7 +16,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
   registerErrorHandler(app);
   await registerCors(app);
   await registerFormBody(app);
-  await registerRateLimit(app);
+  await registerGlobalRateLimit(app);
   await registerRoutes(app);
 
   return app;

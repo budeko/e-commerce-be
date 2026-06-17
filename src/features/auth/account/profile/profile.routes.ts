@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { registerProfileDocumentMultipart } from '@/plugins/multipart-profile';
+import { registerProfileDocumentMultipart } from '@/plugins/multipart/profile';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';

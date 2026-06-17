@@ -4,6 +4,7 @@ import { env } from '@/config/env';
 import { validateBody } from '@/lib/common/http/validate-body';
 import { handleRouteError } from '@/lib/common/http/handle-route-error';
 import { logger } from '@/lib/common/logger';
+import { disabledRouteRateLimit } from '@/plugins/rate-limit/presets';
 import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';
 import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
 import {
@@ -85,7 +86,7 @@ export default async function paymentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.post('/callback', async (req, reply) => {
+  fastify.post('/callback', { config: disabledRouteRateLimit }, async (req, reply) => {
     let checkoutToken: string | undefined;
 
     try {

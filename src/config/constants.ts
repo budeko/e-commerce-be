@@ -35,6 +35,26 @@ export const AUTH_SELLER_RATE_LIMIT = {
   timeWindow: '1 minute' as const,
 };
 
+export const ECOMMERCE_PUBLIC_RATE_LIMIT = {
+  max: 120,
+  timeWindow: '1 minute' as const,
+};
+
+export const ECOMMERCE_BUYER_RATE_LIMIT = {
+  max: 60,
+  timeWindow: '1 minute' as const,
+};
+
+export const ECOMMERCE_SELLER_WRITE_RATE_LIMIT = {
+  max: 30,
+  timeWindow: '1 minute' as const,
+};
+
+export const ECOMMERCE_ADMIN_RATE_LIMIT = {
+  max: 60,
+  timeWindow: '1 minute' as const,
+};
+
 /** Ürün görsel upload — product.routes scope. */
 export const PRODUCT_MULTIPART_LIMITS = {
   fileSize: 2 * 1024 * 1024,

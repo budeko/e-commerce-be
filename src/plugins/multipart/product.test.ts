@@ -1,13 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import fastify from 'fastify';
 import { PRODUCT_MULTIPART_LIMITS } from '@/config/constants';
-import { registerProductMultipart } from '@/plugins/multipart-product';
+import { registerProductMultipart } from '@/plugins/multipart/product';
 
 describe('registerProductMultipart', () => {
-  afterEach(async () => {
-    // her test kendi instance'ını kapatır
-  });
-
   it('multipart eklentisini ürün limitleriyle register eder', async () => {
     const app = fastify({ logger: false });
     await registerProductMultipart(app);

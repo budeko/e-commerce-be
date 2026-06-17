@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import fastify from 'fastify';
-import { registerRateLimit } from '@/plugins/rate-limit';
+import { registerGlobalRateLimit } from '@/plugins/rate-limit/register-global';
 
-describe('registerRateLimit', () => {
+describe('registerGlobalRateLimit', () => {
   it('global rate limit plugin register edilir', async () => {
     const app = fastify({ logger: false });
-    await registerRateLimit(app);
+    await registerGlobalRateLimit(app);
 
     app.get('/ping', async (_req, reply) => reply.send({ ok: true }));
 
