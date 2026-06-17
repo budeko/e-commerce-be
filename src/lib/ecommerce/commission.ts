@@ -12,8 +12,15 @@ const parseCommissionRate = (raw: string | undefined, fallback: number): number 
   return rate;
 };
 
-export const getPlatformCommissionRate = (): number =>
-  parseCommissionRate(process.env.PLATFORM_COMMISSION_RATE, 0.1);
+export const getPlatformCommissionRate = (): number => {
+  const raw = process.env.PLATFORM_COMMISSION_RATE?.trim();
+
+  if (!raw) {
+    throw new Error('PLATFORM_COMMISSION_RATE tanımlı olmalı (örn. 0.10 = %10 komisyon)');
+  }
+
+  return parseCommissionRate(raw, 0.1);
+};
 
 export type ItemSplitAmounts = {
   subtotal: number;

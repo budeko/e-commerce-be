@@ -1,5 +1,23 @@
-import { describe, expect, it } from 'vitest';
-import { calcItemSplit } from '@/lib/ecommerce/commission';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { calcItemSplit, getPlatformCommissionRate } from '@/lib/ecommerce/commission';
+
+describe('getPlatformCommissionRate', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('env yoksa hata fırlatır', () => {
+    vi.stubEnv('PLATFORM_COMMISSION_RATE', '');
+
+    expect(() => getPlatformCommissionRate()).toThrow(/PLATFORM_COMMISSION_RATE tanımlı olmalı/);
+  });
+
+  it('env değerini okur', () => {
+    vi.stubEnv('PLATFORM_COMMISSION_RATE', '0.08');
+
+    expect(getPlatformCommissionRate()).toBe(0.08);
+  });
+});
 
 describe('calcItemSplit', () => {
   it('komisyonu düşerek satıcı payını hesaplar', () => {
