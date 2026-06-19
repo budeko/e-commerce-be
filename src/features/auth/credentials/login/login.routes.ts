@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateBody } from '@/plugins/http/validate-body';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
 import { login } from '@/features/auth/credentials/login/login.service';
 import { loginSchema, type LoginInput } from '@/features/auth/credentials/login/login.schema';

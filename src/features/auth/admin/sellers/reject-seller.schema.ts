@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { safeString } from '@/lib/common/validation/common-schemas';
+import { safeString } from '@/internal/validation/common-schemas';
 
 export const rejectSellerSchema = z.object({
   reason: safeString({ min: 5, max: 500, label: 'Red sebebi' }),

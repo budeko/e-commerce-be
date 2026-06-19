@@ -1,9 +1,9 @@
 import { PaymentSplit, Seller } from '@/db';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 import { calcItemSplit } from '@/features/ecommerce/payment/commission';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
-import { approveIyzicoPaymentItem } from '@/lib/integrations/iyzico/approve-payment-item';
-import type { InitializeCheckoutItem } from '@/lib/integrations/iyzico/types';
+import { approveIyzicoPaymentItem } from '@/integrations/iyzico/approve-payment-item';
+import type { InitializeCheckoutItem } from '@/integrations/iyzico/types';
 
 type OrderItemForSplit = {
   productId: string;

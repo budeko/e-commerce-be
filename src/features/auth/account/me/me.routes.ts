@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { getMe } from '@/features/auth/account/me/me.service';
 
 export default async function (fastify: FastifyInstance) {

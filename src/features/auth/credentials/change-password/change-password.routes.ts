@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateBody } from '@/plugins/http/validate-body';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { changePassword } from '@/features/auth/credentials/change-password/change-password.service';
 import { changePasswordSchema, type ChangePasswordInput } from '@/features/auth/credentials/change-password/change-password.schema';
 

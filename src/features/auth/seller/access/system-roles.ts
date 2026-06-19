@@ -5,7 +5,7 @@ import {
 } from '@/db/models/auth/seller-role.model';
 import { Seller } from '@/db/models/auth/seller.model';
 import { ALL_SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 
 export const ensureSystemOwnerSellerRole = async (sellerId: string) => {
   let role = await SellerRole.findOne({

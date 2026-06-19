@@ -1,4 +1,4 @@
-import { createLogger } from '@/lib/common/logger';
+import { createLogger } from '@/internal/logging';
 import {
   assertEmailCooldown,
   EmailCooldownError,

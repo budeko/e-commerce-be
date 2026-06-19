@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { safeString } from '@/lib/common/validation/common-schemas';
-import { slugSchema } from '@/lib/common/validation/slug-schema';
+import { safeString } from '@/internal/validation/common-schemas';
+import { slugSchema } from '@/internal/validation/slug-schema';
 
 const categoryNameSchema = safeString({
   min: 1,

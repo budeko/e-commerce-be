@@ -1,8 +1,8 @@
 import { Buyer, Order, Payment, User } from '@/db';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 import { getBuyerOrder } from '@/features/ecommerce/order/order.service';
-import { initializeIyzicoCheckout } from '@/lib/integrations/iyzico/initialize-checkout';
-import { completeIyzicoCheckout } from '@/lib/integrations/iyzico/retrieve-checkout';
+import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
+import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import type { CreatePaymentInput } from '@/features/ecommerce/payment/create-payment.schema';
 import {

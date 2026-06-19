@@ -13,8 +13,8 @@ import {
   isOwnerRoleId,
 } from '@/features/auth/admin/roles/roles.service';
 import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
-import { hashPassword } from '@/lib/common/password';
-import { createUserId } from '@/lib/common/user-id';
+import { hashPassword } from '@/internal/security';
+import { createUserId } from '@/internal/ids';
 import { Admin, User } from '@/db';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';

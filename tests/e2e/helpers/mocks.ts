@@ -4,12 +4,12 @@ vi.mock('@/features/auth/core/mail/send-verification', () => ({
   sendUserVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/integrations/resend/send', () => ({
+vi.mock('@/integrations/resend/send', () => ({
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/integrations/iyzico/initialize-checkout', () => ({
+vi.mock('@/integrations/iyzico/initialize-checkout', () => ({
   initializeIyzicoCheckout: vi.fn().mockResolvedValue({
     token: 'e2e-checkout-token',
     paymentPageUrl: 'https://sandbox-cpp.iyzipay.com?token=e2e',
@@ -17,7 +17,7 @@ vi.mock('@/lib/integrations/iyzico/initialize-checkout', () => ({
   }),
 }));
 
-vi.mock('@/lib/integrations/iyzico/retrieve-checkout', () => ({
+vi.mock('@/integrations/iyzico/retrieve-checkout', () => ({
   completeIyzicoCheckout: vi.fn().mockResolvedValue({
     status: 'completed',
     externalId: 'e2e-payment-id',

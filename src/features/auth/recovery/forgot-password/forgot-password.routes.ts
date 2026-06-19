@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateBody } from '@/plugins/http/validate-body';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { forgotPassword } from '@/features/auth/recovery/forgot-password/forgot-password.service';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/features/auth/recovery/forgot-password/forgot-password.schema';
 

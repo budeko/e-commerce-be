@@ -3,11 +3,11 @@ import {
   sendSellerApprovedEmail,
   sendSellerRejectedEmail,
 } from '@/features/auth/admin/mail/send-seller-notifications';
-import { createLogger } from '@/lib/common/logger';
+import { createLogger } from '@/internal/logging';
 import { Seller, User, type SellerApprovalStatus } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
-import { HttpError } from '@/lib/common/errors';
-import { createIyzicoSubMerchant } from '@/lib/integrations/iyzico/create-submerchant';
+import { HttpError } from '@/internal/errors';
+import { createIyzicoSubMerchant } from '@/integrations/iyzico/create-submerchant';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 
 const assertCanManageSellerApproval = (ctx: AdminAccessContext) => {

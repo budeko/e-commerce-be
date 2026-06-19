@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { registerProfileDocumentMultipart } from '@/plugins/multipart/profile';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { getProfile, updateProfile } from '@/features/auth/account/profile/profile.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 import { validateProfileUpdate } from '@/features/auth/core/profile/validate-profile-update';

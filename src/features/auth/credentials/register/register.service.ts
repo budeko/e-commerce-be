@@ -1,4 +1,4 @@
-import { createLogger } from '@/lib/common/logger';
+import { createLogger } from '@/internal/logging';
 import { sendUserVerificationEmail } from '@/features/auth/core/mail/send-verification';
 import {
   assertRegisterEmailCooldown,
@@ -11,8 +11,8 @@ import {
   getVerificationExpiresAt,
 } from '@/features/auth/core/register/unverified-user';
 import { invalidateAuthOtp } from '@/features/auth/core/otp/otp';
-import { hashPassword } from '@/lib/common/password';
-import { createUserId } from '@/lib/common/user-id';
+import { hashPassword } from '@/internal/security';
+import { createUserId } from '@/internal/ids';
 import { User, Buyer, Seller } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';
 import type { RegisterInput } from '@/features/auth/credentials/register/register.schema';

@@ -5,7 +5,7 @@ import {
   AuthOtpPurpose,
   buildAuthOtpId,
 } from '@/db';
-import { comparePassword, hashPassword } from '@/lib/common/password';
+import { comparePassword, hashPassword } from '@/internal/security';
 
 const MAX_OTP_ATTEMPTS = 5;
 

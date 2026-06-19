@@ -14,8 +14,8 @@ import {
 } from '@/features/auth/seller/roles/roles.service';
 import { SellerMember } from '@/db/models/auth/seller-member.model';
 import { User } from '@/db';
-import { hashPassword } from '@/lib/common/password';
-import { createUserId } from '@/lib/common/user-id';
+import { hashPassword } from '@/internal/security';
+import { createUserId } from '@/internal/ids';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
 import type { CreateSellerMemberInput } from '@/features/auth/seller/members/create-member.schema';

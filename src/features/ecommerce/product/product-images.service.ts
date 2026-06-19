@@ -8,13 +8,13 @@ import {
   resolveProductImageMimeType,
 } from '@/features/ecommerce/product/product-image-types';
 import { toSellerProductResponse } from '@/features/ecommerce/product/product-response';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 import {
   deleteFromSellerStorage,
   getSupabaseConfig,
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
-} from '@/lib/integrations/supabase/supabase';
+} from '@/integrations/supabase/supabase';
 
 const getOwnedProduct = async (sellerId: string, productId: string) => {
   const product = await Product.findById(productId);

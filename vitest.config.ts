@@ -8,7 +8,10 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/**/*.test.ts'],
+    include: [
+      'tests/unit/**/*.test.ts',
+      'tests/integration-test/**/*.integration.test.ts',
+    ],
     environment: 'node',
   },
 });

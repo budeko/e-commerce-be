@@ -13,7 +13,7 @@ import {
 import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/db';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 import type { CreateAdminRoleInput } from '@/features/auth/admin/roles/create-role.schema';
 import type { UpdateAdminRoleInput } from '@/features/auth/admin/roles/create-role.schema';
 

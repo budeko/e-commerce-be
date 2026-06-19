@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { safeString } from '@/lib/common/validation/common-schemas';
+import { safeString } from '@/internal/validation/common-schemas';
 import { passwordSchema } from '@/features/auth/core/schemas/password.schema';
 import { emailSchema } from '@/features/auth/core/schemas/email.schema';
 import { otpCodeSchema } from '@/features/auth/core/schemas/otp-code.schema';

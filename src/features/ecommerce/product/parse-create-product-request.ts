@@ -1,6 +1,6 @@
 import type { FastifyRequest } from 'fastify';
-import { HttpError } from '@/lib/common/errors';
-import { sanitizeRequestBody } from '@/lib/common/validation/sanitize';
+import { HttpError } from '@/internal/errors';
+import { sanitizeRequestBody } from '@/internal/validation/sanitize';
 import {
   createProductSchema,
   type CreateProductInput,

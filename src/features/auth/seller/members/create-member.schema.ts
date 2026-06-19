@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { emailSchema } from '@/features/auth/core/schemas/email.schema';
 import { passwordSchema } from '@/features/auth/core/schemas/password.schema';
-import { uuidSchema } from '@/lib/common/validation/common-schemas';
+import { uuidSchema } from '@/internal/validation/common-schemas';
 
 const memberProfileFieldsSchema = z.object({
   firstName: z.string().trim().min(1).max(500).optional(),

@@ -1,4 +1,4 @@
-import { HttpError } from '@/lib/common/errors';
+import { HttpError } from '@/internal/errors';
 
 export class AuthError extends HttpError {
   constructor(statusCode: number, message: string) {
@@ -7,4 +7,4 @@ export class AuthError extends HttpError {
   }
 }
 
-export { isDuplicateKeyError } from '@/lib/common/errors';
+export { isDuplicateKeyError } from '@/internal/errors';

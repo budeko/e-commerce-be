@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { Payment } from '@/db';
 import { env } from '@/config/env';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
-import { logger } from '@/lib/common/logger';
+import { validateBody } from '@/plugins/http/validate-body';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
+import { logger } from '@/internal/logging';
 import { disabledRouteRateLimit } from '@/plugins/rate-limit/presets';
-import { orderIdParamSchema } from '@/lib/common/validation/param-schemas';
+import { orderIdParamSchema } from '@/internal/validation/param-schemas';
 import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
 import {
   createPaymentSchema,

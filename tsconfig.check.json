@@ -4,6 +4,12 @@
     "noEmit": true,
     "rootDir": "."
   },
-  "include": ["src/**/*", "scripts/**/*", "tests/e2e/**/*"],
+  "include": [
+    "src/**/*",
+    "scripts/**/*",
+    "tests/e2e/**/*",
+    "tests/integration-test/**/*",
+    "tests/unit/**/*"
+  ],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,11 +1,11 @@
-import { createLogger } from '@/lib/common/logger';
+import { createLogger } from '@/internal/logging';
 import {
   assertEmailCooldown,
   EmailCooldownError,
   markPasswordResetEmailSent,
 } from '@/features/auth/core/mail/cooldown';
 import { signPasswordResetToken } from '@/features/auth/core/security/email-token';
-import { sendPasswordResetEmail } from '@/lib/integrations/resend/send';
+import { sendPasswordResetEmail } from '@/integrations/resend/send';
 import { createAuthOtp, invalidateAuthOtp } from '@/features/auth/core/otp/otp';
 import { User } from '@/db';
 import { AuthError } from '@/features/auth/core/errors';

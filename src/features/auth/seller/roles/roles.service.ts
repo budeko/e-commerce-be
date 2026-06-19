@@ -17,7 +17,7 @@ import {
 } from '@/db/models/auth/seller-role.model';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
-import { createUserId } from '@/lib/common/user-id';
+import { createUserId } from '@/internal/ids';
 import type {
   CreateSellerRoleInput,
   UpdateSellerRoleInput,

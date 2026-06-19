@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { safeString, safeUrlSchema, uuidSchema } from '@/lib/common/validation/common-schemas';
-import { slugSchema } from '@/lib/common/validation/slug-schema';
+import { safeString, safeUrlSchema, uuidSchema } from '@/internal/validation/common-schemas';
+import { slugSchema } from '@/internal/validation/slug-schema';
 
 export const updateProductSchema = z
   .object({

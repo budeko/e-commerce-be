@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { validateParams } from '@/lib/common/http/validate-params';
-import { categoryIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateParams } from '@/plugins/http/validate-params';
+import { categoryIdParamSchema } from '@/internal/validation/param-schemas';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import {
   getCategoryById,
   getCategoryPaths,

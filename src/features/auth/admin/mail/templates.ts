@@ -1,4 +1,4 @@
-import { actionButton, baseLayout, escapeHtml, footerNote, reasonBox } from '@/lib/integrations/resend/layout';
+import { actionButton, baseLayout, escapeHtml, footerNote, reasonBox } from '@/integrations/resend/layout';
 
 export const buildSellerApprovedEmailHtml = (dashboardUrl: string, companyName?: string) =>
   baseLayout(`

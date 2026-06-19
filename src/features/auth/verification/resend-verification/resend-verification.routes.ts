@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateBody } from '@/plugins/http/validate-body';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/resend-verification.service';
 import {
   resendVerificationSchema,

@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { sanitizeRequestBody } from '@/lib/common/validation/sanitize';
+import { sanitizeRequestBody } from '@/internal/validation/sanitize';
 import { buyerProfileUpdateSchema } from '@/features/auth/account/profile/buyer-profile-update.schema';
 import { sellerProfileUpdateSchema } from '@/features/auth/account/profile/seller-profile-update.schema';
 

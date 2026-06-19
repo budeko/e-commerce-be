@@ -1,11 +1,11 @@
 import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
-import { HttpError } from '@/lib/common/errors';
+import { HttpError } from '@/internal/errors';
 import {
   deleteFromSellerStorage,
   getSupabaseConfig,
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
-} from '@/lib/integrations/supabase/supabase';
+} from '@/integrations/supabase/supabase';
 import { Seller } from '@/db';
 import { getSellerContext } from '@/features/auth/core/queries/seller-context';
 import { AuthError } from '@/features/auth/core/errors';

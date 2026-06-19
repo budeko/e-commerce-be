@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/features/auth/core/guard/require-auth';
 import { requireAdmin, requireOwner } from '@/features/auth/core/guard/require-admin';
-import { validateBody } from '@/lib/common/http/validate-body';
-import { validateParams } from '@/lib/common/http/validate-params';
-import { userIdParamSchema } from '@/lib/common/validation/param-schemas';
-import { handleRouteError } from '@/lib/common/http/handle-route-error';
+import { validateBody } from '@/plugins/http/validate-body';
+import { validateParams } from '@/plugins/http/validate-params';
+import { userIdParamSchema } from '@/internal/validation/param-schemas';
+import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/admins.service';
 import { createAdminSchema, type CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';
 import { updateAdminSchema, type UpdateAdminInput } from '@/features/auth/admin/admins/update-admin.schema';
