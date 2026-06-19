@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin, requirePermission } from '@/features/auth/core/guard/require-admin';
+import { adminOnly } from '@/middleware/presets/admin-route-guards';
+import { requirePermission } from '@/middleware/auth/require-admin';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { validateQuery } from '@/plugins/http/validate-query';
@@ -17,9 +17,8 @@ import {
   syncSellerIyzicoSubMerchant,
 } from '@/features/auth/admin/sellers/sellers.service';
 
-const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {
-  preHandler: [requireAuth, requireAdmin, validateParams(userIdParamSchema)],
+  preHandler: [...adminOnly.preHandler, validateParams(userIdParamSchema)],
 };
 
 export default async function (fastify: FastifyInstance) {
@@ -114,8 +113,7 @@ export default async function (fastify: FastifyInstance) {
     '/:userId/reject',
     {
       preHandler: [
-        requireAuth,
-        requireAdmin,
+        ...adminOnly.preHandler,
         requirePermission(PERMISSIONS.SELLERS_APPROVE),
         validateParams(userIdParamSchema),
         validateBody(rejectSellerSchema),

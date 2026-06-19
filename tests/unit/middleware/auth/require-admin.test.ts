@@ -12,7 +12,7 @@ import {
   requireAdmin,
   requirePermission,
   requireOwner,
-} from '@/features/auth/core/guard/require-admin';
+} from '@/middleware/auth/require-admin';
 
 const adminId = '550e8400-e29b-41d4-a716-446655440000';
 

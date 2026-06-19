@@ -19,7 +19,7 @@ vi.mock('@/features/auth/core/security/access-token', () => ({
   verifyAuthToken: (...args: unknown[]) => mockVerifyAuthToken(...args),
 }));
 
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireAuth } from '@/middleware/auth/require-auth';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 

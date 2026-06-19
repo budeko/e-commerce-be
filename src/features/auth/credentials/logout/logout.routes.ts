@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { requireAuth } from '@/middleware/auth/require-auth';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { logout, logoutAllSessions } from '@/features/auth/credentials/logout/logout.service';
 

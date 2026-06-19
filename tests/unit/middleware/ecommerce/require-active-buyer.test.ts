@@ -9,7 +9,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
+import { requireActiveBuyer } from '@/middleware/ecommerce/require-active-buyer';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -30,58 +30,62 @@ const createReply = () => {
   return reply as unknown as FastifyReply & { statusCode: number; body: unknown };
 };
 
-describe('requireEmailVerified', () => {
+describe('requireActiveBuyer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('auth yoksa 401 döner', async () => {
-    const request = { auth: undefined } as FastifyRequest;
+    const request = {} as FastifyRequest;
     const reply = createReply();
 
-    await requireEmailVerified(request, reply);
+    await requireActiveBuyer(request, reply);
 
     expect(reply.statusCode).toBe(401);
     expect(reply.body).toEqual({ message: 'Giriş gerekli' });
   });
 
-  it('doğrulanmamış buyer için 403 döner', async () => {
-    mockUserFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ isEmailVerified: false, role: 'buyer' }),
-    });
-
-    const request = { auth: { userId, role: 'buyer' } } as FastifyRequest;
+  it('buyer değilse 403 döner', async () => {
+    const request = {
+      auth: { userId, role: 'seller' },
+    } as FastifyRequest;
     const reply = createReply();
 
-    await requireEmailVerified(request, reply);
+    await requireActiveBuyer(request, reply);
 
     expect(reply.statusCode).toBe(403);
-    expect(reply.body).toEqual({ message: 'E-posta adresini doğrulamadan devam edemezsin' });
+    expect(reply.body).toEqual({ message: 'Bu işlem için alıcı hesabı gerekli' });
   });
 
-  it('admin için e-posta doğrulaması atlanır', async () => {
+  it('profil tamamlanmamışsa 403 döner', async () => {
     mockUserFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ isEmailVerified: false, role: 'admin' }),
+      select: vi.fn().mockResolvedValue({ isActive: false, role: 'buyer' }),
     });
 
-    const request = { auth: { userId, role: 'admin' } } as FastifyRequest;
+    const request = {
+      auth: { userId, role: 'buyer' },
+    } as FastifyRequest;
     const reply = createReply();
 
-    await requireEmailVerified(request, reply);
+    await requireActiveBuyer(request, reply);
 
-    expect(reply.statusCode).toBe(200);
-    expect(reply.body).toBeUndefined();
+    expect(reply.statusCode).toBe(403);
+    expect(reply.body).toEqual({
+      message: 'Profilini tamamlamadan alışveriş yapamazsın',
+    });
   });
 
-  it('doğrulanmış buyer geçer', async () => {
+  it('aktif buyer için geçer', async () => {
     mockUserFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({ isEmailVerified: true, role: 'buyer' }),
+      select: vi.fn().mockResolvedValue({ isActive: true, role: 'buyer' }),
     });
 
-    const request = { auth: { userId, role: 'buyer' } } as FastifyRequest;
+    const request = {
+      auth: { userId, role: 'buyer' },
+    } as FastifyRequest;
     const reply = createReply();
 
-    await requireEmailVerified(request, reply);
+    await requireActiveBuyer(request, reply);
 
     expect(reply.statusCode).toBe(200);
     expect(reply.body).toBeUndefined();

@@ -1,6 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin } from '@/features/auth/core/guard/require-admin';
+import { adminOnly } from '@/middleware/presets/admin-route-guards';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
@@ -10,8 +9,6 @@ import {
   type AdminProfileUpdateInput,
 } from '@/features/auth/admin/profile/admin-profile-fields.schema';
 import { getAdminProfile, updateAdminProfile } from '@/features/auth/admin/profile/profile.service';
-
-const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', adminOnly, async (req, reply) => {
@@ -57,8 +54,7 @@ export default async function (fastify: FastifyInstance) {
     '/:userId',
     {
       preHandler: [
-        requireAuth,
-        requireAdmin,
+        ...adminOnly.preHandler,
         validateParams(userIdParamSchema),
         validateBody(adminProfileUpdateSchema),
       ],

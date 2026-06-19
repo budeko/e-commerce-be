@@ -7,7 +7,7 @@ vi.mock('@/features/auth/core/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 
-import { requireApprovedSeller } from '@/features/ecommerce/core/guard/require-approved-seller';
+import { requireApprovedSeller } from '@/middleware/ecommerce/require-approved-seller';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
 const companyId = '660e8400-e29b-41d4-a716-446655440000';

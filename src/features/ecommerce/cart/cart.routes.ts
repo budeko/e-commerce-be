@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/plugins/http/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { productIdParamSchema } from '@/internal/validation/param-schemas';
-import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
+import { buyerOnly, buyerWithParams } from '@/middleware/presets/buyer-route-guards';
 import {
   addToCartSchema,
   type AddToCartInput,

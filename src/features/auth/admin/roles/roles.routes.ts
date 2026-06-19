@@ -1,10 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
+import { adminOnly } from '@/middleware/presets/admin-route-guards';
 import {
-  requireAdmin,
   requireOwner,
   requirePermission,
-} from '@/features/auth/core/guard/require-admin';
+} from '@/middleware/auth/require-admin';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { roleIdParamSchema } from '@/internal/validation/param-schemas';
@@ -25,8 +24,6 @@ import {
   type CreateAdminRoleInput,
   type UpdateAdminRoleInput,
 } from '@/features/auth/admin/roles/create-role.schema';
-
-const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 
 export default async function (fastify: FastifyInstance) {
   fastify.get(
@@ -67,8 +64,7 @@ export default async function (fastify: FastifyInstance) {
     '/:roleId',
     {
       preHandler: [
-        requireAuth,
-        requireAdmin,
+        ...adminOnly.preHandler,
         requirePermission(PERMISSIONS.ADMIN_ROLES_READ),
         validateParams(roleIdParamSchema),
       ],
@@ -87,12 +83,7 @@ export default async function (fastify: FastifyInstance) {
   fastify.post(
     '/',
     {
-      preHandler: [
-        requireAuth,
-        requireAdmin,
-        requireOwner,
-        validateBody(createAdminRoleSchema),
-      ],
+      preHandler: [...adminOnly.preHandler, requireOwner, validateBody(createAdminRoleSchema)],
     },
     async (req, reply) => {
       try {
@@ -114,8 +105,7 @@ export default async function (fastify: FastifyInstance) {
     '/:roleId',
     {
       preHandler: [
-        requireAuth,
-        requireAdmin,
+        ...adminOnly.preHandler,
         requireOwner,
         validateParams(roleIdParamSchema),
         validateBody(updateAdminRoleSchema),
@@ -143,7 +133,7 @@ export default async function (fastify: FastifyInstance) {
   fastify.delete(
     '/:roleId',
     {
-      preHandler: [requireAuth, requireAdmin, requireOwner, validateParams(roleIdParamSchema)],
+      preHandler: [...adminOnly.preHandler, requireOwner, validateParams(roleIdParamSchema)],
     },
     async (req, reply) => {
       try {

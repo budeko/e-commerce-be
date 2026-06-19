@@ -2,12 +2,12 @@ import { FastifyInstance } from 'fastify';
 import { registerProductMultipart } from '@/plugins/multipart/product';
 import { ECOMMERCE_SELLER_WRITE_RATE_LIMIT } from '@/plugins/rate-limit/presets';
 import { registerScopedRateLimit } from '@/plugins/rate-limit/register-scoped';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
+import { requireAuth } from '@/middleware/auth/require-auth';
+import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
 import {
   requireApprovedSeller,
   requireSellerPermission,
-} from '@/features/ecommerce/core/guard/require-approved-seller';
+} from '@/middleware/ecommerce/require-approved-seller';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { validateQuery } from '@/plugins/http/validate-query';

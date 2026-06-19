@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin, requirePermission } from '@/features/auth/core/guard/require-admin';
+import { adminOnly } from '@/middleware/presets/admin-route-guards';
+import { requirePermission } from '@/middleware/auth/require-admin';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { categoryIdParamSchema } from '@/internal/validation/param-schemas';
@@ -28,9 +28,8 @@ import {
   updateCategory,
 } from '@/features/ecommerce/category/category.service';
 
-const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithCategoryId = {
-  preHandler: [requireAuth, requireAdmin, validateParams(categoryIdParamSchema)],
+  preHandler: [...adminOnly.preHandler, validateParams(categoryIdParamSchema)],
 };
 
 export default async function categoriesAdminRoutes(fastify: FastifyInstance) {

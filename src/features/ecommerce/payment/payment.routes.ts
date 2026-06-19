@@ -6,7 +6,7 @@ import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { logger } from '@/internal/logging';
 import { disabledRouteRateLimit } from '@/plugins/rate-limit/presets';
 import { orderIdParamSchema } from '@/internal/validation/param-schemas';
-import { buyerOnly, buyerWithParams } from '@/features/ecommerce/core/routes/buyer-route-guards';
+import { buyerOnly, buyerWithParams } from '@/middleware/presets/buyer-route-guards';
 import {
   createPaymentSchema,
   type CreatePaymentInput,

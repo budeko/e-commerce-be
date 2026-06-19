@@ -1,12 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireEmailVerified } from '@/features/auth/core/guard/require-email-verified';
+import { sellerTeamBase } from '@/middleware/presets/seller-route-guards';
 import {
-  requireSellerContext,
   requireSellerOwner,
   requireSellerPermission,
-  requireKurumsalSeller,
-} from '@/features/ecommerce/core/guard/require-approved-seller';
+} from '@/middleware/ecommerce/require-approved-seller';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { roleIdParamSchema } from '@/internal/validation/param-schemas';
@@ -27,10 +24,6 @@ import {
   type CreateSellerRoleInput,
   type UpdateSellerRoleInput,
 } from '@/features/auth/seller/roles/create-role.schema';
-
-const sellerTeamBase = {
-  preHandler: [requireAuth, requireEmailVerified, requireSellerContext, requireKurumsalSeller],
-};
 
 export default async function (fastify: FastifyInstance) {
   fastify.get(

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { requireAuth } from '@/features/auth/core/guard/require-auth';
-import { requireAdmin, requireOwner } from '@/features/auth/core/guard/require-admin';
+import { adminOnly } from '@/middleware/presets/admin-route-guards';
+import { requireOwner } from '@/middleware/auth/require-admin';
 import { validateBody } from '@/plugins/http/validate-body';
 import { validateParams } from '@/plugins/http/validate-params';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
@@ -9,9 +9,8 @@ import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } f
 import { createAdminSchema, type CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';
 import { updateAdminSchema, type UpdateAdminInput } from '@/features/auth/admin/admins/update-admin.schema';
 
-const adminOnly = { preHandler: [requireAuth, requireAdmin] };
 const adminWithUserId = {
-  preHandler: [requireAuth, requireAdmin, validateParams(userIdParamSchema)],
+  preHandler: [...adminOnly.preHandler, validateParams(userIdParamSchema)],
 };
 
 export default async function (fastify: FastifyInstance) {
@@ -45,7 +44,7 @@ export default async function (fastify: FastifyInstance) {
 
   fastify.post(
     '/',
-    { preHandler: [requireAuth, requireAdmin, requireOwner, validateBody(createAdminSchema)] },
+    { preHandler: [...adminOnly.preHandler, requireOwner, validateBody(createAdminSchema)] },
     async (req, reply) => {
       try {
         if (!req.adminContext) {
@@ -68,8 +67,7 @@ export default async function (fastify: FastifyInstance) {
     '/:userId',
     {
       preHandler: [
-        requireAuth,
-        requireAdmin,
+        ...adminOnly.preHandler,
         requireOwner,
         validateParams(userIdParamSchema),
         validateBody(updateAdminSchema),
@@ -102,7 +100,7 @@ export default async function (fastify: FastifyInstance) {
   fastify.delete(
     '/:userId',
     {
-      preHandler: [requireAuth, requireAdmin, requireOwner, validateParams(userIdParamSchema)],
+      preHandler: [...adminOnly.preHandler, requireOwner, validateParams(userIdParamSchema)],
     },
     async (req, reply) => {
       try {
