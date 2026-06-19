@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FastifyReply } from 'fastify';
 import { AuthError } from '@/internal/auth/errors';
-import { EcommerceError } from '@/internal/ecommerce/errors';
+import { CommerceError } from '@/internal/errors/commerce-error';
 import { handleRouteError } from '@/internal/errors/handle-route-error';
 
 const createReply = () => {
@@ -25,7 +25,7 @@ describe('handleRouteError', () => {
   it('HttpError için status ve mesaj döner', () => {
     const reply = createReply();
 
-    handleRouteError(reply, new EcommerceError(404, 'Ürün bulunamadı'), 'Sunucu hatası');
+    handleRouteError(reply, new CommerceError(404, 'Ürün bulunamadı'), 'Sunucu hatası');
 
     expect(reply.statusCode).toBe(404);
     expect(reply.body).toEqual({ message: 'Ürün bulunamadı' });

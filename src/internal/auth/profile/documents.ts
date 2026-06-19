@@ -18,7 +18,7 @@ import {
   SELLER_DOCUMENT_RULES,
   type SellerDocumentType,
 } from '@/internal/auth/profile/seller-document-types';
-import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
+import type { SellerProfileUpdateInput } from '@/features/buyers/profile/profile.schema';
 import { updateSellerProfile } from '@/internal/auth/profile/seller';
 
 export type UploadSellerDocumentInput = {

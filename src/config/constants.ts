@@ -35,22 +35,22 @@ export const AUTH_SELLER_RATE_LIMIT = {
   timeWindow: '1 minute' as const,
 };
 
-export const ECOMMERCE_PUBLIC_RATE_LIMIT = {
+export const CATALOG_PUBLIC_RATE_LIMIT = {
   max: 120,
   timeWindow: '1 minute' as const,
 };
 
-export const ECOMMERCE_BUYER_RATE_LIMIT = {
+export const BUYERS_RATE_LIMIT = {
   max: 60,
   timeWindow: '1 minute' as const,
 };
 
-export const ECOMMERCE_SELLER_WRITE_RATE_LIMIT = {
+export const SELLERS_WRITE_RATE_LIMIT = {
   max: 30,
   timeWindow: '1 minute' as const,
 };
 
-export const ECOMMERCE_ADMIN_RATE_LIMIT = {
+export const ADMIN_CATEGORIES_RATE_LIMIT = {
   max: 60,
   timeWindow: '1 minute' as const,
 };

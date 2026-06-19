@@ -24,7 +24,7 @@ describe('registerRoutes', () => {
     expect(response.statusCode).toBe(401);
   });
 
-  it('ecommerce route’ları root prefix altında mount edilir', async () => {
+  it('buyer route’ları root prefix altında mount edilir', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/orders',

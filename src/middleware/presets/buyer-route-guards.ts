@@ -1,6 +1,6 @@
 import { requireAuth } from '@/middleware/auth/require-auth';
 import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
-import { requireActiveBuyer } from '@/middleware/ecommerce/require-active-buyer';
+import { requireActiveBuyer } from '@/middleware/buyers/require-active-buyer';
 import { validateParams } from '@/middleware/validation/validate-params';
 import type { ZodTypeAny } from 'zod';
 

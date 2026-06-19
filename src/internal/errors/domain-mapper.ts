@@ -1,1 +1,1 @@
-// İleride: HttpError → feature domain hatalarına (AuthError, EcommerceError) ortak map yardımcıları.
+// İleride: HttpError → feature domain hatalarına (AuthError, CommerceError) ortak map yardımcıları.

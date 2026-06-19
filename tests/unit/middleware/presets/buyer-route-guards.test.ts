@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buyerOnly } from '@/middleware/presets/buyer-route-guards';
 import { requireAuth } from '@/middleware/auth/require-auth';
 import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
-import { requireActiveBuyer } from '@/middleware/ecommerce/require-active-buyer';
+import { requireActiveBuyer } from '@/middleware/buyers/require-active-buyer';
 
 describe('buyerOnly', () => {
   it('buyer guard zincirini korur', () => {

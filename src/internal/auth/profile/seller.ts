@@ -12,7 +12,7 @@ import {
   assertIbanUpdateAllowed,
   omitUnchangedLockedIban,
 } from '@/internal/auth/profile/seller-iban-lock';
-import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
+import type { SellerProfileUpdateInput } from '@/features/buyers/profile/profile.schema';
 
 const assertCanReadCompany = (ctx: SellerAccessContext) => {
   if (!canReadCompanyProfile(ctx)) {

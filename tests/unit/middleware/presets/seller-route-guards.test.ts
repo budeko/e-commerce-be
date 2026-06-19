@@ -5,7 +5,7 @@ import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
 import {
   requireApprovedSeller,
   requireKurumsalSeller,
-} from '@/middleware/ecommerce/require-approved-seller';
+} from '@/middleware/sellers/require-approved-seller';
 
 describe('sellerTeamBase', () => {
   it('seller ekip guard zincirini korur', () => {

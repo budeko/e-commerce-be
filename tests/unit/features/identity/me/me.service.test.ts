@@ -1,0 +1,62 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mockFindById = vi.fn();
+const mockBuildAuthUserFields = vi.fn();
+
+vi.mock('@/integrations/mongo', () => ({
+  User: {
+    findById: (...args: unknown[]) => mockFindById(...args),
+  },
+}));
+
+vi.mock('@/internal/auth/responses/user.response', () => ({
+  buildAuthUserFields: (...args: unknown[]) => mockBuildAuthUserFields(...args),
+}));
+
+import { getMe } from '@/features/identity/me/me.service';
+
+const userId = '550e8400-e29b-41d4-a716-446655440000';
+
+describe('getMe', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('kullanıcı bulunamazsa 404 döner', async () => {
+    mockFindById.mockReturnValue({
+      select: vi.fn().mockResolvedValue(null),
+    });
+
+    await expect(getMe({ userId, role: 'buyer' })).rejects.toMatchObject({
+      statusCode: 404,
+      message: 'Kullanıcı bulunamadı',
+    });
+  });
+
+  it('buyer için email ve durum alanlarını döner', async () => {
+    mockFindById.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        email: 'buyer@example.com',
+        role: 'buyer',
+        isActive: true,
+        isEmailVerified: true,
+      }),
+    });
+    mockBuildAuthUserFields.mockResolvedValue({
+      userId,
+      role: 'buyer',
+      isEmailVerified: true,
+      isActive: true,
+    });
+
+    const result = await getMe({ userId, role: 'buyer' });
+
+    expect(result).toEqual({
+      email: 'buyer@example.com',
+      userId,
+      role: 'buyer',
+      isEmailVerified: true,
+      isActive: true,
+    });
+  });
+});
