@@ -3,10 +3,20 @@ import { registerProfileDocumentMultipart } from '@/plugins/multipart/profile';
 import { requireAuth } from '@/middleware/auth/require-auth';
 import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
+import { buyerProfileUpdateSchema } from '@/features/auth/account/profile/buyer-profile-update.schema';
+import { sellerProfileUpdateSchema } from '@/features/auth/account/profile/seller-profile-update.schema';
 import { getProfile, updateProfile } from '@/features/auth/account/profile/profile.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
-import { validateProfileUpdate } from '@/middleware/validation/validate-profile-update';
+import { validateBodyByRole } from '@/middleware/validation/validate-body-by-role';
 import documentsRoutes from '@/features/auth/account/profile/documents.routes';
+
+const validateProfileUpdate = validateBodyByRole({
+  schemas: {
+    buyer: buyerProfileUpdateSchema,
+    seller: sellerProfileUpdateSchema,
+  },
+  rejectAdmin: true,
+});
 
 export default async function (fastify: FastifyInstance) {
   await registerProfileDocumentMultipart(fastify);

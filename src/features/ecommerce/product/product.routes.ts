@@ -1,4 +1,14 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { HttpError } from '@/internal/errors';
+import { sanitizeRequestBody } from '@/internal/validation/sanitize';
+import {
+  createProductSchema,
+  type CreateProductInput,
+} from '@/features/ecommerce/product/create-product.schema';
+import {
+  MAX_PRODUCT_IMAGES,
+  type ProductImageUpload,
+} from '@/internal/ecommerce/product/product-image-types';
 import { registerProductMultipart } from '@/plugins/multipart/product';
 import { ECOMMERCE_SELLER_WRITE_RATE_LIMIT } from '@/plugins/rate-limit/presets';
 import { registerScopedRateLimit } from '@/plugins/rate-limit/register-scoped';
@@ -22,7 +32,6 @@ import {
   listProductsQuerySchema,
   type ListProductsQuery,
 } from '@/features/ecommerce/product/list-products.schema';
-import { parseCreateProductRequest } from '@/internal/ecommerce/product/parse-create-product-request';
 import {
   createProductWithImages,
   deleteProduct,
@@ -39,6 +48,63 @@ import {
   deleteProductImageSchema,
   type DeleteProductImageInput,
 } from '@/features/ecommerce/product/delete-product-image.schema';
+
+const IMAGE_FIELD_NAMES = new Set(['image', 'images']);
+
+const parseCreateProductInput = (raw: unknown): CreateProductInput => {
+  const parsed = createProductSchema.safeParse(sanitizeRequestBody(raw));
+
+  if (!parsed.success) {
+    throw new HttpError(400, 'Geçersiz istek verisi');
+  }
+
+  return parsed.data;
+};
+
+const parseCreateProductRequest = async (request: FastifyRequest) => {
+  if (!request.isMultipart()) {
+    return {
+      input: parseCreateProductInput(request.body),
+      images: [] as ProductImageUpload[],
+    };
+  }
+
+  let rawData: unknown = null;
+  const images: ProductImageUpload[] = [];
+
+  for await (const part of request.parts()) {
+    if (part.type === 'field') {
+      if (part.fieldname === 'data') {
+        try {
+          rawData = JSON.parse(String(part.value));
+        } catch {
+          throw new HttpError(400, 'data alanı geçerli JSON olmalı');
+        }
+      }
+      continue;
+    }
+
+    if (part.type === 'file' && IMAGE_FIELD_NAMES.has(part.fieldname)) {
+      images.push({
+        mimeType: part.mimetype,
+        buffer: await part.toBuffer(),
+      });
+    }
+  }
+
+  if (rawData === null) {
+    throw new HttpError(400, 'data alanı zorunlu');
+  }
+
+  if (images.length > MAX_PRODUCT_IMAGES) {
+    throw new HttpError(400, `En fazla ${MAX_PRODUCT_IMAGES} görsel eklenebilir`);
+  }
+
+  return {
+    input: parseCreateProductInput(rawData),
+    images,
+  };
+};
 
 const sellerApproved = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],

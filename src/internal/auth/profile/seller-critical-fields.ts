@@ -1,5 +1,3 @@
-import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/seller-profile-update.schema';
-
 export const SELLER_CRITICAL_FIELDS = [
   'sellerType',
   'companyName',
@@ -28,7 +26,7 @@ const isCriticalField = (key: string): key is SellerCriticalField =>
 
 export const hasCriticalSellerFieldChanges = (
   current: Record<string, unknown>,
-  update: SellerProfileUpdateInput
+  update: Record<string, unknown>
 ) =>
   Object.entries(update).some(([key, newValue]) => {
     if (!isCriticalField(key)) {

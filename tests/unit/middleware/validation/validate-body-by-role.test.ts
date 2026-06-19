@@ -1,6 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { validateProfileUpdate } from '@/middleware/validation/validate-profile-update';
+import { buyerProfileUpdateSchema } from '@/features/auth/account/profile/buyer-profile-update.schema';
+import { sellerProfileUpdateSchema } from '@/features/auth/account/profile/seller-profile-update.schema';
+import { validateBodyByRole } from '@/middleware/validation/validate-body-by-role';
+
+const validateProfileUpdate = validateBodyByRole({
+  schemas: {
+    buyer: buyerProfileUpdateSchema,
+    seller: sellerProfileUpdateSchema,
+  },
+  rejectAdmin: true,
+});
 
 const createReply = () => {
   const reply = {
@@ -19,7 +29,7 @@ const createReply = () => {
   return reply as unknown as FastifyReply & { statusCode: number; body: unknown };
 };
 
-describe('validateProfileUpdate', () => {
+describe('validateBodyByRole', () => {
   it('auth yoksa 401 döner', async () => {
     const reply = createReply();
     const request = { auth: undefined, body: {} } as FastifyRequest;
