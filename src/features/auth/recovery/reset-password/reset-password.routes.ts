@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/plugins/http/validate-body';
+import { validateBody } from '@/middleware/validation/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { resetPassword } from '@/features/auth/recovery/reset-password/reset-password.service';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/features/auth/recovery/reset-password/reset-password.schema';

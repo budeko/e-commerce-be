@@ -1,10 +1,10 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import type { SellerPermissionKey } from '@/features/auth/seller/access/permission-keys';
-import { hasSellerPermission } from '@/features/auth/seller/access/permissions';
+import type { SellerPermissionKey } from '@/internal/auth/access/seller/permission-keys';
+import { hasSellerPermission } from '@/internal/auth/access/seller/permissions';
 import {
   getSellerContext,
   type SellerAccessContext,
-} from '@/features/auth/core/queries/seller-context';
+} from '@/internal/auth/queries/seller-context';
 
 declare module 'fastify' {
   interface FastifyRequest {

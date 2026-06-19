@@ -3,16 +3,16 @@ import {
   OWNER_ONLY_PERMISSIONS,
   PERMISSION_LABELS,
   type PermissionKey,
-} from '@/features/auth/admin/access/permission-keys';
+} from '@/internal/auth/access/admin/permission-keys';
 import {
   assertIsOwner,
   canDeleteAdminRoles,
   canReadAdminRoles,
   canWriteAdminRoles,
-} from '@/features/auth/admin/access/permissions';
+} from '@/internal/auth/access/admin/permissions';
 import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
-import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
-import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import { createUserId } from '@/internal/ids';
 import type { CreateAdminRoleInput } from '@/features/auth/admin/roles/create-role.schema';
 import type { UpdateAdminRoleInput } from '@/features/auth/admin/roles/create-role.schema';

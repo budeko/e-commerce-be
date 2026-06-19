@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import { adminOnly } from '@/middleware/presets/admin-route-guards';
 import { requirePermission } from '@/middleware/auth/require-admin';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
-import { validateQuery } from '@/plugins/http/validate-query';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
+import { validateQuery } from '@/middleware/validation/validate-query';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
-import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import { PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
 import { listSellersQuerySchema, type ListSellersQuery } from '@/features/auth/admin/sellers/list-sellers.schema';
 import { rejectSellerSchema, type RejectSellerInput } from '@/features/auth/admin/sellers/reject-seller.schema';
 import {

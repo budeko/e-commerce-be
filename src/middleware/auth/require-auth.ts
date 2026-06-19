@@ -1,13 +1,13 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
-import { verifyAuthToken, type AuthTokenPayload } from '@/features/auth/core/security/access-token';
+import { verifyAuthToken, type AuthTokenPayload } from '@/plugins/jwt/access-token';
 import { User } from '@/integrations/mongo';
 import {
   isTokenIssuedBefore,
   PASSWORD_CHANGED_MESSAGE,
   SESSIONS_REVOKED_MESSAGE,
-} from '@/features/auth/core/session/invalidate-all';
-import { isTokenRevoked } from '@/features/auth/core/session/revoke-token';
+} from '@/plugins/jwt/session/invalidate-all';
+import { isTokenRevoked } from '@/plugins/jwt/session/revoke-token';
 
 declare module 'fastify' {
   interface FastifyRequest {

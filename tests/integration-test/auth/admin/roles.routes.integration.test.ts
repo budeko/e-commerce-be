@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
-import { signAuthToken } from '@/features/auth/core/security/access-token';
+import { PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
+import { signAuthToken } from '@/plugins/jwt/access-token';
 import { buildApp } from '@/app/app';
 
 const mockListAdminRoles = vi.fn();
@@ -20,7 +20,7 @@ vi.mock('@/features/auth/admin/roles/roles.service', () => ({
   deleteAdminRole: vi.fn(),
 }));
 
-vi.mock('@/features/auth/core/queries/admin-context', () => ({
+vi.mock('@/internal/auth/queries/admin-context', () => ({
   getAdminContext: (...args: unknown[]) => mockGetAdminContext(...args),
 }));
 

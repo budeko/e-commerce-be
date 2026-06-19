@@ -1,6 +1,6 @@
 import { User, Buyer } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
-import { isBuyerProfileComplete } from '@/features/auth/core/profile/profile-completion';
+import { AuthError } from '@/internal/auth/errors';
+import { isBuyerProfileComplete } from '@/internal/auth/profile/profile-completion';
 import type { BuyerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 
 const syncBuyerActiveStatus = async (userId: string, isComplete: boolean) => {

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   ASSIGNABLE_PERMISSIONS,
   isPermissionKey,
-} from '@/features/auth/admin/access/permission-keys';
+} from '@/internal/auth/access/admin/permission-keys';
 
 const slugSchema = z
   .string()

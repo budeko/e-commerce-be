@@ -1,7 +1,7 @@
-import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
+import type { AuthTokenPayload } from '@/plugins/jwt/access-token';
 import { User, Buyer, Seller } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
-import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
+import { AuthError } from '@/internal/auth/errors';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import { updateBuyerProfile } from '@/features/auth/account/profile/buyer.service';
 import { updateSellerProfile } from '@/features/auth/account/profile/seller.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';

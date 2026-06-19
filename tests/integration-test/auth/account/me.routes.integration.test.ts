@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { signAuthToken } from '@/features/auth/core/security/access-token';
+import { signAuthToken } from '@/plugins/jwt/access-token';
 import { buildApp } from '@/app/app';
 
 const mockGetMe = vi.fn();

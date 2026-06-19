@@ -1,7 +1,7 @@
 import { PaymentSplit, Seller } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
-import { calcItemSplit } from '@/features/ecommerce/payment/commission';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { calcItemSplit } from '@/internal/ecommerce/payment/commission';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import { approveIyzicoPaymentItem } from '@/integrations/iyzico/approve-payment-item';
 import type { InitializeCheckoutItem } from '@/integrations/iyzico/types';
 

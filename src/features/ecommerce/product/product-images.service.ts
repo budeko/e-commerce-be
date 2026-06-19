@@ -1,13 +1,13 @@
 import { Product } from '@/integrations/mongo';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import {
   buildProductImageObjectPath,
   MAX_PRODUCT_IMAGE_BYTES,
   MAX_PRODUCT_IMAGES,
   resolveProductImageExtension,
   resolveProductImageMimeType,
-} from '@/features/ecommerce/product/product-image-types';
-import { toSellerProductResponse } from '@/features/ecommerce/product/product-response';
+} from '@/internal/ecommerce/product/product-image-types';
+import { toSellerProductResponse } from '@/internal/ecommerce/product/product-response';
 import { createUserId } from '@/internal/ids';
 import {
   deleteFromSellerStorage,

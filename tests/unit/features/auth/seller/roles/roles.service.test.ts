@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
-import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
-import { AuthError } from '@/features/auth/core/errors';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
+import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
+import { AuthError } from '@/internal/auth/errors';
 
 const mockSellerRoleFind = vi.fn();
 

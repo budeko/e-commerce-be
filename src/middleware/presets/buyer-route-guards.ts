@@ -1,7 +1,7 @@
 import { requireAuth } from '@/middleware/auth/require-auth';
 import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
 import { requireActiveBuyer } from '@/middleware/ecommerce/require-active-buyer';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateParams } from '@/middleware/validation/validate-params';
 import type { ZodTypeAny } from 'zod';
 
 export const buyerOnly = {

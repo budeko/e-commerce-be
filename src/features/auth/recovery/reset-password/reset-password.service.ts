@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { verifyPasswordResetToken } from '@/features/auth/core/security/email-token';
-import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/core/otp/otp';
+import { verifyPasswordResetToken } from '@/plugins/jwt/email-token';
+import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/internal/auth/otp/otp';
 import { hashPassword } from '@/internal/security';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 import type { ResetPasswordInput } from '@/features/auth/recovery/reset-password/reset-password.schema';
 
 const updateUserPassword = async (userId: string, newPassword: string) => {

@@ -26,7 +26,7 @@ vi.mock('@/features/auth/account/profile/seller.service', () => ({
   updateSellerProfile: (...args: unknown[]) => mockUpdateSellerProfile(...args),
 }));
 
-vi.mock('@/features/auth/core/responses/user.response', () => ({
+vi.mock('@/internal/auth/responses/user.response', () => ({
   buildAuthUserFields: vi.fn(async (user: { _id: unknown; role: string; isActive?: boolean }) => {
     if (user.role === 'buyer') {
       return {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 
 const mockSellerFindById = vi.fn();
 const mockSellerFindByIdAndUpdate = vi.fn();
@@ -12,7 +12,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/queries/seller-context', () => ({
+vi.mock('@/internal/auth/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 

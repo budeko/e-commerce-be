@@ -3,11 +3,11 @@ import {
   assertEmailCooldown,
   EmailCooldownError,
   markVerificationEmailSent,
-} from '@/features/auth/core/mail/cooldown';
-import { sendUserVerificationEmail } from '@/features/auth/core/mail/send-verification';
-import { invalidateAuthOtp } from '@/features/auth/core/otp/otp';
+} from '@/internal/auth/mail/cooldown';
+import { sendUserVerificationEmail } from '@/internal/auth/mail/send-verification';
+import { invalidateAuthOtp } from '@/internal/auth/otp/otp';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 
 const log = createLogger({ module: 'resend-verification' });
 

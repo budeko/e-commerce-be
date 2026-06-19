@@ -4,11 +4,11 @@ import {
   requireSellerOwner,
   requireSellerPermission,
 } from '@/middleware/ecommerce/require-approved-seller';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import {
   createSellerMember,
   deleteSellerMember,

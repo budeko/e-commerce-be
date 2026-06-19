@@ -8,7 +8,7 @@ vi.mock('@/features/auth/verification/verify-email/verify-email.service', () => 
   verifyEmail: (...args: unknown[]) => mockVerifyEmail(...args),
 }));
 
-vi.mock('@/features/auth/core/responses/user.response', () => ({
+vi.mock('@/internal/auth/responses/user.response', () => ({
   buildAuthUserFields: vi.fn().mockResolvedValue({
     role: 'buyer',
     isActive: false,

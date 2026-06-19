@@ -3,20 +3,20 @@ import {
   SELLER_OWNER_ONLY_PERMISSIONS,
   SELLER_PERMISSION_LABELS,
   type SellerPermissionKey,
-} from '@/features/auth/seller/access/permission-keys';
+} from '@/internal/auth/access/seller/permission-keys';
 import {
   assertSellerOwner,
   canDeleteSellerRoles,
   canReadSellerRoles,
   canWriteSellerRoles,
-} from '@/features/auth/seller/access/permissions';
+} from '@/internal/auth/access/seller/permissions';
 import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
 import {
   SellerRole,
   SELLER_SYSTEM_OWNER_ROLE_SLUG,
 } from '@/integrations/mongo/models/auth/seller-role.model';
-import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
-import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
+import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import { createUserId } from '@/internal/ids';
 import type {
   CreateSellerRoleInput,

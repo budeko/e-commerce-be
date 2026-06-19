@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { adminOnly } from '@/middleware/presets/admin-route-guards';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import {

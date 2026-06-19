@@ -1,6 +1,6 @@
 import { Category, Product } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import {
   MAX_CHILDREN_PER_NODE,
   MAX_PARENTS_PER_NODE,
@@ -12,8 +12,8 @@ import {
   uniqueIds,
   wouldCreateCycle,
   type CategoryGraphNode,
-} from '@/features/ecommerce/category/category-graph';
-import { slugify } from '@/features/ecommerce/category/slugify';
+} from '@/internal/ecommerce/category/category-graph';
+import { slugify } from '@/internal/ecommerce/category/slugify';
 import type { CreateCategoryInput } from '@/features/ecommerce/category/create-category.schema';
 import type { LinkCategoryInput } from '@/features/ecommerce/category/link-category.schema';
 import type { UpdateCategoryInput } from '@/features/ecommerce/category/update-category.schema';

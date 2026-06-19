@@ -1,8 +1,8 @@
 import { Buyer, Cart, Order, Product, type OrderStatus } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import { clearCart } from '@/features/ecommerce/cart/cart.service';
-import { assertCartItemQuantity } from '@/features/ecommerce/product/product-order-quantity';
+import { assertCartItemQuantity } from '@/internal/ecommerce/product/product-order-quantity';
 import { approvePaymentSplitsForOrder } from '@/features/ecommerce/payment/payment-split.service';
 import type { UpdateOrderStatusInput } from '@/features/ecommerce/order/update-order-status.schema';
 

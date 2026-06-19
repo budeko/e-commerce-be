@@ -4,8 +4,8 @@ import {
   canUpdateSellerMemberRole,
   canViewSellerMember,
   assertSellerPermission,
-} from '@/features/auth/seller/access/permissions';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
+} from '@/internal/auth/access/seller/permissions';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import {
   assertAssignableSellerRoleId,
   countOwnerSellerMembers,
@@ -16,8 +16,8 @@ import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.mod
 import { User } from '@/integrations/mongo';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
-import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
-import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
+import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import type { CreateSellerMemberInput } from '@/features/auth/seller/members/create-member.schema';
 import type {
   UpdateSellerMemberProfileInput,

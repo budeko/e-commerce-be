@@ -1,14 +1,14 @@
-import { canManageSellerApproval, canReadSellers } from '@/features/auth/admin/access/permissions';
+import { canManageSellerApproval, canReadSellers } from '@/internal/auth/access/admin/permissions';
 import {
   sendSellerApprovedEmail,
   sendSellerRejectedEmail,
-} from '@/features/auth/admin/mail/send-seller-notifications';
+} from '@/internal/auth/admin/mail/send-seller-notifications';
 import { createLogger } from '@/internal/logging';
 import { Seller, User, type SellerApprovalStatus } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 import { HttpError } from '@/internal/errors';
 import { createIyzicoSubMerchant } from '@/integrations/iyzico/create-submerchant';
-import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 
 const assertCanManageSellerApproval = (ctx: AdminAccessContext) => {
   if (!canManageSellerApproval(ctx)) {

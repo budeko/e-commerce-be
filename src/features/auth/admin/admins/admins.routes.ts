@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { adminOnly } from '@/middleware/presets/admin-route-guards';
 import { requireOwner } from '@/middleware/auth/require-admin';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
 import { userIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from '@/features/auth/admin/admins/admins.service';

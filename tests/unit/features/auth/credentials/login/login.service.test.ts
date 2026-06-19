@@ -14,7 +14,7 @@ vi.mock('@/internal/security', () => ({
   comparePassword: (...args: unknown[]) => mockComparePassword(...args),
 }));
 
-vi.mock('@/features/auth/core/security/access-token', () => ({
+vi.mock('@/plugins/jwt/access-token', () => ({
   signAuthToken: (...args: unknown[]) => mockSignAuthToken(...args),
 }));
 

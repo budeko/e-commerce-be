@@ -1,20 +1,20 @@
 import { createLogger } from '@/internal/logging';
-import { sendUserVerificationEmail } from '@/features/auth/core/mail/send-verification';
+import { sendUserVerificationEmail } from '@/internal/auth/mail/send-verification';
 import {
   assertRegisterEmailCooldown,
   EmailCooldownError,
   markRegisterEmailCooldown,
   markVerificationEmailSent,
-} from '@/features/auth/core/mail/cooldown';
+} from '@/internal/auth/mail/cooldown';
 import {
   deleteUnverifiedUser,
   getVerificationExpiresAt,
-} from '@/features/auth/core/register/unverified-user';
-import { invalidateAuthOtp } from '@/features/auth/core/otp/otp';
+} from '@/internal/auth/register/unverified-user';
+import { invalidateAuthOtp } from '@/internal/auth/otp/otp';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
 import { User, Buyer, Seller } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 import type { RegisterInput } from '@/features/auth/credentials/register/register.schema';
 
 const log = createLogger({ module: 'register' });

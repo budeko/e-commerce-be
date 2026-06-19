@@ -4,11 +4,11 @@ import {
   requireOwner,
   requirePermission,
 } from '@/middleware/auth/require-admin';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
 import { roleIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
-import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
+import { PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
 import {
   createAdminRole,
   deleteAdminRole,

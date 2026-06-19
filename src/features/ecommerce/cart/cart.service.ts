@@ -1,10 +1,10 @@
 import { Cart, Product } from '@/integrations/mongo';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import type { AddToCartInput } from '@/features/ecommerce/cart/add-to-cart.schema';
 import {
   assertCartItemQuantity,
   resolveMinOrderQuantity,
-} from '@/features/ecommerce/product/product-order-quantity';
+} from '@/internal/ecommerce/product/product-order-quantity';
 
 type CartItemRecord = {
   productId: string;

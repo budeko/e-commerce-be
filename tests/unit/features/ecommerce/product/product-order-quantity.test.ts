@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
-import { assertCartItemQuantity } from '@/features/ecommerce/product/product-order-quantity';
+import { EcommerceError } from '@/internal/ecommerce/errors';
+import { assertCartItemQuantity } from '@/internal/ecommerce/product/product-order-quantity';
 
 describe('assertCartItemQuantity', () => {
   it('minimum adedin altında 400 fırlatır', () => {

@@ -8,7 +8,7 @@ vi.mock('@/features/auth/credentials/register/register.service', () => ({
   register: (...args: unknown[]) => mockRegister(...args),
 }));
 
-vi.mock('@/features/auth/core/responses/user.response', () => ({
+vi.mock('@/internal/auth/responses/user.response', () => ({
   buildAuthUserFields: vi.fn().mockResolvedValue({
     role: 'buyer',
     isActive: false,

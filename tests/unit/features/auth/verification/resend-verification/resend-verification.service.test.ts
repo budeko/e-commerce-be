@@ -14,17 +14,17 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/mail/send-verification', () => ({
+vi.mock('@/internal/auth/mail/send-verification', () => ({
   sendUserVerificationEmail: (...args: unknown[]) => mockSendVerification(...args),
 }));
 
-vi.mock('@/features/auth/core/otp/otp', () => ({
+vi.mock('@/internal/auth/otp/otp', () => ({
   invalidateAuthOtp: (...args: unknown[]) => mockInvalidateAuthOtp(...args),
 }));
 
-vi.mock('@/features/auth/core/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('@/features/auth/core/mail/cooldown')>(
-    '@/features/auth/core/mail/cooldown'
+vi.mock('@/internal/auth/mail/cooldown', async () => {
+  const actual = await vi.importActual<typeof import('@/internal/auth/mail/cooldown')>(
+    '@/internal/auth/mail/cooldown'
   );
 
   return {
@@ -34,7 +34,7 @@ vi.mock('@/features/auth/core/mail/cooldown', async () => {
   };
 });
 
-import { EmailCooldownError } from '@/features/auth/core/mail/cooldown';
+import { EmailCooldownError } from '@/internal/auth/mail/cooldown';
 import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/resend-verification.service';
 
 describe('resendVerificationEmail', () => {

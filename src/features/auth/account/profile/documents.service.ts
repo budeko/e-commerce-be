@@ -1,4 +1,4 @@
-import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
+import type { AuthTokenPayload } from '@/plugins/jwt/access-token';
 import { HttpError } from '@/internal/errors';
 import {
   deleteFromSellerStorage,
@@ -7,8 +7,8 @@ import {
   uploadToSellerStorage,
 } from '@/integrations/supabase/supabase';
 import { Seller } from '@/integrations/mongo';
-import { getSellerContext } from '@/features/auth/core/queries/seller-context';
-import { AuthError } from '@/features/auth/core/errors';
+import { getSellerContext } from '@/internal/auth/queries/seller-context';
+import { AuthError } from '@/internal/auth/errors';
 import {
   buildSellerDocumentObjectPath,
   isSellerDocumentType,
@@ -17,7 +17,7 @@ import {
   SELLER_DOCUMENT_FIELD_MAP,
   SELLER_DOCUMENT_RULES,
   type SellerDocumentType,
-} from '@/features/auth/core/profile/seller-document-types';
+} from '@/internal/auth/profile/seller-document-types';
 import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 import { updateSellerProfile } from '@/features/auth/account/profile/seller.service';
 

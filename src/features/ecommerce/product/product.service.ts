@@ -1,17 +1,17 @@
 import { Product } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import {
   assertProductCategory,
   getCategoryProductFilterIds,
 } from '@/features/ecommerce/category/category.service';
-import { slugify } from '@/features/ecommerce/category/slugify';
+import { slugify } from '@/internal/ecommerce/category/slugify';
 import {
   toPublicProductResponse,
   toSellerProductResponse,
-} from '@/features/ecommerce/product/product-response';
+} from '@/internal/ecommerce/product/product-response';
 import { deleteProductImagesFromStorage, uploadProductImage } from '@/features/ecommerce/product/product-images.service';
-import type { ProductImageUpload } from '@/features/ecommerce/product/product-image-types';
+import type { ProductImageUpload } from '@/internal/ecommerce/product/product-image-types';
 import type { CreateProductInput } from '@/features/ecommerce/product/create-product.schema';
 import type { ListProductsQuery } from '@/features/ecommerce/product/list-products.schema';
 import type { UpdateProductInput } from '@/features/ecommerce/product/update-product.schema';

@@ -1,17 +1,17 @@
 import { Seller } from '@/integrations/mongo';
-import { canReadCompanyProfile, canWriteCompanyProfile } from '@/features/auth/seller/access/permissions';
-import { getSellerContext, type SellerAccessContext } from '@/features/auth/core/queries/seller-context';
+import { canReadCompanyProfile, canWriteCompanyProfile } from '@/internal/auth/access/seller/permissions';
+import { getSellerContext, type SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import {
   bootstrapSellerTeam,
   cleanupSellerTeam,
-} from '@/features/auth/seller/access/system-roles';
-import { AuthError } from '@/features/auth/core/errors';
-import { isSellerProfileComplete } from '@/features/auth/core/profile/profile-completion';
-import { hasCriticalSellerFieldChanges } from '@/features/auth/core/profile/seller-critical-fields';
+} from '@/internal/auth/access/seller/system-roles';
+import { AuthError } from '@/internal/auth/errors';
+import { isSellerProfileComplete } from '@/internal/auth/profile/profile-completion';
+import { hasCriticalSellerFieldChanges } from '@/internal/auth/profile/seller-critical-fields';
 import {
   assertIbanUpdateAllowed,
   omitUnchangedLockedIban,
-} from '@/features/auth/core/profile/seller-iban-lock';
+} from '@/internal/auth/profile/seller-iban-lock';
 import type { SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
 
 const assertCanReadCompany = (ctx: SellerAccessContext) => {

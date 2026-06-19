@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { Payment } from '@/integrations/mongo';
 import { env } from '@/config/env';
-import { validateBody } from '@/plugins/http/validate-body';
+import { validateBody } from '@/middleware/validation/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { logger } from '@/internal/logging';
 import { disabledRouteRateLimit } from '@/plugins/rate-limit/presets';

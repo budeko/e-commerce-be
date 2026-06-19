@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-vi.mock('@/features/auth/core/mail/send-verification', () => ({
+vi.mock('@/internal/auth/mail/send-verification', () => ({
   sendUserVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 

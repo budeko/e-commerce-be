@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { validateParams } from '@/plugins/http/validate-params';
+import { validateParams } from '@/middleware/validation/validate-params';
 import { categoryIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import {

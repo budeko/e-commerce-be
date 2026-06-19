@@ -9,7 +9,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/responses/user.response', () => ({
+vi.mock('@/internal/auth/responses/user.response', () => ({
   buildAuthUserFields: (...args: unknown[]) => mockBuildAuthUserFields(...args),
 }));
 

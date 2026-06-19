@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/plugins/http/validate-body';
+import { validateBody } from '@/middleware/validation/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { resendVerificationEmail } from '@/features/auth/verification/resend-verification/resend-verification.service';
 import {

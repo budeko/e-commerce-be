@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
-import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
-import { signAuthToken } from '@/features/auth/core/security/access-token';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
+import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
+import { signAuthToken } from '@/plugins/jwt/access-token';
 import { buildApp } from '@/app/app';
 
 const mockCreateOrderFromCart = vi.fn();
@@ -21,7 +21,7 @@ vi.mock('@/features/ecommerce/order/order.service', () => ({
   updateOrderStatus: (...args: unknown[]) => mockUpdateOrderStatus(...args),
 }));
 
-vi.mock('@/features/auth/core/queries/seller-context', () => ({
+vi.mock('@/internal/auth/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 

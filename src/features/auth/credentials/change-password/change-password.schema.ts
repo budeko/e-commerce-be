@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { passwordSchema } from '@/features/auth/core/schemas/password.schema';
+import { passwordSchema } from '@/internal/auth/schemas/password.schema';
 
 export const changePasswordSchema = z
   .object({

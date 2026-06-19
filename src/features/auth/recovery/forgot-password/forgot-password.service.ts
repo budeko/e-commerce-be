@@ -3,12 +3,12 @@ import {
   assertEmailCooldown,
   EmailCooldownError,
   markPasswordResetEmailSent,
-} from '@/features/auth/core/mail/cooldown';
-import { signPasswordResetToken } from '@/features/auth/core/security/email-token';
+} from '@/internal/auth/mail/cooldown';
+import { signPasswordResetToken } from '@/plugins/jwt/email-token';
 import { sendPasswordResetEmail } from '@/integrations/resend/send';
-import { createAuthOtp, invalidateAuthOtp } from '@/features/auth/core/otp/otp';
+import { createAuthOtp, invalidateAuthOtp } from '@/internal/auth/otp/otp';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 
 const log = createLogger({ module: 'forgot-password' });
 

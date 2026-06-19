@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { validateBody } from '@/plugins/http/validate-body';
+import { validateBody } from '@/middleware/validation/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
-import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import { registerSchema, type RegisterInput } from '@/features/auth/credentials/register/register.schema';
 import { register } from '@/features/auth/credentials/register/register.service';
 

@@ -5,7 +5,7 @@ import { requireEmailVerified } from '@/middleware/auth/require-email-verified';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
 import { getProfile, updateProfile } from '@/features/auth/account/profile/profile.service';
 import type { BuyerProfileUpdateInput, SellerProfileUpdateInput } from '@/features/auth/account/profile/profile.schema';
-import { validateProfileUpdate } from '@/features/auth/core/profile/validate-profile-update';
+import { validateProfileUpdate } from '@/middleware/validation/validate-profile-update';
 import documentsRoutes from '@/features/auth/account/profile/documents.routes';
 
 export default async function (fastify: FastifyInstance) {

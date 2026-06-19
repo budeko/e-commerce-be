@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { signEmailVerificationToken } from '@/features/auth/core/security/email-token';
-import { AuthError } from '@/features/auth/core/errors';
+import { signEmailVerificationToken } from '@/plugins/jwt/email-token';
+import { AuthError } from '@/internal/auth/errors';
 
 const mockFindOne = vi.fn();
 const mockFindById = vi.fn();
@@ -15,11 +15,11 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/register/unverified-user', () => ({
+vi.mock('@/internal/auth/register/unverified-user', () => ({
   deleteUnverifiedUser: (...args: unknown[]) => mockDeleteUnverifiedUser(...args),
 }));
 
-vi.mock('@/features/auth/core/otp/otp', async () => {
+vi.mock('@/internal/auth/otp/otp', async () => {
   class OtpError extends Error {
     constructor(
       public statusCode: number,
@@ -36,7 +36,7 @@ vi.mock('@/features/auth/core/otp/otp', async () => {
   };
 });
 
-import { OtpError } from '@/features/auth/core/otp/otp';
+import { OtpError } from '@/internal/auth/otp/otp';
 import { verifyEmail } from '@/features/auth/verification/verify-email/verify-email.service';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';

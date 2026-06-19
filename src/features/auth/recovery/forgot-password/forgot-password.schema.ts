@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emailSchema } from '@/features/auth/core/schemas/email.schema';
+import { emailSchema } from '@/internal/auth/schemas/email.schema';
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,

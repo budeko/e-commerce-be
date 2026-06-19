@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { safeString, uuidSchema } from '@/internal/validation/common-schemas';
 import { slugSchema } from '@/internal/validation/slug-schema';
-import { MAX_PARENTS_PER_NODE } from '@/features/ecommerce/category/category-graph';
+import { MAX_PARENTS_PER_NODE } from '@/internal/ecommerce/category/category-graph';
 
 const categoryNameSchema = safeString({
   min: 1,

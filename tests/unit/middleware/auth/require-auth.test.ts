@@ -11,11 +11,11 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/session/revoke-token', () => ({
+vi.mock('@/plugins/jwt/session/revoke-token', () => ({
   isTokenRevoked: (...args: unknown[]) => mockIsTokenRevoked(...args),
 }));
 
-vi.mock('@/features/auth/core/security/access-token', () => ({
+vi.mock('@/plugins/jwt/access-token', () => ({
   verifyAuthToken: (...args: unknown[]) => mockVerifyAuthToken(...args),
 }));
 

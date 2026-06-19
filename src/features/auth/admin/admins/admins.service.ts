@@ -3,21 +3,21 @@ import {
   canDeleteAdmin,
   canUpdateAdminRoleId,
   canViewAdmin,
-} from '@/features/auth/admin/access/permissions';
-import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
-import { assertPermission } from '@/features/auth/admin/access/permissions';
+} from '@/internal/auth/access/admin/permissions';
+import { PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
+import { assertPermission } from '@/internal/auth/access/admin/permissions';
 import {
   assertAssignableRoleId,
   countOwnerAdmins,
   getRoleSummariesByIds,
   isOwnerRoleId,
 } from '@/features/auth/admin/roles/roles.service';
-import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
+import { formatAdminResponse } from '@/internal/auth/responses/admin.response';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
 import { Admin, User } from '@/integrations/mongo';
-import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
-import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import type { CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';
 import type { UpdateAdminInput } from '@/features/auth/admin/admins/update-admin.schema';
 

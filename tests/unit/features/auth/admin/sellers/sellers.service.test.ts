@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
-import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import { PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
+import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 
 const mockUserFindById = vi.fn();
 const mockSellerFindById = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('@/integrations/iyzico/create-submerchant', () => ({
   createIyzicoSubMerchant: vi.fn().mockResolvedValue('sandbox-sub-merchant-key'),
 }));
 
-vi.mock('@/features/auth/admin/mail/send-seller-notifications', () => ({
+vi.mock('@/internal/auth/admin/mail/send-seller-notifications', () => ({
   sendSellerApprovedEmail: (...args: unknown[]) => mockSendApproved(...args),
   sendSellerRejectedEmail: (...args: unknown[]) => mockSendRejected(...args),
 }));

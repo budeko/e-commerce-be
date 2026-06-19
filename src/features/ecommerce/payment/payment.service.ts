@@ -3,7 +3,7 @@ import { createUserId } from '@/internal/ids';
 import { getBuyerOrder } from '@/features/ecommerce/order/order.service';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
 import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
-import { EcommerceError } from '@/features/ecommerce/core/errors';
+import { EcommerceError } from '@/internal/ecommerce/errors';
 import type { CreatePaymentInput } from '@/features/ecommerce/payment/create-payment.schema';
 import {
   buildPaymentSplitsForOrder,

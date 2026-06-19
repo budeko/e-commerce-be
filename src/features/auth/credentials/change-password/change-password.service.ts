@@ -1,7 +1,7 @@
-import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
+import type { AuthTokenPayload } from '@/plugins/jwt/access-token';
 import { hashPassword, comparePassword } from '@/internal/security';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 import type { ChangePasswordInput } from '@/features/auth/credentials/change-password/change-password.schema';
 
 export const changePassword = async (

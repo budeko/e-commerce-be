@@ -1,7 +1,7 @@
-import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
-import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
+import type { AuthTokenPayload } from '@/plugins/jwt/access-token';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 
 export const getMe = async (auth: AuthTokenPayload) => {
   const user = await User.findById(auth.userId).select(

@@ -25,9 +25,9 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/mail/cooldown', async () => {
-  const actual = await vi.importActual<typeof import('@/features/auth/core/mail/cooldown')>(
-    '@/features/auth/core/mail/cooldown'
+vi.mock('@/internal/auth/mail/cooldown', async () => {
+  const actual = await vi.importActual<typeof import('@/internal/auth/mail/cooldown')>(
+    '@/internal/auth/mail/cooldown'
   );
   return {
     ...actual,
@@ -37,16 +37,16 @@ vi.mock('@/features/auth/core/mail/cooldown', async () => {
   };
 });
 
-vi.mock('@/features/auth/core/otp/otp', () => ({
+vi.mock('@/internal/auth/otp/otp', () => ({
   invalidateAuthOtp: (...args: unknown[]) => mockInvalidateAuthOtp(...args),
 }));
 
-vi.mock('@/features/auth/core/register/unverified-user', () => ({
+vi.mock('@/internal/auth/register/unverified-user', () => ({
   deleteUnverifiedUser: (...args: unknown[]) => mockDeleteUnverifiedUser(...args),
   getVerificationExpiresAt: () => new Date(Date.now() + 86_400_000),
 }));
 
-vi.mock('@/features/auth/core/mail/send-verification', () => ({
+vi.mock('@/internal/auth/mail/send-verification', () => ({
   sendUserVerificationEmail: (...args: unknown[]) => mockSendVerification(...args),
 }));
 
@@ -101,7 +101,7 @@ describe('register', () => {
   });
 
   it('cooldown aktifken 429 döner', async () => {
-    const { EmailCooldownError } = await import('@/features/auth/core/mail/cooldown');
+    const { EmailCooldownError } = await import('@/internal/auth/mail/cooldown');
 
     mockAssertRegisterEmailCooldown.mockRejectedValue(
       new EmailCooldownError(429, 'E-posta gönderimleri arasında bekleme süresi var')

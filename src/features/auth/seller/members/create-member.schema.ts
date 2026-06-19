@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { emailSchema } from '@/features/auth/core/schemas/email.schema';
-import { passwordSchema } from '@/features/auth/core/schemas/password.schema';
+import { emailSchema } from '@/internal/auth/schemas/email.schema';
+import { passwordSchema } from '@/internal/auth/schemas/password.schema';
 import { uuidSchema } from '@/internal/validation/common-schemas';
 
 const memberProfileFieldsSchema = z.object({

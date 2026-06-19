@@ -1,9 +1,9 @@
-import { canUpdateAdminProfile, canViewAdmin } from '@/features/auth/admin/access/permissions';
+import { canUpdateAdminProfile, canViewAdmin } from '@/internal/auth/access/admin/permissions';
 import { getRoleSummariesByIds } from '@/features/auth/admin/roles/roles.service';
-import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
+import { formatAdminResponse } from '@/internal/auth/responses/admin.response';
 import { Admin, User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
-import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
+import { AuthError } from '@/internal/auth/errors';
+import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import type { AdminProfileUpdateInput } from '@/features/auth/admin/profile/admin-profile-fields.schema';
 
 const findAdminWithUser = async (targetUserId: string) => {

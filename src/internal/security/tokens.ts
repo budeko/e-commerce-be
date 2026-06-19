@@ -1,1 +1,1 @@
-// İleride: JWT imzalama/doğrulama yardımcıları features/auth/core/security'den taşınabilir.
+// JWT: plugins/jwt/ — ileride @fastify/jwt'ye geçiş buradan yapılabilir.

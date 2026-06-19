@@ -1,7 +1,7 @@
-import { signAuthToken } from '@/features/auth/core/security/access-token';
+import { signAuthToken } from '@/plugins/jwt/access-token';
 import { comparePassword } from '@/internal/security';
 import { User } from '@/integrations/mongo';
-import { AuthError } from '@/features/auth/core/errors';
+import { AuthError } from '@/internal/auth/errors';
 import type { LoginInput } from '@/features/auth/credentials/login/login.schema';
 
 export const login = async (data: LoginInput) => {

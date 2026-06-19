@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { signPasswordResetToken } from '@/features/auth/core/security/email-token';
+import { signPasswordResetToken } from '@/plugins/jwt/email-token';
 
 const mockFindOne = vi.fn();
 const mockFindById = vi.fn();
@@ -16,7 +16,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/auth/core/otp/otp', async () => {
+vi.mock('@/internal/auth/otp/otp', async () => {
   class OtpError extends Error {
     constructor(
       public statusCode: number,
@@ -38,7 +38,7 @@ vi.mock('@/internal/security', () => ({
   comparePassword: vi.fn(),
 }));
 
-import { OtpError } from '@/features/auth/core/otp/otp';
+import { OtpError } from '@/internal/auth/otp/otp';
 import { resetPassword } from '@/features/auth/recovery/reset-password/reset-password.service';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';

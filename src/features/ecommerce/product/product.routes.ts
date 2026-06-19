@@ -8,12 +8,12 @@ import {
   requireApprovedSeller,
   requireSellerPermission,
 } from '@/middleware/ecommerce/require-approved-seller';
-import { validateBody } from '@/plugins/http/validate-body';
-import { validateParams } from '@/plugins/http/validate-params';
-import { validateQuery } from '@/plugins/http/validate-query';
+import { validateBody } from '@/middleware/validation/validate-body';
+import { validateParams } from '@/middleware/validation/validate-params';
+import { validateQuery } from '@/middleware/validation/validate-query';
 import { productIdParamSchema } from '@/internal/validation/param-schemas';
 import { handleRouteError } from '@/plugins/http/handle-route-error';
-import { SELLER_PERMISSIONS } from '@/features/auth/seller/access/permission-keys';
+import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import {
   updateProductSchema,
   type UpdateProductInput,
@@ -22,7 +22,7 @@ import {
   listProductsQuerySchema,
   type ListProductsQuery,
 } from '@/features/ecommerce/product/list-products.schema';
-import { parseCreateProductRequest } from '@/features/ecommerce/product/parse-create-product-request';
+import { parseCreateProductRequest } from '@/internal/ecommerce/product/parse-create-product-request';
 import {
   createProductWithImages,
   deleteProduct,
