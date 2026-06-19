@@ -11,8 +11,8 @@ vi.mock('@/features/auth/credentials/change-password/change-password.service', (
   changePassword: (...args: unknown[]) => mockChangePassword(...args),
 }));
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     User: {

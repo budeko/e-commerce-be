@@ -1,4 +1,4 @@
-import { AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/db/models/auth/admin-role.model';
+import { AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo/models/auth/admin-role.model';
 import { ALL_PERMISSIONS } from '@/features/auth/admin/access/permission-keys';
 import { createUserId } from '@/internal/ids';
 

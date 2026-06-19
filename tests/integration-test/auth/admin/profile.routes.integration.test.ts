@@ -19,8 +19,8 @@ vi.mock('@/features/auth/core/queries/admin-context', () => ({
   getAdminContext: (...args: unknown[]) => mockGetAdminContext(...args),
 }));
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     User: {

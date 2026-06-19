@@ -13,7 +13,7 @@ vi.mock('@/features/ecommerce/cart/cart.service', () => ({
   clearCart: (...args: unknown[]) => mockClearCart(...args),
 }));
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Cart: {
     findById: (...args: unknown[]) => mockCartFindById(...args),
   },

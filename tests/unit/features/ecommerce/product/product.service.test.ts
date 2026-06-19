@@ -20,7 +20,7 @@ const mockProductCreate = vi.fn();
 const mockProductCountDocuments = vi.fn();
 const mockProductFindByIdAndDelete = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Product: {
     find: (...args: unknown[]) => mockProductFind(...args),
     findOne: (...args: unknown[]) => mockProductFindOne(...args),

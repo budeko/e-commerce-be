@@ -1,4 +1,4 @@
-import { Product } from '@/db';
+import { Product } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import {

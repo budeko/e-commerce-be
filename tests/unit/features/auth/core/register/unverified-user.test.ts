@@ -8,7 +8,7 @@ const mockSellerFindByIdAndDelete = vi.fn();
 const mockSellerMemberFindByIdAndDelete = vi.fn();
 const mockSellerRoleDeleteMany = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findById: (...args: unknown[]) => mockUserFindById(...args),
     findByIdAndDelete: (...args: unknown[]) => mockUserFindByIdAndDelete(...args),

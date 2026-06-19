@@ -4,7 +4,7 @@ import {
   AuthOtp,
   AuthOtpPurpose,
   buildAuthOtpId,
-} from '@/db';
+} from '@/integrations/mongo';
 import { comparePassword, hashPassword } from '@/internal/security';
 
 const MAX_OTP_ATTEMPTS = 5;

@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import jwt from 'jsonwebtoken';
-import { RevokedToken } from '@/db';
+import { RevokedToken } from '@/integrations/mongo';
 
 const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');

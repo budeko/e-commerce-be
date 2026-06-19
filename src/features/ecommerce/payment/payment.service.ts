@@ -1,4 +1,4 @@
-import { Buyer, Order, Payment, User } from '@/db';
+import { Buyer, Order, Payment, User } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
 import { getBuyerOrder } from '@/features/ecommerce/order/order.service';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';

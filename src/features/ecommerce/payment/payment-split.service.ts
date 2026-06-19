@@ -1,4 +1,4 @@
-import { PaymentSplit, Seller } from '@/db';
+import { PaymentSplit, Seller } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
 import { calcItemSplit } from '@/features/ecommerce/payment/commission';
 import { EcommerceError } from '@/features/ecommerce/core/errors';

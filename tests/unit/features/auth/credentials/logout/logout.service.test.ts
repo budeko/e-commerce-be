@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockFindByIdAndUpdate = vi.fn();
 const mockRevokeToken = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),
   },

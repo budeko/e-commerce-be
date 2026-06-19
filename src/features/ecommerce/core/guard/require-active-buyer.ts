@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 
 export const requireActiveBuyer = async (request: FastifyRequest, reply: FastifyReply) => {
   if (!request.auth) {

@@ -12,8 +12,8 @@ import {
   getSellerRoleSummariesByIds,
   isOwnerSellerRoleId,
 } from '@/features/auth/seller/roles/roles.service';
-import { SellerMember } from '@/db/models/auth/seller-member.model';
-import { User } from '@/db';
+import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
+import { User } from '@/integrations/mongo';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';

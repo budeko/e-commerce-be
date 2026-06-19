@@ -6,7 +6,7 @@ const mockCategoryCreate = vi.fn();
 const mockCategoryFindByIdAndDelete = vi.fn();
 const mockProductCountDocuments = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Category: {
     find: (...args: unknown[]) => mockCategoryFind(...args),
     findById: (...args: unknown[]) => mockCategoryFindById(...args),

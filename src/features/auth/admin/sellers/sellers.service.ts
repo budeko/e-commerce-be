@@ -4,7 +4,7 @@ import {
   sendSellerRejectedEmail,
 } from '@/features/auth/admin/mail/send-seller-notifications';
 import { createLogger } from '@/internal/logging';
-import { Seller, User, type SellerApprovalStatus } from '@/db';
+import { Seller, User, type SellerApprovalStatus } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import { HttpError } from '@/internal/errors';
 import { createIyzicoSubMerchant } from '@/integrations/iyzico/create-submerchant';

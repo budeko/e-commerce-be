@@ -1,6 +1,6 @@
 import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
 import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 
 export const getMe = async (auth: AuthTokenPayload) => {

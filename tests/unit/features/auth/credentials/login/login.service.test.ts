@@ -4,7 +4,7 @@ const mockFindOne = vi.fn();
 const mockComparePassword = vi.fn();
 const mockSignAuthToken = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findOne: (...args: unknown[]) => mockFindOne(...args),
   },

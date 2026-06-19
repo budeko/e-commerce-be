@@ -15,7 +15,7 @@ import {
 import { formatAdminResponse } from '@/features/auth/core/responses/admin.response';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
-import { Admin, User } from '@/db';
+import { Admin, User } from '@/integrations/mongo';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { AdminAccessContext } from '@/features/auth/core/queries/admin-context';
 import type { CreateAdminInput } from '@/features/auth/admin/admins/create-admin.schema';

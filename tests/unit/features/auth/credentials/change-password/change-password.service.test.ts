@@ -5,7 +5,7 @@ const mockFindByIdAndUpdate = vi.fn();
 const mockComparePassword = vi.fn();
 const mockHashPassword = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findById: (...args: unknown[]) => mockFindById(...args),
     findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),

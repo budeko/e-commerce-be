@@ -5,8 +5,8 @@ const mockFindOneAndUpdate = vi.fn();
 const mockFindById = vi.fn();
 const mockFindByIdAndDelete = vi.fn();
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     AuthOtp: {

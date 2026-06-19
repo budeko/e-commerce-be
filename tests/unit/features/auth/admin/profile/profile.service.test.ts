@@ -11,7 +11,7 @@ const chainFindById = (value: unknown) => ({
   select: vi.fn().mockResolvedValue(value),
 });
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Admin: {
     findById: (...args: unknown[]) => mockAdminFindById(...args),
     findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),

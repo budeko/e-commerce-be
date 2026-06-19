@@ -5,7 +5,7 @@ const mockPaymentSplitFindOneAndUpdate = vi.fn();
 const mockPaymentSplitFind = vi.fn();
 const mockApproveIyzicoPaymentItem = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Seller: {
     find: (...args: unknown[]) => mockSellerFind(...args),
   },

@@ -3,7 +3,7 @@ import { signAuthToken, type UserRole } from '@/features/auth/core/security/acce
 import { verifyEmailVerificationToken } from '@/features/auth/core/security/email-token';
 import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/core/otp/otp';
 import { deleteUnverifiedUser } from '@/features/auth/core/register/unverified-user';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import type { VerifyEmailInput } from '@/features/auth/verification/verify-email/verify-email.schema';
 

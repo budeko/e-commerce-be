@@ -13,8 +13,8 @@ vi.mock('@/features/auth/credentials/logout/logout.service', () => ({
   logoutAllSessions: (...args: unknown[]) => mockLogoutAllSessions(...args),
 }));
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     User: {

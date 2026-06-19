@@ -1,4 +1,4 @@
-import { Buyer, Seller, SellerMember, SellerRole, User } from '@/db';
+import { Buyer, Seller, SellerMember, SellerRole, User } from '@/integrations/mongo';
 import { deleteAuthOtpsForUser } from '@/features/auth/core/otp/otp';
 
 export const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;

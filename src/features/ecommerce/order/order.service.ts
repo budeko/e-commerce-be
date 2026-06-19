@@ -1,4 +1,4 @@
-import { Buyer, Cart, Order, Product, type OrderStatus } from '@/db';
+import { Buyer, Cart, Order, Product, type OrderStatus } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import { clearCart } from '@/features/ecommerce/cart/cart.service';

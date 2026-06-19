@@ -5,7 +5,7 @@ const mockCartCreate = vi.fn();
 const mockProductFindOne = vi.fn();
 const mockProductFind = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Cart: {
     findById: (...args: unknown[]) => mockCartFindById(...args),
     create: (...args: unknown[]) => mockCartCreate(...args),

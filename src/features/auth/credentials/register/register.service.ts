@@ -13,7 +13,7 @@ import {
 import { invalidateAuthOtp } from '@/features/auth/core/otp/otp';
 import { hashPassword } from '@/internal/security';
 import { createUserId } from '@/internal/ids';
-import { User, Buyer, Seller } from '@/db';
+import { User, Buyer, Seller } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import type { RegisterInput } from '@/features/auth/credentials/register/register.schema';
 

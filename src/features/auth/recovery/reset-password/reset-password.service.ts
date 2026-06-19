@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { verifyPasswordResetToken } from '@/features/auth/core/security/email-token';
 import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/features/auth/core/otp/otp';
 import { hashPassword } from '@/internal/security';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import type { ResetPasswordInput } from '@/features/auth/recovery/reset-password/reset-password.schema';
 

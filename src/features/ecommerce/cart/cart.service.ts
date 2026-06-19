@@ -1,4 +1,4 @@
-import { Cart, Product } from '@/db';
+import { Cart, Product } from '@/integrations/mongo';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import type { AddToCartInput } from '@/features/ecommerce/cart/add-to-cart.schema';
 import {

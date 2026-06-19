@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockFindById = vi.fn();
 const mockBuildAuthUserFields = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findById: (...args: unknown[]) => mockFindById(...args),
   },

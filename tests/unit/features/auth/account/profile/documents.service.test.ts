@@ -22,7 +22,7 @@ vi.mock('@/features/auth/core/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Seller: {
     findById: (...args: unknown[]) => mockSellerFindById(...args),
   },

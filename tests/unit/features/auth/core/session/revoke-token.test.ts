@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 const mockRevokedTokenExists = vi.fn();
 const mockRevokedTokenUpdateOne = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   RevokedToken: {
     exists: (...args: unknown[]) => mockRevokedTokenExists(...args),
     updateOne: (...args: unknown[]) => mockRevokedTokenUpdateOne(...args),

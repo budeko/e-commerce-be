@@ -1,6 +1,6 @@
 import { signAuthToken } from '@/features/auth/core/security/access-token';
 import { comparePassword } from '@/internal/security';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import type { LoginInput } from '@/features/auth/credentials/login/login.schema';
 

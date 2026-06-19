@@ -1,6 +1,6 @@
 import { getAdminContext } from '@/features/auth/core/queries/admin-context';
 import { getSellerContext } from '@/features/auth/core/queries/seller-context';
-import { Seller } from '@/db';
+import { Seller } from '@/integrations/mongo';
 import type { PermissionKey } from '@/features/auth/admin/access/permission-keys';
 import type { SellerPermissionKey } from '@/features/auth/seller/access/permission-keys';
 import { AuthError } from '@/features/auth/core/errors';

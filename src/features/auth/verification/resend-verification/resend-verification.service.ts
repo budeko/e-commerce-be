@@ -6,7 +6,7 @@ import {
 } from '@/features/auth/core/mail/cooldown';
 import { sendUserVerificationEmail } from '@/features/auth/core/mail/send-verification';
 import { invalidateAuthOtp } from '@/features/auth/core/otp/otp';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 
 const log = createLogger({ module: 'resend-verification' });

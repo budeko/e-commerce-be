@@ -1,13 +1,13 @@
-import { Seller } from '@/db';
-import type { SellerApprovalStatus } from '@/db';
+import { Seller } from '@/integrations/mongo';
+import type { SellerApprovalStatus } from '@/integrations/mongo';
 import type { SellerPermissionKey } from '@/features/auth/seller/access/permission-keys';
 import {
   ALL_SELLER_PERMISSIONS,
   BIREYSEL_SELLER_PERMISSIONS,
 } from '@/features/auth/seller/access/permission-keys';
-import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/db/models/auth/seller-role.model';
-import { SellerMember } from '@/db/models/auth/seller-member.model';
-import { SellerRole } from '@/db/models/auth/seller-role.model';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo/models/auth/seller-role.model';
+import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
+import { SellerRole } from '@/integrations/mongo/models/auth/seller-role.model';
 import { ensureSellerMember } from '@/features/auth/seller/access/system-roles';
 
 export type SellerAccessContext = {

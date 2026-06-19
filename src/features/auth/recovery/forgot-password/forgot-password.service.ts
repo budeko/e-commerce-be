@@ -7,7 +7,7 @@ import {
 import { signPasswordResetToken } from '@/features/auth/core/security/email-token';
 import { sendPasswordResetEmail } from '@/integrations/resend/send';
 import { createAuthOtp, invalidateAuthOtp } from '@/features/auth/core/otp/otp';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 
 const log = createLogger({ module: 'forgot-password' });

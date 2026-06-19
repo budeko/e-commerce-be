@@ -8,7 +8,7 @@ const mockVerifyAuthOtp = vi.fn();
 const mockInvalidateAuthOtp = vi.fn();
 const mockDeleteUnverifiedUser = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findOne: (...args: unknown[]) => mockFindOne(...args),
     findById: (...args: unknown[]) => mockFindById(...args),

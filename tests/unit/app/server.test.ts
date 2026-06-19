@@ -14,7 +14,7 @@ vi.mock('@/config/env', async (importOriginal) => {
   };
 });
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   connectDB: (...args: unknown[]) => mockConnectDB(...args),
 }));
 

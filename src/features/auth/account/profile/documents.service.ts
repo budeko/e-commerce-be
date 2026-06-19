@@ -6,7 +6,7 @@ import {
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
 } from '@/integrations/supabase/supabase';
-import { Seller } from '@/db';
+import { Seller } from '@/integrations/mongo';
 import { getSellerContext } from '@/features/auth/core/queries/seller-context';
 import { AuthError } from '@/features/auth/core/errors';
 import {

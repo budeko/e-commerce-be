@@ -13,7 +13,7 @@ const chainFindById = (value: unknown) => ({
   }),
 });
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findById: (...args: unknown[]) => mockUserFindById(...args),
   },

@@ -1,4 +1,4 @@
-import { AuthEmailCooldown, User, buildAuthEmailCooldownId } from '@/db';
+import { AuthEmailCooldown, User, buildAuthEmailCooldownId } from '@/integrations/mongo';
 
 export const EMAIL_COOLDOWN_MS = 60_000;
 

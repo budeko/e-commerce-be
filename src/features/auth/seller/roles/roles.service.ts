@@ -10,11 +10,11 @@ import {
   canReadSellerRoles,
   canWriteSellerRoles,
 } from '@/features/auth/seller/access/permissions';
-import { SellerMember } from '@/db/models/auth/seller-member.model';
+import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
 import {
   SellerRole,
   SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/db/models/auth/seller-role.model';
+} from '@/integrations/mongo/models/auth/seller-role.model';
 import { AuthError, isDuplicateKeyError } from '@/features/auth/core/errors';
 import type { SellerAccessContext } from '@/features/auth/core/queries/seller-context';
 import { createUserId } from '@/internal/ids';

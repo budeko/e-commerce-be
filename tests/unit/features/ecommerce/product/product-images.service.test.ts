@@ -4,7 +4,7 @@ const mockProductFindById = vi.fn();
 const mockUpload = vi.fn();
 const mockDelete = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Product: {
     findById: (...args: unknown[]) => mockProductFindById(...args),
   },

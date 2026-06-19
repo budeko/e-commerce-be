@@ -7,7 +7,7 @@ const mockSendPasswordResetEmail = vi.fn();
 const mockAssertEmailCooldown = vi.fn();
 const mockMarkPasswordResetEmailSent = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findOne: (...args: unknown[]) => mockFindOne(...args),
   },

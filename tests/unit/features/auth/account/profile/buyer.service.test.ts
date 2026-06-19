@@ -4,7 +4,7 @@ const mockBuyerFindById = vi.fn();
 const mockBuyerFindByIdAndUpdate = vi.fn();
 const mockUserFindByIdAndUpdate = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Buyer: {
     findById: (...args: unknown[]) => mockBuyerFindById(...args),
     findByIdAndUpdate: (...args: unknown[]) => mockBuyerFindByIdAndUpdate(...args),

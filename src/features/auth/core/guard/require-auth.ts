@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { verifyAuthToken, type AuthTokenPayload } from '@/features/auth/core/security/access-token';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import {
   isTokenIssuedBefore,
   PASSWORD_CHANGED_MESSAGE,

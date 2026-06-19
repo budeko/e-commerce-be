@@ -22,7 +22,7 @@ vi.mock('@/integrations/iyzico/retrieve-checkout', () => ({
   completeIyzicoCheckout: vi.fn(),
 }));
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Order: {
     findOne: (...args: unknown[]) => mockOrderFindOne(...args),
     findById: (...args: unknown[]) => mockOrderFindById(...args),

@@ -1,5 +1,5 @@
 import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
-import { User, Buyer, Seller } from '@/db';
+import { User, Buyer, Seller } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import { buildAuthUserFields } from '@/features/auth/core/responses/user.response';
 import { updateBuyerProfile } from '@/features/auth/account/profile/buyer.service';

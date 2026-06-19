@@ -5,7 +5,7 @@ import { AuthError } from '@/features/auth/core/errors';
 
 const mockAdminRoleFind = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   AdminRole: {
     find: (...args: unknown[]) => mockAdminRoleFind(...args),
   },

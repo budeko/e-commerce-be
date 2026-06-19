@@ -1,4 +1,4 @@
-import { Product } from '@/db';
+import { Product } from '@/integrations/mongo';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import {
   buildProductImageObjectPath,

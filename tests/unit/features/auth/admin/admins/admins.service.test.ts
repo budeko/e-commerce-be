@@ -10,7 +10,7 @@ const mockAssertAssignableRoleId = vi.fn();
 const mockCountOwnerAdmins = vi.fn();
 const mockIsOwnerRoleId = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   Admin: {
     findById: (...args: unknown[]) => mockAdminFindById(...args),
     countDocuments: (...args: unknown[]) => mockCountDocuments(...args),

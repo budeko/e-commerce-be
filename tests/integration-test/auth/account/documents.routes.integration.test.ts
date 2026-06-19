@@ -11,8 +11,8 @@ vi.mock('@/features/auth/account/profile/documents.service', () => ({
   uploadSellerDocument: (...args: unknown[]) => mockUploadSellerDocument(...args),
 }));
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     User: {

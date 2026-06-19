@@ -1,4 +1,4 @@
-import { Category, Product } from '@/db';
+import { Category, Product } from '@/integrations/mongo';
 import { createUserId } from '@/internal/ids';
 import { EcommerceError } from '@/features/ecommerce/core/errors';
 import {

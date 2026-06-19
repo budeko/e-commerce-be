@@ -1,4 +1,4 @@
-import { Seller } from '@/db';
+import { Seller } from '@/integrations/mongo';
 import { canReadCompanyProfile, canWriteCompanyProfile } from '@/features/auth/seller/access/permissions';
 import { getSellerContext, type SellerAccessContext } from '@/features/auth/core/queries/seller-context';
 import {

@@ -11,7 +11,7 @@ const mockMarkRegisterEmailCooldown = vi.fn();
 const mockMarkVerificationEmailSent = vi.fn();
 const mockInvalidateAuthOtp = vi.fn();
 
-vi.mock('@/db', () => ({
+vi.mock('@/integrations/mongo', () => ({
   User: {
     findOne: (...args: unknown[]) => mockFindOne(...args),
     create: (...args: unknown[]) => mockCreate(...args),

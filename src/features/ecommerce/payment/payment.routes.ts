@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
-import { Payment } from '@/db';
+import { Payment } from '@/integrations/mongo';
 import { env } from '@/config/env';
 import { validateBody } from '@/plugins/http/validate-body';
 import { handleRouteError } from '@/plugins/http/handle-route-error';

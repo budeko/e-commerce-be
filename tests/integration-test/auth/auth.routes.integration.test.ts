@@ -14,8 +14,8 @@ vi.mock('@/features/auth/core/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
 }));
 
-vi.mock('@/db', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/db')>();
+vi.mock('@/integrations/mongo', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
   return {
     ...actual,
     User: {

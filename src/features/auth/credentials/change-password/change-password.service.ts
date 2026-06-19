@@ -1,6 +1,6 @@
 import type { AuthTokenPayload } from '@/features/auth/core/security/access-token';
 import { hashPassword, comparePassword } from '@/internal/security';
-import { User } from '@/db';
+import { User } from '@/integrations/mongo';
 import { AuthError } from '@/features/auth/core/errors';
 import type { ChangePasswordInput } from '@/features/auth/credentials/change-password/change-password.schema';
 
