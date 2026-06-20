@@ -1,4 +1,4 @@
-import { createLogger } from '@/internal/logging';
+import { createLogger } from '@/internal/common/logging';
 import { sendUserVerificationEmail } from '@/internal/auth/mail/send-verification';
 import {
   assertRegisterEmailCooldown,
@@ -11,10 +11,11 @@ import {
   getVerificationExpiresAt,
 } from '@/internal/auth/register/unverified-user';
 import { invalidateAuthOtp } from '@/internal/auth/otp/otp';
-import { hashPassword } from '@/internal/security';
-import { createUserId } from '@/internal/ids';
+import { hashPassword } from '@/internal/common/security';
+import { createUserId } from '@/internal/common/ids';
 import { User, Buyer, Seller } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import type { RegisterInput } from '@/features/identity/register/register.schema';
 
 const log = createLogger({ module: 'register' });
@@ -95,5 +96,12 @@ export const register = async (data: RegisterInput) => {
   }
 
   await resolveEmailForRegister(normalizedEmail);
-  return createUserWithProfile(normalizedEmail, password, role);
+  const { user } = await createUserWithProfile(normalizedEmail, password, role);
+  const statusFields = await buildAuthUserFields(user);
+
+  return {
+    message: 'Kayıt başarılı. E-posta adresini doğrula.',
+    ...statusFields,
+    isEmailVerified: user.isEmailVerified,
+  };
 };

@@ -12,10 +12,9 @@ import {
   getSellerRoleSummariesByIds,
   isOwnerSellerRoleId,
 } from '@/features/sellers/roles/roles.service';
-import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
-import { User } from '@/integrations/mongo';
-import { hashPassword } from '@/internal/security';
-import { createUserId } from '@/internal/ids';
+import { SellerMember, User } from '@/integrations/mongo';
+import { hashPassword } from '@/internal/common/security';
+import { createUserId } from '@/internal/common/ids';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
 import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import type { CreateSellerMemberInput } from '@/features/sellers/members/create-member.schema';

@@ -21,7 +21,7 @@ vi.mock('@/integrations/supabase/supabase', () => ({
   },
 }));
 
-vi.mock('@/internal/ids', () => ({
+vi.mock('@/internal/common/ids', () => ({
   createUserId: () => '880e8400-e29b-41d4-a716-446655440000',
 }));
 

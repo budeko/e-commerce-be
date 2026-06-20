@@ -1,11 +1,11 @@
-import { SellerMember } from '@/integrations/mongo/models/auth/seller-member.model';
 import {
+  Seller,
+  SellerMember,
   SellerRole,
   SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/integrations/mongo/models/auth/seller-role.model';
-import { Seller } from '@/integrations/mongo/models/auth/seller.model';
+} from '@/integrations/mongo';
 import { ALL_SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
-import { createUserId } from '@/internal/ids';
+import { createUserId } from '@/internal/common/ids';
 
 export const ensureSystemOwnerSellerRole = async (sellerId: string) => {
   let role = await SellerRole.findOne({

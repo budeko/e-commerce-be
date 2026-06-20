@@ -8,16 +8,6 @@ vi.mock('@/features/identity/login/login.service', () => ({
   login: (...args: unknown[]) => mockLogin(...args),
 }));
 
-vi.mock('@/internal/auth/responses/user.response', () => ({
-  buildAuthUserFields: vi.fn().mockResolvedValue({
-    role: 'buyer',
-    isActive: true,
-    companyId: null,
-    isOwner: null,
-    approvalStatus: null,
-  }),
-}));
-
 describe('login routes integration', () => {
   let app: FastifyInstance;
 
@@ -46,11 +36,12 @@ describe('login routes integration', () => {
 
   it('POST /auth/login başarılı giriş token döner', async () => {
     mockLogin.mockResolvedValue({
-      user: {
-        _id: '550e8400-e29b-41d4-a716-446655440000',
-        email: 'buyer@test.com',
-        role: 'buyer',
-      },
+      message: 'Giriş başarılı',
+      role: 'buyer',
+      isActive: true,
+      companyId: null,
+      isOwner: null,
+      approvalStatus: null,
       token: 'access-token-123',
     });
 

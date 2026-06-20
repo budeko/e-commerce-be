@@ -1,6 +1,7 @@
 import { Product } from '@/integrations/mongo';
-import { createUserId } from '@/internal/ids';
-import { CommerceError } from '@/internal/errors/commerce-error';
+import type { FastifyRequest } from 'fastify';
+import { createUserId } from '@/internal/common/ids';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 import {
   assertProductCategory,
   getCategoryProductFilterIds,
@@ -12,12 +13,16 @@ import {
 } from '@/internal/catalog/product/product-response';
 import { deleteProductImagesFromStorage, uploadProductImage } from '@/internal/catalog/product/product-images';
 import type { ProductImageUpload } from '@/internal/catalog/product/product-image-types';
-import { catalogCacheKeys, catalogCacheTtl } from '@/internal/cache/catalog-keys';
-import { invalidateCatalogProductCache } from '@/internal/cache/catalog-cache';
-import { memoryCache } from '@/internal/cache/memory-cache';
-import type { CreateProductInput } from '@/features/sellers/products/create-product.schema';
+import { parseCreateProductRequest } from '@/internal/catalog/product/parse-create-product-request';
+import { catalogCacheKeys, catalogCacheTtl } from '@/internal/common/cache/catalog-keys';
+import { invalidateCatalogProductCache } from '@/internal/common/cache/catalog-cache';
+import { memoryCache } from '@/internal/common/cache/memory-cache';
+import {
+  createProductSchema,
+  type CreateProductInput,
+} from '@/features/catalog/products/create-product.schema';
 import type { ListProductsQuery } from '@/features/catalog/products/list-products.schema';
-import type { UpdateProductInput } from '@/features/sellers/products/update-product.schema';
+import type { UpdateProductInput } from '@/features/catalog/products/update-product.schema';
 
 const resolveSlug = (name: string, slug?: string | null) => {
   if (slug === null) {
@@ -182,6 +187,13 @@ export const createProductWithImages = async (
     await deleteProduct(sellerId, product.id);
     throw error;
   }
+};
+
+export const createProductFromRequest = async (sellerId: string, request: FastifyRequest) => {
+  const { input, images } = await parseCreateProductRequest(request, createProductSchema);
+  const product = await createProductWithImages(sellerId, input, images);
+
+  return { product, imageCount: images.length };
 };
 
 export const updateProduct = async (

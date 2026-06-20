@@ -1,5 +1,5 @@
 import type { AuthTokenPayload } from '@/internal/auth/tokens/access-token';
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 import {
   deleteFromSellerStorage,
   getSupabaseConfig,
@@ -18,7 +18,7 @@ import {
   SELLER_DOCUMENT_RULES,
   type SellerDocumentType,
 } from '@/internal/auth/profile/seller-document-types';
-import type { SellerProfileUpdateInput } from '@/features/buyers/profile/profile.schema';
+import type { SellerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
 import { updateSellerProfile } from '@/internal/auth/profile/seller';
 
 export type UploadSellerDocumentInput = {
@@ -97,7 +97,7 @@ export const uploadSellerDocument = async (
     throw error;
   }
 
-  const profileUpdate = { [profileField]: url } as SellerProfileUpdateInput;
+  const profileUpdate = { [profileField]: url } as SellerProfileUpdate;
   const result = await updateSellerProfile(auth.userId, profileUpdate);
 
   return {

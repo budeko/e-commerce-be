@@ -5,7 +5,7 @@ import { AuthError } from '@/internal/auth/errors';
 
 const mockSellerRoleFind = vi.fn();
 
-vi.mock('@/integrations/mongo/models/auth/seller-role.model', () => ({
+vi.mock('@/integrations/mongo', () => ({
   SellerRole: {
     find: (...args: unknown[]) => mockSellerRoleFind(...args),
   },

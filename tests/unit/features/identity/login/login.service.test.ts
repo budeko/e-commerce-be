@@ -10,12 +10,22 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/internal/security', () => ({
+vi.mock('@/internal/common/security', () => ({
   comparePassword: (...args: unknown[]) => mockComparePassword(...args),
 }));
 
 vi.mock('@/internal/auth/tokens/access-token', () => ({
   signAuthToken: (...args: unknown[]) => mockSignAuthToken(...args),
+}));
+
+vi.mock('@/internal/auth/responses/user.response', () => ({
+  buildAuthUserFields: vi.fn().mockResolvedValue({
+    role: 'buyer',
+    isActive: true,
+    companyId: null,
+    isOwner: null,
+    approvalStatus: null,
+  }),
 }));
 
 import { login } from '@/features/identity/login/login.service';

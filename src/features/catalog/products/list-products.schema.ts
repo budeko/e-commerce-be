@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { safeString, uuidSchema } from '@/internal/validation/common-schemas';
+import { safeString, uuidSchema } from '@/internal/common/validation/common-schemas';
 
 export const listProductsQuerySchema = z.object({
   categoryId: uuidSchema.optional(),

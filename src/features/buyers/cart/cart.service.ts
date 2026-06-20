@@ -1,5 +1,5 @@
 import { Cart, Product } from '@/integrations/mongo';
-import { CommerceError } from '@/internal/errors/commerce-error';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 import type { AddToCartInput } from '@/features/buyers/cart/add-to-cart.schema';
 import {
   assertCartItemQuantity,

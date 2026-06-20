@@ -52,12 +52,22 @@ vi.mock('@/internal/auth/mail/send-verification', () => ({
 
 const mockCreateUserId = vi.fn();
 
-vi.mock('@/internal/ids', () => ({
+vi.mock('@/internal/common/ids', () => ({
   createUserId: () => mockCreateUserId(),
 }));
 
-vi.mock('@/internal/security', () => ({
+vi.mock('@/internal/common/security', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
+}));
+
+vi.mock('@/internal/auth/responses/user.response', () => ({
+  buildAuthUserFields: vi.fn().mockImplementation(async (user: { role: string }) => ({
+    role: user.role,
+    isActive: false,
+    companyId: null,
+    isOwner: null,
+    approvalStatus: null,
+  })),
 }));
 
 import { register } from '@/features/identity/register/register.service';
@@ -97,7 +107,7 @@ describe('register', () => {
 
     expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith(existingUserId);
     expect(mockMarkRegisterEmailCooldown).toHaveBeenCalledWith('user@example.com');
-    expect(result.user.isEmailVerified).toBe(false);
+    expect(result.isEmailVerified).toBe(false);
   });
 
   it('cooldown aktifken 429 döner', async () => {

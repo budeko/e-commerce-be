@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { optionalSafeString, phoneSchema } from '@/internal/validation/common-schemas';
+import { optionalSafeString, phoneSchema } from '@/internal/common/validation/common-schemas';
 
 export const adminProfileFieldsSchema = z.object({
   firstName: optionalSafeString({ min: 2, max: 100, label: 'Ad' }),

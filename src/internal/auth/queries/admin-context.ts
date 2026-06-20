@@ -1,6 +1,5 @@
-import { Admin, AdminRole } from '@/integrations/mongo';
+import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import type { PermissionKey } from '@/internal/auth/access/admin/permission-keys';
-import { SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo/models/auth/admin-role.model';
 
 export type AdminAccessContext = {
   userId: string;

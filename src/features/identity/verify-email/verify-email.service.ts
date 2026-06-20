@@ -5,6 +5,7 @@ import { invalidateAuthOtp, OtpError, verifyAuthOtp } from '@/internal/auth/otp/
 import { deleteUnverifiedUser } from '@/internal/auth/register/unverified-user';
 import { User } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import type { VerifyEmailInput } from '@/features/identity/verify-email/verify-email.schema';
 
 const markEmailVerified = async (userId: string) => {
@@ -78,6 +79,12 @@ export const verifyEmail = async (input: VerifyEmailInput) => {
       : await verifyEmailByCode(input.email, input.code);
 
   const token = signAuthToken(user._id.toString(), user.role as UserRole);
+  const statusFields = await buildAuthUserFields(user);
 
-  return { user, token };
+  return {
+    message: 'E-posta doğrulandı',
+    ...statusFields,
+    isEmailVerified: user.isEmailVerified,
+    token,
+  };
 };

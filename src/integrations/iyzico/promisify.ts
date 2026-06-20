@@ -1,4 +1,4 @@
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 
 type IyzipayCallback<T> = (err: unknown, result: T) => void;
 

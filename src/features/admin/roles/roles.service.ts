@@ -13,7 +13,7 @@ import {
 import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
-import { createUserId } from '@/internal/ids';
+import { createUserId } from '@/internal/common/ids';
 import type { CreateAdminRoleInput } from '@/features/admin/roles/create-role.schema';
 import type { UpdateAdminRoleInput } from '@/features/admin/roles/create-role.schema';
 

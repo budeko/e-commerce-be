@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/config/env';
-import { HttpError } from '@/internal/errors';
-import { logger } from '@/internal/logging';
+import { HttpError } from '@/internal/common/errors';
+import { logger } from '@/internal/common/logging';
 
 type SupabaseConfig = {
   url: string;

@@ -7,8 +7,8 @@ import {
 } from '@/middleware/sellers/require-approved-seller';
 import { validateBody } from '@/middleware/validation/validate-body';
 import { validateParams } from '@/middleware/validation/validate-params';
-import { orderIdParamSchema } from '@/internal/validation/param-schemas';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { orderIdParamSchema } from '@/internal/common/validation/param-schemas';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import { buyerOnly, buyerWithParams } from '@/middleware/presets/buyer-route-guards';
 import { createOrderSchema } from '@/features/buyers/orders/create-order.schema';

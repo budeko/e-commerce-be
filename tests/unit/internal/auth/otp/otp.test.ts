@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { hashPassword } from '@/internal/security';
+import { hashPassword } from '@/internal/common/security';
 
 const mockFindOneAndUpdate = vi.fn();
 const mockFindById = vi.fn();

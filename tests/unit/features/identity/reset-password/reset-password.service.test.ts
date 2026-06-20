@@ -33,7 +33,7 @@ vi.mock('@/internal/auth/otp/otp', async () => {
   };
 });
 
-vi.mock('@/internal/security', () => ({
+vi.mock('@/internal/common/security', () => ({
   hashPassword: (...args: unknown[]) => mockHashPassword(...args),
   comparePassword: vi.fn(),
 }));

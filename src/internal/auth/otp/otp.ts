@@ -5,7 +5,7 @@ import {
   AuthOtpPurpose,
   buildAuthOtpId,
 } from '@/integrations/mongo';
-import { comparePassword, hashPassword } from '@/internal/security';
+import { comparePassword, hashPassword } from '@/internal/common/security';
 
 const MAX_OTP_ATTEMPTS = 5;
 

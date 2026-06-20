@@ -1,5 +1,5 @@
 import { Product } from '@/integrations/mongo';
-import { CommerceError } from '@/internal/errors/commerce-error';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 import {
   buildProductImageObjectPath,
   MAX_PRODUCT_IMAGE_BYTES,
@@ -8,8 +8,8 @@ import {
   resolveProductImageMimeType,
 } from '@/internal/catalog/product/product-image-types';
 import { toSellerProductResponse } from '@/internal/catalog/product/product-response';
-import { invalidateCatalogProductCache } from '@/internal/cache/catalog-cache';
-import { createUserId } from '@/internal/ids';
+import { invalidateCatalogProductCache } from '@/internal/common/cache/catalog-cache';
+import { createUserId } from '@/internal/common/ids';
 import {
   deleteFromSellerStorage,
   getSupabaseConfig,

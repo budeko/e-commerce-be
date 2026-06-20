@@ -4,7 +4,7 @@ import { getIyzicoClient } from '@/integrations/iyzico/client';
 import { formatIyzicoDate, formatIyzicoPhone, formatIyzicoPrice } from '@/integrations/iyzico/format';
 import { promisifyIyzipay } from '@/integrations/iyzico/promisify';
 import type { InitializeCheckoutInput, InitializeCheckoutResult } from '@/integrations/iyzico/types';
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 
 export const initializeIyzicoCheckout = async (
   input: InitializeCheckoutInput

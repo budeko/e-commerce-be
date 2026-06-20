@@ -1,7 +1,7 @@
 import { User, Buyer } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
 import { isBuyerProfileComplete } from '@/internal/auth/profile/profile-completion';
-import type { BuyerProfileUpdateInput } from '@/features/buyers/profile/profile.schema';
+import type { BuyerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
 
 const syncBuyerActiveStatus = async (userId: string, isComplete: boolean) => {
   await User.findByIdAndUpdate(userId, { isActive: isComplete });
@@ -14,7 +14,7 @@ const resolveBuyerBilling = (
     billingAddress?: string | null;
     billingSameAsDelivery?: boolean | null;
   },
-  update: BuyerProfileUpdateInput
+  update: BuyerProfileUpdate
 ) => {
   const billingSameAsDelivery =
     update.billingSameAsDelivery ?? current.billingSameAsDelivery ?? false;
@@ -32,7 +32,7 @@ const resolveBuyerBilling = (
   };
 };
 
-export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdateInput) => {
+export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdate) => {
   const buyer = await Buyer.findById(userId);
 
   if (!buyer) {

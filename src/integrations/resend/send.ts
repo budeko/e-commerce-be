@@ -3,7 +3,7 @@ import {
   buildPasswordResetEmailHtml,
   buildVerificationEmailHtml,
 } from '@/integrations/resend/templates';
-import { createLogger } from '@/internal/logging';
+import { createLogger } from '@/internal/common/logging';
 
 const log = createLogger({ module: 'mail' });
 

@@ -35,7 +35,7 @@ vi.mock('@/integrations/mongo', () => ({
   Buyer: { findById: (...args: unknown[]) => mockBuyerFindById(...args) },
 }));
 
-vi.mock('@/internal/ids', () => ({
+vi.mock('@/internal/common/ids', () => ({
   createUserId: () => '9c9e6679-7425-40de-944b-e07fc1f90ae9',
 }));
 

@@ -1,9 +1,9 @@
 import { Buyer, Order, Payment, User } from '@/integrations/mongo';
-import { createUserId } from '@/internal/ids';
+import { createUserId } from '@/internal/common/ids';
 import { getBuyerOrder } from '@/features/buyers/orders/order.service';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
 import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
-import { CommerceError } from '@/internal/errors/commerce-error';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 import type { CreatePaymentInput } from '@/features/buyers/payments/create-payment.schema';
 import {
   buildPaymentSplitsForOrder,

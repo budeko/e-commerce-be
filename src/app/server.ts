@@ -1,7 +1,7 @@
 import { connectDB } from '@/integrations/mongo';
 import { buildApp } from '@/app/app';
 import { env, validateEnvAtStartup } from '@/config/env';
-import { logger } from '@/internal/logging';
+import { logger } from '@/internal/common/logging';
 
 export const getPort = (): number => env.port;
 

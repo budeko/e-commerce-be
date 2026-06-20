@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearMemoryCache } from '@/internal/cache/memory-cache';
+import { clearMemoryCache } from '@/internal/common/cache/memory-cache';
 
 const mockAssertProductCategory = vi.fn();
 const mockGetCategoryProductFilterIds = vi.fn();
@@ -32,7 +32,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/internal/ids', () => ({
+vi.mock('@/internal/common/ids', () => ({
   createUserId: () => '7c9e6679-7425-40de-944b-e07fc1f90ae7',
 }));
 

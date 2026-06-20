@@ -12,7 +12,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/internal/security', () => ({
+vi.mock('@/internal/common/security', () => ({
   comparePassword: (...args: unknown[]) => mockComparePassword(...args),
   hashPassword: (...args: unknown[]) => mockHashPassword(...args),
 }));

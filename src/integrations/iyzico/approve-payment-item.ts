@@ -1,7 +1,7 @@
 import Iyzipay from 'iyzipay';
 import { getIyzicoClient } from '@/integrations/iyzico/client';
 import { promisifyIyzipay } from '@/integrations/iyzico/promisify';
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 
 export const approveIyzicoPaymentItem = async (
   paymentTransactionId: string,

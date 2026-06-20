@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { requireAuth } from '@/middleware/auth/require-auth';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { logout, logoutAllSessions } from '@/features/identity/logout/logout.service';
 
 export default async function (fastify: FastifyInstance) {

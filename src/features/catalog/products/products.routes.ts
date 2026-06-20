@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { validateParams } from '@/middleware/validation/validate-params';
 import { validateQuery } from '@/middleware/validation/validate-query';
-import { productIdParamSchema } from '@/internal/validation/param-schemas';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { productIdParamSchema } from '@/internal/common/validation/param-schemas';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import {
   listProductsQuerySchema,
   type ListProductsQuery,

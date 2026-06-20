@@ -1,14 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { HttpError } from '@/internal/errors';
-import { sanitizeRequestBody } from '@/internal/validation/sanitize';
-import {
-  createProductSchema,
-  type CreateProductInput,
-} from '@/features/sellers/products/create-product.schema';
-import {
-  MAX_PRODUCT_IMAGES,
-  type ProductImageUpload,
-} from '@/internal/catalog/product/product-image-types';
+import type { FastifyInstance } from 'fastify';
 import { registerProductMultipart } from '@/plugins/multipart/product';
 import { SELLERS_WRITE_RATE_LIMIT } from '@/middleware/presets/rate-limit';
 import { registerScopedRateLimit } from '@/plugins/rate-limit/register-scoped';
@@ -20,15 +10,15 @@ import {
 } from '@/middleware/sellers/require-approved-seller';
 import { validateBody } from '@/middleware/validation/validate-body';
 import { validateParams } from '@/middleware/validation/validate-params';
-import { productIdParamSchema } from '@/internal/validation/param-schemas';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { productIdParamSchema } from '@/internal/common/validation/param-schemas';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import {
   updateProductSchema,
   type UpdateProductInput,
-} from '@/features/sellers/products/update-product.schema';
+} from '@/features/catalog/products/update-product.schema';
 import {
-  createProductWithImages,
+  createProductFromRequest,
   deleteProduct,
   listSellerProducts,
   updateProduct,
@@ -41,63 +31,6 @@ import {
   deleteProductImageSchema,
   type DeleteProductImageInput,
 } from '@/features/sellers/products/delete-product-image.schema';
-
-const IMAGE_FIELD_NAMES = new Set(['image', 'images']);
-
-const parseCreateProductInput = (raw: unknown): CreateProductInput => {
-  const parsed = createProductSchema.safeParse(sanitizeRequestBody(raw));
-
-  if (!parsed.success) {
-    throw new HttpError(400, 'Geçersiz istek verisi');
-  }
-
-  return parsed.data;
-};
-
-const parseCreateProductRequest = async (request: FastifyRequest) => {
-  if (!request.isMultipart()) {
-    return {
-      input: parseCreateProductInput(request.body),
-      images: [] as ProductImageUpload[],
-    };
-  }
-
-  let rawData: unknown = null;
-  const images: ProductImageUpload[] = [];
-
-  for await (const part of request.parts()) {
-    if (part.type === 'field') {
-      if (part.fieldname === 'data') {
-        try {
-          rawData = JSON.parse(String(part.value));
-        } catch {
-          throw new HttpError(400, 'data alanı geçerli JSON olmalı');
-        }
-      }
-      continue;
-    }
-
-    if (part.type === 'file' && IMAGE_FIELD_NAMES.has(part.fieldname)) {
-      images.push({
-        mimeType: part.mimetype,
-        buffer: await part.toBuffer(),
-      });
-    }
-  }
-
-  if (rawData === null) {
-    throw new HttpError(400, 'data alanı zorunlu');
-  }
-
-  if (images.length > MAX_PRODUCT_IMAGES) {
-    throw new HttpError(400, `En fazla ${MAX_PRODUCT_IMAGES} görsel eklenebilir`);
-  }
-
-  return {
-    input: parseCreateProductInput(rawData),
-    images,
-  };
-};
 
 const sellerApproved = {
   preHandler: [requireAuth, requireEmailVerified, requireApprovedSeller],
@@ -136,15 +69,13 @@ export default async function productRoutes(fastify: FastifyInstance) {
 
   fastify.post('/', sellerWrite, async (req, reply) => {
     try {
-      const { input, images } = await parseCreateProductRequest(req);
-      const product = await createProductWithImages(
+      const { product, imageCount } = await createProductFromRequest(
         req.sellerContext!.companyId,
-        input,
-        images
+        req
       );
 
       return reply.status(201).send({
-        message: images.length > 0 ? 'Ürün ve görseller oluşturuldu' : 'Ürün oluşturuldu',
+        message: imageCount > 0 ? 'Ürün ve görseller oluşturuldu' : 'Ürün oluşturuldu',
         product,
       });
     } catch (error) {

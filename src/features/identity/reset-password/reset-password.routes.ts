@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/middleware/validation/validate-body';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { resetPassword } from '@/features/identity/reset-password/reset-password.service';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/features/identity/reset-password/reset-password.schema';
 

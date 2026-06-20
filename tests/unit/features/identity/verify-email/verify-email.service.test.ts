@@ -36,6 +36,16 @@ vi.mock('@/internal/auth/otp/otp', async () => {
   };
 });
 
+vi.mock('@/internal/auth/responses/user.response', () => ({
+  buildAuthUserFields: vi.fn().mockImplementation(async (user: { role: string; isEmailVerified: boolean }) => ({
+    role: user.role,
+    isActive: false,
+    companyId: null,
+    isOwner: null,
+    approvalStatus: null,
+  })),
+}));
+
 import { OtpError } from '@/internal/auth/otp/otp';
 import { verifyEmail } from '@/features/identity/verify-email/verify-email.service';
 
@@ -68,7 +78,7 @@ describe('verifyEmail', () => {
 
       const result = await verifyEmail({ token });
 
-      expect(result.user.isEmailVerified).toBe(true);
+      expect(result.isEmailVerified).toBe(true);
       expect(result.token).toEqual(expect.any(String));
       expect(save).toHaveBeenCalled();
       expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(userId, 'email_verify');

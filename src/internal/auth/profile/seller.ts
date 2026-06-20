@@ -12,7 +12,7 @@ import {
   assertIbanUpdateAllowed,
   omitUnchangedLockedIban,
 } from '@/internal/auth/profile/seller-iban-lock';
-import type { SellerProfileUpdateInput } from '@/features/buyers/profile/profile.schema';
+import type { SellerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
 
 const assertCanReadCompany = (ctx: SellerAccessContext) => {
   if (!canReadCompanyProfile(ctx)) {
@@ -26,7 +26,7 @@ const assertCanWriteCompany = (ctx: SellerAccessContext) => {
   }
 };
 
-export const updateSellerProfile = async (userId: string, data: SellerProfileUpdateInput) => {
+export const updateSellerProfile = async (userId: string, data: SellerProfileUpdate) => {
   const ctx = await getSellerContext(userId);
 
   if (!ctx) {
@@ -50,7 +50,7 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
   const updateData = omitUnchangedLockedIban(
     seller.iban,
     data as Record<string, unknown>
-  ) as SellerProfileUpdateInput;
+  ) as SellerProfileUpdate;
 
   const criticalChanged =
     ctx.teamManagementEnabled &&

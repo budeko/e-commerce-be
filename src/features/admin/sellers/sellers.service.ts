@@ -3,10 +3,10 @@ import {
   sendSellerApprovedEmail,
   sendSellerRejectedEmail,
 } from '@/internal/auth/admin/mail/send-seller-notifications';
-import { createLogger } from '@/internal/logging';
+import { createLogger } from '@/internal/common/logging';
 import { Seller, User, type SellerApprovalStatus } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 import { createIyzicoSubMerchant } from '@/integrations/iyzico/create-submerchant';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 

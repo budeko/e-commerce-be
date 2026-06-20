@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { safeString, uuidSchema } from '@/internal/validation/common-schemas';
-import { slugSchema } from '@/internal/validation/slug-schema';
+import { safeString, uuidSchema } from '@/internal/common/validation/common-schemas';
+import { slugSchema } from '@/internal/common/validation/slug-schema';
 import { MAX_PARENTS_PER_NODE } from '@/internal/catalog/category/category-graph';
 
 const categoryNameSchema = safeString({

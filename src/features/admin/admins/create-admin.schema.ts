@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { adminProfileFieldsSchema } from '@/features/admin/profile/profile.schema';
 import { emailSchema } from '@/internal/auth/schemas/email.schema';
 import { passwordSchema } from '@/internal/auth/schemas/password.schema';
-import { uuidSchema } from '@/internal/validation/common-schemas';
+import { uuidSchema } from '@/internal/common/validation/common-schemas';
 
 export const createAdminSchema = adminProfileFieldsSchema.extend({
   email: emailSchema,

@@ -1,4 +1,4 @@
-import { CommerceError } from '@/internal/errors/commerce-error';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 
 export const resolveMinOrderQuantity = (minOrderQuantity?: number | null) =>
   minOrderQuantity ?? 1;

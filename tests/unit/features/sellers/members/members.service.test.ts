@@ -9,14 +9,11 @@ const mockUserFind = vi.fn();
 const mockUserFindById = vi.fn();
 const mockGetSellerRoleSummariesByIds = vi.fn();
 
-vi.mock('@/integrations/mongo/models/auth/seller-member.model', () => ({
+vi.mock('@/integrations/mongo', () => ({
   SellerMember: {
     find: (...args: unknown[]) => mockSellerMemberFind(...args),
     findOne: (...args: unknown[]) => mockSellerMemberFindOne(...args),
   },
-}));
-
-vi.mock('@/integrations/mongo', () => ({
   User: {
     find: (...args: unknown[]) => mockUserFind(...args),
     findById: (...args: unknown[]) => mockUserFindById(...args),

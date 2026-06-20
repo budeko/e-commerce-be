@@ -22,7 +22,7 @@ vi.mock('@/app/app', () => ({
   buildApp: (...args: unknown[]) => mockBuildApp(...args),
 }));
 
-vi.mock('@/internal/logging', () => ({
+vi.mock('@/internal/common/logging', () => ({
   logger: {
     info: (...args: unknown[]) => mockLoggerInfo(...args),
     error: (...args: unknown[]) => mockLoggerError(...args),

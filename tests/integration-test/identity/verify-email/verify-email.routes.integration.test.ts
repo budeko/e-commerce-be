@@ -8,16 +8,6 @@ vi.mock('@/features/identity/verify-email/verify-email.service', () => ({
   verifyEmail: (...args: unknown[]) => mockVerifyEmail(...args),
 }));
 
-vi.mock('@/internal/auth/responses/user.response', () => ({
-  buildAuthUserFields: vi.fn().mockResolvedValue({
-    role: 'buyer',
-    isActive: false,
-    companyId: null,
-    isOwner: null,
-    approvalStatus: null,
-  }),
-}));
-
 describe('verify-email routes integration', () => {
   let app: FastifyInstance;
 
@@ -46,12 +36,13 @@ describe('verify-email routes integration', () => {
 
   it('POST /auth/verify-email token ile doğrular', async () => {
     mockVerifyEmail.mockResolvedValue({
-      user: {
-        _id: '550e8400-e29b-41d4-a716-446655440000',
-        email: 'buyer@test.com',
-        role: 'buyer',
-        isEmailVerified: true,
-      },
+      message: 'E-posta doğrulandı',
+      role: 'buyer',
+      isActive: false,
+      companyId: null,
+      isOwner: null,
+      approvalStatus: null,
+      isEmailVerified: true,
       token: 'access-token-123',
     });
 

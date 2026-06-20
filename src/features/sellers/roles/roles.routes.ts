@@ -6,8 +6,8 @@ import {
 } from '@/middleware/sellers/require-approved-seller';
 import { validateBody } from '@/middleware/validation/validate-body';
 import { validateParams } from '@/middleware/validation/validate-params';
-import { roleIdParamSchema } from '@/internal/validation/param-schemas';
-import { handleRouteError } from '@/internal/errors/handle-route-error';
+import { roleIdParamSchema } from '@/internal/common/validation/param-schemas';
+import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import {
   createSellerRole,

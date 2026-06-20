@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { HttpError } from '@/internal/errors';
+import { HttpError } from '@/internal/common/errors';
 
 export const registerErrorHandler = (app: FastifyInstance): void => {
   app.setErrorHandler((error: unknown, _request, reply) => {

@@ -1,7 +1,8 @@
 import { signAuthToken } from '@/internal/auth/tokens/access-token';
-import { comparePassword } from '@/internal/security';
+import { comparePassword } from '@/internal/common/security';
 import { User } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
+import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import type { LoginInput } from '@/features/identity/login/login.schema';
 
 export const login = async (data: LoginInput) => {
@@ -25,6 +26,11 @@ export const login = async (data: LoginInput) => {
   }
 
   const token = signAuthToken(user._id.toString(), user.role, data.rememberMe);
+  const statusFields = await buildAuthUserFields(user);
 
-  return { user, token };
+  return {
+    message: 'Giriş başarılı',
+    ...statusFields,
+    token,
+  };
 };

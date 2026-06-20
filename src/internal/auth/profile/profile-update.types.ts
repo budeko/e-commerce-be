@@ -1,0 +1,40 @@
+export type BuyerProfileUpdate = Partial<{
+  firstName: string;
+  lastName: string;
+  phone: string;
+  country: string;
+  city: string;
+  nationalId: string;
+  deliveryAddress: string;
+  corporateAddress: string;
+  billingSameAsDelivery: boolean;
+  billingAddress: string;
+}>;
+
+export type SellerProfileUpdate = Partial<{
+  sellerType: 'bireysel' | 'kurumsal';
+  firstName: string;
+  lastName: string;
+  phone: string;
+  authorizedFirstName: string;
+  authorizedLastName: string;
+  authorizedPhone: string;
+  companyPhone: string;
+  companyType: 'ltd' | 'as';
+  companyName: string;
+  taxNumber: string;
+  taxOffice: string;
+  country: string;
+  city: string;
+  district: string;
+  companyAddress: string;
+  taxCertificateUrl: string;
+  signatureCircularUrl: string;
+  bankName: string;
+  iban: string;
+  accountHolderName: string;
+  companyLogoUrl: string;
+  companyDescription: string;
+  companyWebsite: string;
+  socialMediaLinks: string[];
+}>;

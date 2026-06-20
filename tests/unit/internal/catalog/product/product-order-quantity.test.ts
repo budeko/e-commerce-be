@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CommerceError } from '@/internal/errors/commerce-error';
+import { CommerceError } from '@/internal/common/errors/commerce-error';
 import { assertCartItemQuantity } from '@/internal/catalog/product/product-order-quantity';
 
 describe('assertCartItemQuantity', () => {
