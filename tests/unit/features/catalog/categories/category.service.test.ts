@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearMemoryCache } from '@/internal/cache/memory-cache';
 
 const mockCategoryFind = vi.fn();
 const mockCategoryFindById = vi.fn();
@@ -55,6 +56,7 @@ const childCategoryDoc = {
 
 describe('listPublicCategories', () => {
   beforeEach(() => {
+    clearMemoryCache();
     vi.clearAllMocks();
     mockCategoryFind.mockReturnValue({
       lean: vi.fn().mockResolvedValue([rootCategoryDoc, childCategoryDoc]),
@@ -85,6 +87,13 @@ describe('listPublicCategories', () => {
         ],
       },
     ]);
+  });
+
+  it('ikinci çağrıda Mongo sorgusu tekrarlanmaz', async () => {
+    await listPublicCategories();
+    await listPublicCategories();
+
+    expect(mockCategoryFind).toHaveBeenCalledTimes(1);
   });
 });
 

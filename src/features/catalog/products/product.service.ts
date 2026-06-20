@@ -12,6 +12,9 @@ import {
 } from '@/internal/catalog/product/product-response';
 import { deleteProductImagesFromStorage, uploadProductImage } from '@/internal/catalog/product/product-images';
 import type { ProductImageUpload } from '@/internal/catalog/product/product-image-types';
+import { catalogCacheKeys, catalogCacheTtl } from '@/internal/cache/catalog-keys';
+import { invalidateCatalogProductCache } from '@/internal/cache/catalog-cache';
+import { memoryCache } from '@/internal/cache/memory-cache';
 import type { CreateProductInput } from '@/features/sellers/products/create-product.schema';
 import type { ListProductsQuery } from '@/features/catalog/products/list-products.schema';
 import type { UpdateProductInput } from '@/features/sellers/products/update-product.schema';
@@ -59,6 +62,20 @@ const buildPublicFilter = async (query: ListProductsQuery) => {
 };
 
 export const listPublicProducts = async (query: ListProductsQuery) => {
+  const cacheKey = catalogCacheKeys.productsList(query);
+  const cached = memoryCache.get<Awaited<ReturnType<typeof listPublicProductsUncached>>>(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const result = await listPublicProductsUncached(query);
+  memoryCache.set(cacheKey, result, { ttlMs: catalogCacheTtl.productsListMs });
+
+  return result;
+};
+
+const listPublicProductsUncached = async (query: ListProductsQuery) => {
   const filter = await buildPublicFilter(query);
   const skip = (query.page - 1) * query.limit;
 
@@ -79,6 +96,20 @@ export const listPublicProducts = async (query: ListProductsQuery) => {
 };
 
 export const getPublicProductById = async (productId: string) => {
+  const cacheKey = catalogCacheKeys.productDetail(productId);
+  const cached = memoryCache.get<Awaited<ReturnType<typeof getPublicProductByIdUncached>>>(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const product = await getPublicProductByIdUncached(productId);
+  memoryCache.set(cacheKey, product, { ttlMs: catalogCacheTtl.productDetailMs });
+
+  return product;
+};
+
+const getPublicProductByIdUncached = async (productId: string) => {
   const product = await Product.findOne({
     _id: productId,
     isActive: true,
@@ -116,6 +147,8 @@ export const createProduct = async (sellerId: string, input: CreateProductInput)
     isActive: input.isActive ?? true,
     images: [],
   });
+
+  invalidateCatalogProductCache();
 
   return toSellerProductResponse(product.toObject());
 };
@@ -200,6 +233,8 @@ export const updateProduct = async (
   product.updatedAt = new Date();
   await product.save();
 
+  invalidateCatalogProductCache();
+
   return toSellerProductResponse(product.toObject());
 };
 
@@ -207,4 +242,6 @@ export const deleteProduct = async (sellerId: string, productId: string) => {
   const product = await getOwnedProduct(sellerId, productId);
   await deleteProductImagesFromStorage(product.images);
   await Product.findByIdAndDelete(product._id);
+
+  invalidateCatalogProductCache();
 };

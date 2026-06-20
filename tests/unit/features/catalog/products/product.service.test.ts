@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearMemoryCache } from '@/internal/cache/memory-cache';
 
 const mockAssertProductCategory = vi.fn();
 const mockGetCategoryProductFilterIds = vi.fn();
@@ -178,6 +179,7 @@ describe('createProductWithImages', () => {
 
 describe('listPublicProducts', () => {
   beforeEach(() => {
+    clearMemoryCache();
     vi.clearAllMocks();
     mockGetCategoryProductFilterIds.mockResolvedValue([categoryId, 'leaf-category-id']);
     mockProductFind.mockReturnValue({
@@ -211,6 +213,16 @@ describe('listPublicProducts', () => {
       isActive: true,
       categoryId: { $in: [categoryId, 'leaf-category-id'] },
     });
+  });
+
+  it('aynı sorguda ikinci çağrı Mongo find tekrarlamaz', async () => {
+    const query = { page: 1, limit: 20 };
+
+    await listPublicProducts(query);
+    await listPublicProducts(query);
+
+    expect(mockProductFind).toHaveBeenCalledTimes(1);
+    expect(mockProductCountDocuments).toHaveBeenCalledTimes(1);
   });
 });
 

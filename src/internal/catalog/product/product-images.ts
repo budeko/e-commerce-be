@@ -8,6 +8,7 @@ import {
   resolveProductImageMimeType,
 } from '@/internal/catalog/product/product-image-types';
 import { toSellerProductResponse } from '@/internal/catalog/product/product-response';
+import { invalidateCatalogProductCache } from '@/internal/cache/catalog-cache';
 import { createUserId } from '@/internal/ids';
 import {
   deleteFromSellerStorage,
@@ -74,6 +75,8 @@ export const uploadProductImage = async (
   product.updatedAt = new Date();
   await product.save();
 
+  invalidateCatalogProductCache();
+
   return {
     url,
     product: toSellerProductResponse(product.toObject()),
@@ -96,6 +99,8 @@ export const deleteProductImage = async (
   product.images = product.images.filter((url) => url !== imageUrl);
   product.updatedAt = new Date();
   await product.save();
+
+  invalidateCatalogProductCache();
 
   return {
     url: imageUrl,

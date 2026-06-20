@@ -14,6 +14,9 @@ import {
   type CategoryGraphNode,
 } from '@/internal/catalog/category/category-graph';
 import { slugify } from '@/internal/catalog/category/slugify';
+import { catalogCacheKeys, catalogCacheTtl } from '@/internal/cache/catalog-keys';
+import { invalidateCatalogCache } from '@/internal/cache/catalog-cache';
+import { memoryCache } from '@/internal/cache/memory-cache';
 import type { CreateCategoryInput } from '@/features/admin/categories/create-category.schema';
 import type { LinkCategoryInput } from '@/features/admin/categories/link-category.schema';
 import type { UpdateCategoryInput } from '@/features/admin/categories/update-category.schema';
@@ -208,7 +211,7 @@ export const getCategoryPaths = async (categoryId: string) => {
   return collectAncestorPaths(categoryId, graphNodes);
 };
 
-export const listPublicCategories = async () => {
+const listPublicCategoriesUncached = async () => {
   const categories = await Category.find({ isActive: true }).lean();
   const graphNodes = categories.map((category) => toGraphNode(category));
   const visibleNodes = filterCategoriesWithActiveAncestors(graphNodes);
@@ -218,6 +221,20 @@ export const listPublicCategories = async () => {
     .map(toPublicCategoryResponse);
 
   return buildCategoryForest(flatCategories, (category) => category);
+};
+
+export const listPublicCategories = async () => {
+  const cacheKey = catalogCacheKeys.publicCategories();
+  const cached = memoryCache.get<Awaited<ReturnType<typeof listPublicCategoriesUncached>>>(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const categories = await listPublicCategoriesUncached();
+  memoryCache.set(cacheKey, categories, { ttlMs: catalogCacheTtl.categoriesMs });
+
+  return categories;
 };
 
 export const listAdminCategories = async () => {
@@ -268,6 +285,8 @@ export const createCategory = async (input: CreateCategoryInput) => {
 
   const fresh = await Category.findById(categoryId).lean();
 
+  invalidateCatalogCache();
+
   return toCategoryResponse(fresh!);
 };
 
@@ -294,6 +313,8 @@ export const updateCategory = async (categoryId: string, input: UpdateCategoryIn
 
   await category.save();
 
+  invalidateCatalogCache();
+
   return toCategoryResponse(category.toObject());
 };
 
@@ -313,6 +334,8 @@ export const linkCategory = async (categoryId: string, input: LinkCategoryInput)
   }
 
   const category = await Category.findById(categoryId).lean();
+
+  invalidateCatalogCache();
 
   return {
     category: toCategoryResponse(category!),
@@ -334,6 +357,8 @@ export const unlinkCategory = async (categoryId: string, input: LinkCategoryInpu
   if (!category) {
     throw new CommerceError(404, 'Kategori bulunamadı');
   }
+
+  invalidateCatalogCache();
 
   return toCategoryResponse(category);
 };
@@ -360,6 +385,8 @@ export const deleteCategory = async (categoryId: string) => {
   }
 
   await Category.findByIdAndDelete(categoryId);
+
+  invalidateCatalogCache();
 };
 
 export const assertProductCategory = async (categoryId: string) => {
