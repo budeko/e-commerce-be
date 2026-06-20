@@ -22,7 +22,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/admin/roles/roles.service', () => ({
+vi.mock('@/internal/auth/access/admin/role-queries', () => ({
   getRoleSummariesByIds: (...args: unknown[]) => mockGetRoleSummariesByIds(...args),
   assertAssignableRoleId: (...args: unknown[]) => mockAssertAssignableRoleId(...args),
   countOwnerAdmins: (...args: unknown[]) => mockCountOwnerAdmins(...args),

@@ -11,7 +11,7 @@ import {
   countOwnerAdmins,
   getRoleSummariesByIds,
   isOwnerRoleId,
-} from '@/features/admin/roles/roles.service';
+} from '@/internal/auth/access/admin/role-queries';
 import { formatAdminResponse } from '@/internal/auth/responses/admin.response';
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';

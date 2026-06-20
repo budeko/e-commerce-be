@@ -11,7 +11,7 @@ import {
   countOwnerSellerMembers,
   getSellerRoleSummariesByIds,
   isOwnerSellerRoleId,
-} from '@/features/sellers/roles/roles.service';
+} from '@/internal/auth/access/seller/role-queries';
 import { SellerMember, User } from '@/integrations/mongo';
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';

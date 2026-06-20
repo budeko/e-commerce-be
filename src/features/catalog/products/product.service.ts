@@ -11,7 +11,7 @@ import {
   toPublicProductResponse,
   toSellerProductResponse,
 } from '@/internal/catalog/product/product-response';
-import { deleteProductImagesFromStorage, uploadProductImage } from '@/internal/catalog/product/product-images';
+import { deleteProductImagesFromStorage, uploadProductImage, deleteProductImage } from '@/internal/catalog/product/product-images';
 import type { ProductImageUpload } from '@/internal/catalog/product/product-image-types';
 import { parseCreateProductRequest } from '@/internal/catalog/product/parse-create-product-request';
 import { catalogCacheKeys, catalogCacheTtl } from '@/internal/common/cache/catalog-keys';
@@ -257,3 +257,13 @@ export const deleteProduct = async (sellerId: string, productId: string) => {
 
   invalidateCatalogProductCache();
 };
+
+export const addProductImage = async (
+  sellerId: string,
+  productId: string,
+  mimeType: string,
+  buffer: Buffer
+) => uploadProductImage(sellerId, productId, mimeType, buffer);
+
+export const removeProductImage = async (sellerId: string, productId: string, url: string) =>
+  deleteProductImage(sellerId, productId, url);

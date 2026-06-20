@@ -20,7 +20,7 @@ vi.mock('@/integrations/mongo', () => ({
   },
 }));
 
-vi.mock('@/features/sellers/roles/roles.service', () => ({
+vi.mock('@/internal/auth/access/seller/role-queries', () => ({
   getSellerRoleSummariesByIds: (...args: unknown[]) => mockGetSellerRoleSummariesByIds(...args),
 }));
 

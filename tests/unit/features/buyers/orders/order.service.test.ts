@@ -9,8 +9,8 @@ const mockOrderCreate = vi.fn();
 const mockOrderFindOne = vi.fn();
 const mockClearCart = vi.fn();
 
-vi.mock('@/features/buyers/cart/cart.service', () => ({
-  clearCart: (...args: unknown[]) => mockClearCart(...args),
+vi.mock('@/repositories/buyers/cart.repository', () => ({
+  clearBuyerCartItems: (...args: unknown[]) => mockClearCart(...args),
 }));
 
 vi.mock('@/integrations/mongo', () => ({

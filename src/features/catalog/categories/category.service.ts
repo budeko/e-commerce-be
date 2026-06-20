@@ -17,9 +17,11 @@ import { slugify } from '@/internal/catalog/category/slugify';
 import { catalogCacheKeys, catalogCacheTtl } from '@/internal/common/cache/catalog-keys';
 import { invalidateCatalogCache } from '@/internal/common/cache/catalog-cache';
 import { memoryCache } from '@/internal/common/cache/memory-cache';
-import type { CreateCategoryInput } from '@/features/admin/categories/create-category.schema';
-import type { LinkCategoryInput } from '@/features/admin/categories/link-category.schema';
-import type { UpdateCategoryInput } from '@/features/admin/categories/update-category.schema';
+import type {
+  CreateCategoryInput,
+  LinkCategoryInput,
+  UpdateCategoryInput,
+} from '@/internal/catalog/category/category-admin.schema';
 
 type CategoryRecord = {
   _id: unknown;
@@ -338,6 +340,10 @@ export const linkCategory = async (categoryId: string, input: LinkCategoryInput)
   invalidateCatalogCache();
 
   return {
+    message:
+      orphanedProductCount > 0
+        ? 'Kategori bağlantısı eklendi; bağlı ürünlerin kategorisi sıfırlandı, satıcı güncellemeli'
+        : 'Kategori bağlantısı eklendi',
     category: toCategoryResponse(category!),
     orphanedProductCount,
   };

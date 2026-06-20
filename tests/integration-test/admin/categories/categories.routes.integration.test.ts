@@ -118,6 +118,7 @@ describe('category admin routes integration', () => {
     const token = signAuthToken(adminId, 'admin');
     mockAdminAuth();
     mockLinkCategory.mockResolvedValue({
+      message: 'Kategori bağlantısı eklendi',
       category: { id: childId, name: 'Telefon', parentIds: [categoryId] },
       orphanedProductCount: 0,
     });

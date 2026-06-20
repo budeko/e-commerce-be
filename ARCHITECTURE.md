@@ -5,7 +5,7 @@ E-commerce backend organized in explicit layers. Each layer has a single respons
 ## Request flow
 
 ```
-HTTP → plugins → middleware → features (route → service) → internal → integrations
+HTTP → plugins → middleware → features (route → service) → internal → repositories → integrations
 ```
 
 1. **Plugins** register Fastify infrastructure (CORS, multipart, global rate limit, error handler).
@@ -13,17 +13,19 @@ HTTP → plugins → middleware → features (route → service) → internal �
 3. **Routes** wire HTTP to services; they stay thin (no business logic, no direct DB orchestration).
 4. **Services** implement use cases and coordinate `internal` helpers plus `integrations`.
 5. **Internal** holds shared domain logic reusable across features.
-6. **Integrations** talk to external systems (MongoDB, Resend, Iyzico, Supabase).
+6. **Repositories** isolate Mongoose/data access queries shared across services.
+7. **Integrations** talk to external systems (MongoDB, Resend, Iyzico, Supabase).
 
 ## Directory layout
 
 ```
 src/
-  app/              # bootstrap, route registration
+  app/              # bootstrap, route registration (incl. register-auth-routes)
   config/           # env and app config
   features/         # HTTP surface per domain (routes + services + schemas)
   middleware/       # guards and validation preHandlers
   plugins/          # Fastify plugin registration
+  repositories/     # data-access queries (Mongoose), shared across services
   internal/         # shared domain logic
     common/         # cross-cutting helpers (no domain coupling)
     auth/           # auth, tokens, permissions, profile helpers
@@ -50,7 +52,7 @@ Only these file types:
 
 Domain grouping: `identity/`, `buyers/`, `sellers/`, `catalog/`, `admin/`.
 
-Routes may import middleware, plugins (e.g. scoped rate limit), `internal`, and their own service/schemas. They must not contain parsing, permission, or persistence logic beyond wiring.
+Routes may import middleware, plugins (e.g. scoped rate limit), `internal`, and their own service/schemas. They must not contain parsing, permission, or persistence logic beyond wiring. **Routes call feature services only** — never `@/internal/*` helpers or `@/integrations/mongo` directly (multipart file read + pass to service is OK).
 
 ### `middleware/`
 
@@ -102,9 +104,10 @@ Do not deep-import `@/integrations/mongo/models/...` outside the barrel (`integr
 
 ```
 features → middleware (preHandler wiring only)
-features → internal → integrations
+features → internal → repositories → integrations
 integrations ↛ features | internal (domain) | middleware
 internal (domain) ↛ features
+features ↛ features (use internal or repositories instead)
 ```
 
 Allowed exceptions:
@@ -118,6 +121,7 @@ Allowed exceptions:
 |----------|-----|
 | `features/**/**.schema.ts` | Request/response shapes for a specific endpoint or feature |
 | `internal/**/schemas/` | Small reusable primitives (email, password, OTP) shared across auth flows |
+| `internal/**/**.schema.ts` | Domain input schemas shared by multiple HTTP surfaces (e.g. category admin CRUD) |
 | `internal/common/validation/` | Generic validators (`uuidSchema`, `slugSchema`, param schemas) |
 
 Endpoint schemas compose internal primitives; they do not live in `middleware/`.

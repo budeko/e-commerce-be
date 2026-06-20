@@ -1,9 +1,6 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { Payment } from '@/integrations/mongo';
-import { env } from '@/config/env';
+import { FastifyInstance } from 'fastify';
 import { validateBody } from '@/middleware/validation/validate-body';
 import { handleRouteError } from '@/internal/common/errors/handle-route-error';
-import { logger } from '@/internal/common/logging';
 import { disabledRouteRateLimit } from '@/middleware/presets/rate-limit';
 import { orderIdParamSchema } from '@/internal/common/validation/param-schemas';
 import { buyerOnly, buyerWithParams } from '@/middleware/presets/buyer-route-guards';
@@ -12,54 +9,12 @@ import {
   type CreatePaymentInput,
 } from '@/features/buyers/payments/create-payment.schema';
 import {
-  completePaymentFromCheckoutToken,
   createPaymentForOrder,
   getPaymentByOrderId,
+  handlePaymentCallback,
 } from '@/features/buyers/payments/payment.service';
 
 const buyerWithOrderId = buyerWithParams(orderIdParamSchema);
-
-const parseFormBody = (body: unknown): Record<string, string> => {
-  if (typeof body === 'string') {
-    return Object.fromEntries(new URLSearchParams(body));
-  }
-
-  if (Buffer.isBuffer(body)) {
-    return Object.fromEntries(new URLSearchParams(body.toString('utf8')));
-  }
-
-  if (typeof body === 'object' && body !== null) {
-    return Object.fromEntries(
-      Object.entries(body).map(([key, value]) => [key, String(value)])
-    );
-  }
-
-  return {};
-};
-
-const buildPaymentRedirectUrl = (
-  outcome: 'success' | 'failed',
-  orderId?: string | null
-): string => {
-  const frontendUrl = env.frontendUrlOrDefault.replace(/\/+$/, '');
-
-  if (orderId) {
-    return `${frontendUrl}/orders/${orderId}?payment=${outcome}`;
-  }
-
-  return `${frontendUrl}/checkout?payment=${outcome}`;
-};
-
-const findOrderIdByCheckoutToken = async (token: string): Promise<string | null> => {
-  const payment = await Payment.findOne({ externalId: token }).select('orderId').lean();
-  return payment?.orderId ?? null;
-};
-
-const redirectPaymentOutcome = (
-  reply: FastifyReply,
-  outcome: 'success' | 'failed',
-  orderId?: string | null
-) => reply.redirect(buildPaymentRedirectUrl(outcome, orderId));
 
 export default async function paymentRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -87,33 +42,8 @@ export default async function paymentRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post('/callback', { config: disabledRouteRateLimit }, async (req, reply) => {
-    let checkoutToken: string | undefined;
-
-    try {
-      const form = parseFormBody(req.body);
-      checkoutToken = form.token?.trim();
-
-      if (!checkoutToken) {
-        return redirectPaymentOutcome(reply, 'failed');
-      }
-
-      const result = await completePaymentFromCheckoutToken(checkoutToken);
-
-      if (!result.success) {
-        return redirectPaymentOutcome(reply, 'failed', result.payment.orderId);
-      }
-
-      return redirectPaymentOutcome(reply, 'success', result.payment.orderId);
-    } catch (error) {
-      const orderId = checkoutToken ? await findOrderIdByCheckoutToken(checkoutToken) : null;
-
-      logger.error(
-        { err: error, checkoutToken, orderId },
-        'Iyzico ödeme callback doğrulaması başarısız'
-      );
-
-      return redirectPaymentOutcome(reply, 'failed', orderId);
-    }
+    const redirectUrl = await handlePaymentCallback(req.body);
+    return reply.redirect(redirectUrl);
   });
 
   fastify.get('/order/:orderId', buyerWithOrderId, async (req, reply) => {

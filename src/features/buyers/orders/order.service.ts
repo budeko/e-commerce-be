@@ -1,7 +1,8 @@
 import { Buyer, Cart, Order, Product, type OrderStatus } from '@/integrations/mongo';
 import { createUserId } from '@/internal/common/ids';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
-import { clearCart } from '@/features/buyers/cart/cart.service';
+import { clearBuyerCartItems } from '@/repositories/buyers/cart.repository';
+import { findBuyerOrder } from '@/repositories/buyers/order.repository';
 import { assertCartItemQuantity } from '@/internal/catalog/product/product-order-quantity';
 import { approvePaymentSplitsForOrder } from '@/internal/buyers/payment/payment-split';
 import type { UpdateOrderStatusInput } from '@/features/buyers/orders/update-order-status.schema';
@@ -72,15 +73,7 @@ const buildShippingAddress = async (buyerId: string): Promise<ShippingAddressRec
   };
 };
 
-export const getBuyerOrder = async (buyerId: string, orderId: string) => {
-  const order = await Order.findOne({ _id: orderId, buyerId }).lean();
-
-  if (!order) {
-    throw new CommerceError(404, 'Sipariş bulunamadı');
-  }
-
-  return order;
-};
+export const getBuyerOrder = findBuyerOrder;
 
 const getSellerOrder = async (sellerId: string, orderId: string) => {
   const order = await Order.findOne({
@@ -179,7 +172,7 @@ export const createOrderFromCart = async (buyerId: string) => {
       shippingAddress,
     });
 
-    await clearCart(buyerId);
+    await clearBuyerCartItems(buyerId);
 
     return toOrderResponse(order.toObject() as OrderRecord);
   } catch (error) {

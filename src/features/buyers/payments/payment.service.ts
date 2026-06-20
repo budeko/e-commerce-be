@@ -1,10 +1,12 @@
 import { Buyer, Order, Payment, User } from '@/integrations/mongo';
 import { createUserId } from '@/internal/common/ids';
-import { getBuyerOrder } from '@/features/buyers/orders/order.service';
+import { env } from '@/config/env';
+import { findBuyerOrder } from '@/repositories/buyers/order.repository';
+import { findOrderIdByCheckoutToken } from '@/repositories/buyers/payment.repository';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
 import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
-import type { CreatePaymentInput } from '@/features/buyers/payments/create-payment.schema';
+import { logger } from '@/internal/common/logging';import type { CreatePaymentInput } from '@/features/buyers/payments/create-payment.schema';
 import {
   buildPaymentSplitsForOrder,
   syncPaymentSplitTransactionIds,
@@ -94,7 +96,7 @@ export const createPaymentForOrder = async (
   input: CreatePaymentInput,
   options?: CreatePaymentOptions
 ) => {
-  const order = await getBuyerOrder(buyerId, input.orderId);
+  const order = await findBuyerOrder(buyerId, input.orderId);
 
   if (order.status !== 'pending') {
     throw new CommerceError(400, 'Sipariş ödemeye uygun değil');
@@ -179,7 +181,7 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
 };
 
 export const getPaymentByOrderId = async (buyerId: string, orderId: string) => {
-  await getBuyerOrder(buyerId, orderId);
+  await findBuyerOrder(buyerId, orderId);
 
   const payment = await Payment.findOne({ orderId }).lean();
 
@@ -188,4 +190,67 @@ export const getPaymentByOrderId = async (buyerId: string, orderId: string) => {
   }
 
   return toPaymentResponse(payment as PaymentRecord);
+};
+
+type PaymentCallbackOutcome = 'success' | 'failed';
+
+const parseIyzicoCallbackBody = (body: unknown): Record<string, string> => {
+  if (typeof body === 'string') {
+    return Object.fromEntries(new URLSearchParams(body));
+  }
+
+  if (Buffer.isBuffer(body)) {
+    return Object.fromEntries(new URLSearchParams(body.toString('utf8')));
+  }
+
+  if (typeof body === 'object' && body !== null) {
+    return Object.fromEntries(
+      Object.entries(body).map(([key, value]) => [key, String(value)])
+    );
+  }
+
+  return {};
+};
+
+export const buildPaymentRedirectUrl = (
+  outcome: PaymentCallbackOutcome,
+  orderId?: string | null
+): string => {
+  const frontendUrl = env.frontendUrlOrDefault.replace(/\/+$/, '');
+
+  if (orderId) {
+    return `${frontendUrl}/orders/${orderId}?payment=${outcome}`;
+  }
+
+  return `${frontendUrl}/checkout?payment=${outcome}`;
+};
+
+export const handlePaymentCallback = async (body: unknown): Promise<string> => {
+  let checkoutToken: string | undefined;
+
+  try {
+    const form = parseIyzicoCallbackBody(body);
+    checkoutToken = form.token?.trim();
+
+    if (!checkoutToken) {
+      return buildPaymentRedirectUrl('failed');
+    }
+
+    const result = await completePaymentFromCheckoutToken(checkoutToken);
+
+    if (!result.success) {
+      return buildPaymentRedirectUrl('failed', result.payment.orderId);
+    }
+
+    return buildPaymentRedirectUrl('success', result.payment.orderId);
+  } catch (error) {
+    const orderId = checkoutToken ? await findOrderIdByCheckoutToken(checkoutToken) : null;
+
+    logger.error(
+      { err: error, checkoutToken, orderId },
+      'Iyzico ödeme callback doğrulaması başarısız'
+    );
+
+    return buildPaymentRedirectUrl('failed', orderId);
+  }
 };

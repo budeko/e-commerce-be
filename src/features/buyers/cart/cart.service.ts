@@ -1,10 +1,15 @@
-import { Cart, Product } from '@/integrations/mongo';
+import { Product } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import type { AddToCartInput } from '@/features/buyers/cart/add-to-cart.schema';
 import {
   assertCartItemQuantity,
   resolveMinOrderQuantity,
 } from '@/internal/catalog/product/product-order-quantity';
+import {
+  clearBuyerCartItems,
+  ensureCartDocument,
+  saveCartDocumentItems,
+} from '@/repositories/buyers/cart.repository';
 
 type CartItemRecord = {
   productId: string;
@@ -71,15 +76,9 @@ const getActiveProduct = async (productId: string) => {
   return product;
 };
 
-const ensureCart = async (buyerId: string) => {
-  const existing = await Cart.findById(buyerId);
+const ensureCart = ensureCartDocument;
 
-  if (existing) {
-    return existing;
-  }
-
-  return Cart.create({ _id: buyerId, items: [] });
-};
+const saveCartItems = saveCartDocumentItems;
 
 const loadProductsForItems = async (items: CartItemRecord[]) => {
   const productIds = items.map((item) => item.productId);
@@ -93,15 +92,6 @@ const loadProductsForItems = async (items: CartItemRecord[]) => {
     .lean();
 
   return new Map(products.map((product) => [String(product._id), product as ProductSummary]));
-};
-
-const saveCartItems = async (
-  cart: { items: CartItemRecord[]; updatedAt?: Date; save: () => Promise<unknown> },
-  items: CartItemRecord[]
-) => {
-  cart.items = items;
-  cart.updatedAt = new Date();
-  await cart.save();
 };
 
 export const getCart = async (buyerId: string) => {
@@ -204,9 +194,7 @@ export const removeCartItem = async (buyerId: string, productId: string) => {
 };
 
 export const clearCart = async (buyerId: string) => {
-  const cart = await ensureCart(buyerId);
-
-  await saveCartItems(cart, []);
+  const cart = await clearBuyerCartItems(buyerId);
 
   return toCartResponse({ ...cart.toObject(), items: [] }, new Map());
 };

@@ -22,11 +22,9 @@ import {
   deleteProduct,
   listSellerProducts,
   updateProduct,
+  addProductImage,
+  removeProductImage,
 } from '@/features/catalog/products/product.service';
-import {
-  deleteProductImage,
-  uploadProductImage,
-} from '@/internal/catalog/product/product-images';
 import {
   deleteProductImageSchema,
   type DeleteProductImageInput,
@@ -121,7 +119,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
       }
 
       const buffer = await file.toBuffer();
-      const result = await uploadProductImage(
+      const result = await addProductImage(
         req.sellerContext!.companyId,
         productId,
         file.mimetype,
@@ -149,7 +147,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
       try {
         const { productId } = req.params as { productId: string };
         const { url } = req.body as DeleteProductImageInput;
-        const result = await deleteProductImage(
+        const result = await removeProductImage(
           req.sellerContext!.companyId,
           productId,
           url

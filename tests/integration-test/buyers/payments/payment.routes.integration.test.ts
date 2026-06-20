@@ -3,16 +3,14 @@ import type { FastifyInstance } from 'fastify';
 import { signAuthToken } from '@/internal/auth/tokens/access-token';
 import { buildApp } from '@/app/app';
 
-const mockCompletePaymentFromCheckoutToken = vi.fn();
+const mockHandlePaymentCallback = vi.fn();
 const mockCreatePaymentForOrder = vi.fn();
 const mockGetPaymentByOrderId = vi.fn();
 const mockUserFindById = vi.fn();
 const mockRevokedTokenExists = vi.fn();
-const mockPaymentFindOne = vi.fn();
 
 vi.mock('@/features/buyers/payments/payment.service', () => ({
-  completePaymentFromCheckoutToken: (...args: unknown[]) =>
-    mockCompletePaymentFromCheckoutToken(...args),
+  handlePaymentCallback: (...args: unknown[]) => mockHandlePaymentCallback(...args),
   createPaymentForOrder: (...args: unknown[]) => mockCreatePaymentForOrder(...args),
   getPaymentByOrderId: (...args: unknown[]) => mockGetPaymentByOrderId(...args),
 }));
@@ -28,9 +26,6 @@ vi.mock('@/integrations/mongo', async (importOriginal) => {
     RevokedToken: {
       ...actual.RevokedToken,
       exists: (...args: unknown[]) => mockRevokedTokenExists(...args),
-    },
-    Payment: {
-      findOne: (...args: unknown[]) => mockPaymentFindOne(...args),
     },
   };
 });
@@ -53,11 +48,6 @@ describe('payment routes integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRevokedTokenExists.mockResolvedValue(null);
-    mockPaymentFindOne.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue({ orderId }),
-      }),
-    });
   });
 
   it('POST /payments token olmadan 401 döner', async () => {
@@ -71,6 +61,8 @@ describe('payment routes integration', () => {
   });
 
   it('POST /payments/callback token yoksa failed redirect döner', async () => {
+    mockHandlePaymentCallback.mockResolvedValue('http://localhost:3000/checkout?payment=failed');
+
     const response = await app.inject({
       method: 'POST',
       url: '/payments/callback',
@@ -83,7 +75,9 @@ describe('payment routes integration', () => {
   });
 
   it('POST /payments/callback doğrulama hatasında failed redirect döner', async () => {
-    mockCompletePaymentFromCheckoutToken.mockRejectedValue(new Error('token bulunamadı'));
+    mockHandlePaymentCallback.mockResolvedValue(
+      `http://localhost:3000/orders/${orderId}?payment=failed`
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -97,10 +91,9 @@ describe('payment routes integration', () => {
   });
 
   it('POST /payments/callback başarılı ödemede redirect döner', async () => {
-    mockCompletePaymentFromCheckoutToken.mockResolvedValue({
-      success: true,
-      payment: { orderId },
-    });
+    mockHandlePaymentCallback.mockResolvedValue(
+      `http://localhost:3000/orders/${orderId}?payment=success`
+    );
 
     const response = await app.inject({
       method: 'POST',

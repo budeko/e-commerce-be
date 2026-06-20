@@ -1,5 +1,5 @@
 import { canUpdateAdminProfile, canViewAdmin } from '@/internal/auth/access/admin/permissions';
-import { getRoleSummariesByIds } from '@/features/admin/roles/roles.service';
+import { getRoleSummariesByIds } from '@/internal/auth/access/admin/role-queries';
 import { formatAdminResponse } from '@/internal/auth/responses/admin.response';
 import { Admin, User } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
