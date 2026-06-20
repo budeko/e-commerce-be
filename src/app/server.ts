@@ -8,6 +8,7 @@ import { startPaymentReconciliationScheduler } from '@/internal/buyers/orders/re
 import { startPaymentSplitSyncRetryScheduler } from '@/internal/buyers/orders/retry-payment-split-sync';
 import { startStuckPaymentRecoveryScheduler } from '@/internal/buyers/orders/recover-stuck-payments';
 import { startOutboxProcessorScheduler } from '@/internal/common/outbox/process-outbox-events';
+import { startPaymentSplitApprovalRetryScheduler } from '@/internal/buyers/orders/retry-failed-payment-splits';
 import { startUnverifiedUserExpiryScheduler } from '@/internal/auth/register/expire-unverified-users';
 
 export const getPort = (): number => env.port;
@@ -53,6 +54,7 @@ export const start = async (): Promise<void> => {
     startPaymentReconciliationScheduler();
     startPaymentSplitSyncRetryScheduler();
     startStuckPaymentRecoveryScheduler();
+    startPaymentSplitApprovalRetryScheduler();
     startOutboxProcessorScheduler();
     startUnverifiedUserExpiryScheduler();
 

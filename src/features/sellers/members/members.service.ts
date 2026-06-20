@@ -15,12 +15,14 @@ import {
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import { sendSellerMemberInviteEmail } from '@/internal/auth/mail/send-member-invite';
 import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import type { CreateSellerMemberInput } from '@/features/sellers/members/create-member.schema';
 import type {
   UpdateSellerMemberProfileInput,
   UpdateSellerMemberRoleInput,
 } from '@/features/sellers/members/create-member.schema';
+import { randomBytes } from 'crypto';
 import {
   createSellerMember as createSellerMemberRecord,
   deleteSellerMemberById,
@@ -134,7 +136,7 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
     throw new AuthError(409, 'Bu e-posta adresi zaten kayıtlı');
   }
 
-  const hashedPassword = await hashPassword(data.password);
+  const hashedPassword = await hashPassword(randomBytes(32).toString('hex'));
   const userId = createUserId();
 
   try {
@@ -143,8 +145,8 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
       email: data.email,
       password: hashedPassword,
       role: 'seller',
-      isActive: true,
-      isEmailVerified: true,
+      isActive: false,
+      isEmailVerified: false,
     });
 
     const member = await createSellerMemberRecord({
@@ -157,6 +159,14 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
       ...(data.lastName !== undefined ? { lastName: data.lastName } : {}),
       ...(data.phone !== undefined ? { phone: data.phone } : {}),
     });
+
+    try {
+      await sendSellerMemberInviteEmail(userId, data.email);
+    } catch {
+      await deleteSellerMemberById(userId);
+      await deleteUserById(userId);
+      throw new AuthError(500, 'Davet e-postası gönderilemedi');
+    }
 
     const rolesById = await getSellerRoleSummariesByIds(ctx.companyId, [data.roleId]);
 

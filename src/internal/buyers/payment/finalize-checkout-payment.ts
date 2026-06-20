@@ -109,9 +109,8 @@ const handleFulfillmentFailure = async (
   externalId: string,
   error: unknown
 ): Promise<never> => {
-  await markPaymentCompleted(payment, externalId);
-  await cancelPendingOrder(payment.orderId);
   await refundCapturedIyzicoPayment(payment, externalId, 'fulfillment_failed_refund');
+  await cancelPendingOrder(payment.orderId);
 
   logger.error(
     { err: error, orderId: payment.orderId },

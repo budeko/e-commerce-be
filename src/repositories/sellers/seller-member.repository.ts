@@ -2,6 +2,9 @@ import { SellerMember } from '@/integrations/mongo';
 
 export const findSellerMemberById = async (memberId: string) => SellerMember.findById(memberId);
 
+export const findSellerMemberByIdLean = async (memberId: string) =>
+  SellerMember.findById(memberId).lean();
+
 export const findSellerMemberByCompanyAndUserId = async (
   companyId: string,
   userId: string

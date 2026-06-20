@@ -5,13 +5,13 @@ import {
   resolveMinOrderQuantity,
 } from '@/internal/catalog/product/product-order-quantity';
 import {
+  findPurchasableCatalogProductLean,
+} from '@/internal/catalog/product/assert-purchasable-product';
+import {
   clearBuyerCartItems,
   ensureCartDocument,
   saveCartDocumentItems,
 } from '@/repositories/buyers/cart.repository';
-import {
-  findProductSummariesByIdsLean,
-} from '@/repositories/catalog/product.repository';
 import { assertPurchasableCatalogProduct } from '@/internal/catalog/product/assert-purchasable-product';
 
 type CartItemRecord = {
@@ -20,48 +20,59 @@ type CartItemRecord = {
   priceSnapshot?: number | null;
 };
 
-type ProductSummary = {
-  _id: unknown;
-  name: string;
-  price: number;
-  stock: number;
-  minOrderQuantity?: number;
-  isActive: boolean;
-  images: string[];
+type PurchasableProduct = Awaited<ReturnType<typeof assertPurchasableCatalogProduct>>;
+
+const enrichCartItemFromProduct = (item: CartItemRecord, product: PurchasableProduct) => {
+  const priceChanged =
+    item.priceSnapshot != null && Math.abs(item.priceSnapshot - product.price) > 0.001;
+
+  return {
+    productId: item.productId,
+    quantity: item.quantity,
+    priceSnapshot: item.priceSnapshot ?? null,
+    currentPrice: product.price,
+    priceChanged,
+    isPurchasable: true,
+    product: {
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      minOrderQuantity: resolveMinOrderQuantity(product.minOrderQuantity),
+      isActive: product.isActive,
+      images: product.images,
+    },
+    isAvailable:
+      product.stock >= item.quantity &&
+      item.quantity >= resolveMinOrderQuantity(product.minOrderQuantity),
+  };
 };
 
-const toCartItemResponse = (
-  item: CartItemRecord,
-  product?: ProductSummary | null
-) => ({
-  productId: item.productId,
-  quantity: item.quantity,
-  priceSnapshot: item.priceSnapshot ?? null,
-  product: product
-    ? {
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        minOrderQuantity: resolveMinOrderQuantity(product.minOrderQuantity),
-        isActive: product.isActive,
-        images: product.images,
-      }
-    : null,
-  isAvailable: Boolean(
-    product?.isActive &&
-      product.stock >= item.quantity &&
-      item.quantity >= resolveMinOrderQuantity(product.minOrderQuantity)
-  ),
-});
+const enrichCartItem = async (item: CartItemRecord) => {
+  const product = await findPurchasableCatalogProductLean(item.productId);
 
-const toCartResponse = (
-  cart: { _id: unknown; items: CartItemRecord[]; updatedAt?: Date },
-  productsById: Map<string, ProductSummary>
-) => ({
+  if (!product) {
+    return {
+      productId: item.productId,
+      quantity: item.quantity,
+      priceSnapshot: item.priceSnapshot ?? null,
+      currentPrice: null,
+      priceChanged: false,
+      isPurchasable: false,
+      product: null,
+      isAvailable: false,
+    };
+  }
+
+  return enrichCartItemFromProduct(item, product);
+};
+
+const buildCartResponse = async (cart: {
+  _id: unknown;
+  items: CartItemRecord[];
+  updatedAt?: Date;
+}) => ({
   id: String(cart._id),
-  items: cart.items.map((item) =>
-    toCartItemResponse(item, productsById.get(item.productId) ?? null)
-  ),
+  items: await Promise.all(cart.items.map((item) => enrichCartItem(item))),
   updatedAt: cart.updatedAt,
 });
 
@@ -71,23 +82,10 @@ const ensureCart = ensureCartDocument;
 
 const saveCartItems = saveCartDocumentItems;
 
-const loadProductsForItems = async (items: CartItemRecord[]) => {
-  const productIds = items.map((item) => item.productId);
-
-  if (productIds.length === 0) {
-    return new Map<string, ProductSummary>();
-  }
-
-  const products = await findProductSummariesByIdsLean(productIds);
-
-  return new Map(products.map((product) => [String(product._id), product as ProductSummary]));
-};
-
 export const getCart = async (buyerId: string) => {
   const cart = await ensureCart(buyerId);
-  const productsById = await loadProductsForItems(cart.items);
 
-  return toCartResponse(cart.toObject(), productsById);
+  return buildCartResponse(cart.toObject());
 };
 
 export const addToCart = async (buyerId: string, input: AddToCartInput) => {
@@ -120,9 +118,21 @@ export const addToCart = async (buyerId: string, input: AddToCartInput) => {
 
   await saveCartItems(cart, items);
 
-  const productsById = await loadProductsForItems(items);
+  const itemsWithProduct = await Promise.all(
+    items.map(async (item) => {
+      if (item.productId === input.productId) {
+        return enrichCartItemFromProduct(item, product);
+      }
 
-  return toCartResponse({ ...cart.toObject(), items }, productsById);
+      return enrichCartItem(item);
+    })
+  );
+
+  return {
+    id: String(cart._id),
+    items: itemsWithProduct,
+    updatedAt: cart.updatedAt,
+  };
 };
 
 export const updateCartItem = async (
@@ -155,9 +165,21 @@ export const updateCartItem = async (
 
   await saveCartItems(cart, items);
 
-  const productsById = await loadProductsForItems(items);
+  const itemsWithProduct = await Promise.all(
+    items.map(async (item) => {
+      if (item.productId === productId) {
+        return enrichCartItemFromProduct(item, product);
+      }
 
-  return toCartResponse({ ...cart.toObject(), items }, productsById);
+      return enrichCartItem(item);
+    })
+  );
+
+  return {
+    id: String(cart._id),
+    items: itemsWithProduct,
+    updatedAt: cart.updatedAt,
+  };
 };
 
 export const removeCartItem = async (buyerId: string, productId: string) => {
@@ -177,13 +199,11 @@ export const removeCartItem = async (buyerId: string, productId: string) => {
 
   await saveCartItems(cart, items);
 
-  const productsById = await loadProductsForItems(items);
-
-  return toCartResponse({ ...cart.toObject(), items }, productsById);
+  return buildCartResponse({ ...cart.toObject(), items });
 };
 
 export const clearCart = async (buyerId: string) => {
   const cart = await clearBuyerCartItems(buyerId);
 
-  return toCartResponse({ ...cart.toObject(), items: [] }, new Map());
+  return buildCartResponse({ ...cart.toObject(), items: [] });
 };

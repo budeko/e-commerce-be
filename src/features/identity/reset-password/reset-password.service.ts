@@ -9,6 +9,7 @@ import {
   updateUserById,
 } from '@/repositories/auth/user.repository';
 import { revokeAllSessions } from '@/internal/auth/tokens/invalidate-all';
+import { activateInvitedSellerAfterPasswordReset } from '@/internal/auth/members/activate-invited-seller';
 import type { ResetPasswordInput } from '@/features/identity/reset-password/reset-password.schema';
 
 const updateUserPassword = async (userId: string, newPassword: string) => {
@@ -27,6 +28,7 @@ const updateUserPassword = async (userId: string, newPassword: string) => {
     },
   });
   await invalidateAuthOtp(userId, 'password_reset');
+  await activateInvitedSellerAfterPasswordReset(userId);
   await revokeAllSessions(userId);
 };
 

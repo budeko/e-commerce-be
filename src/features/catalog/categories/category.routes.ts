@@ -4,7 +4,7 @@ import { categoryIdParamSchema } from '@/internal/common/validation/param-schema
 import { handleRouteError } from '@/internal/common/errors/handle-route-error';
 import { setPublicCacheControl } from '@/internal/common/cache/public-http-cache';
 import {
-  getCategoryById,
+  getPublicCategoryById,
   getCategoryPaths,
   listPublicCategories,
 } from '@/features/catalog/categories/category.service';
@@ -26,11 +26,7 @@ export default async function categoryRoutes(fastify: FastifyInstance) {
     async (req, reply) => {
       try {
         const { categoryId } = req.params as { categoryId: string };
-        const category = await getCategoryById(categoryId);
-
-        if (!category.isActive) {
-          return reply.status(404).send({ message: 'Kategori bulunamadı' });
-        }
+        const category = await getPublicCategoryById(categoryId);
 
         setPublicCacheControl(reply, 'categories');
         return reply.status(200).send({ category });

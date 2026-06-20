@@ -29,6 +29,7 @@ import {
 } from '@/internal/catalog/category/category-graph';
 import { loadCategoryGraphNodes } from '@/internal/catalog/category/load-category-graph';
 import { slugify } from '@/internal/catalog/category/slugify';
+import { isCategoryPubliclyVisible } from '@/internal/catalog/category/visible-categories';
 import { catalogCacheKeys } from '@/internal/common/cache/catalog-keys';
 import { catalogCacheConfig } from '@/internal/common/cache/catalog-cache-config';
 import { invalidateCatalogCache } from '@/internal/common/cache/catalog-cache';
@@ -252,6 +253,27 @@ export const listAdminCategories = async () => {
   const flatCategories = categories.map(toCategoryResponse);
 
   return buildCategoryForest(flatCategories, (category) => category);
+};
+
+export const getPublicCategoryById = async (categoryId: string) => {
+  const category = await findCategoryByIdLean(categoryId);
+
+  if (!category || !category.isActive) {
+    throw new CommerceError(404, 'Kategori bulunamadı');
+  }
+
+  const visible = await isCategoryPubliclyVisible(categoryId);
+
+  if (!visible) {
+    throw new CommerceError(404, 'Kategori bulunamadı');
+  }
+
+  const paths = await getCategoryPaths(categoryId);
+
+  return {
+    ...toPublicCategoryResponse(category),
+    paths,
+  };
 };
 
 export const getCategoryById = async (categoryId: string) => {

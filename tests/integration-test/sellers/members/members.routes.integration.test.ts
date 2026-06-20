@@ -163,7 +163,6 @@ describe('seller members routes integration', () => {
       headers: { authorization: `Bearer ${token}` },
       payload: {
         email: 'member@test.com',
-        password: 'Test1234!',
         roleId,
         firstName: 'Ayşe',
       },

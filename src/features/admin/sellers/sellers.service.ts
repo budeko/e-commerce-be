@@ -20,7 +20,12 @@ import {
 } from '@/repositories/auth/user.repository';
 import { AuthError } from '@/internal/auth/errors';
 import { recordAdminAction } from '@/internal/auth/admin/admin-audit';
+import {
+  applyUserActiveStatus,
+  recordUserActiveStatusChange,
+} from '@/internal/auth/admin/user-active-status';
 import { HttpError } from '@/internal/common/errors';
+import type { SetUserActiveStatusInput } from '@/features/admin/common/set-user-active.schema';
 import {
   enqueueOutboxEvent,
   OUTBOX_EVENT_TYPES,
@@ -318,4 +323,30 @@ export const syncSellerIyzicoSubMerchant = async (ctx: AdminAccessContext, userI
     iyzicoSubMerchantRegistered: true,
     created: true as const,
   };
+};
+
+export const setSellerActiveStatus = async (
+  ctx: AdminAccessContext,
+  userId: string,
+  input: SetUserActiveStatusInput
+) => {
+  if (!canManageSellerApproval(ctx)) {
+    throw new AuthError(403, 'Satıcı hesap durumu değiştirme yetkin yok');
+  }
+
+  const seller = await findSellerByIdLean(userId);
+
+  if (!seller) {
+    throw new AuthError(404, 'Satıcı bulunamadı');
+  }
+
+  const updatedUser = await applyUserActiveStatus(userId, 'seller', input.isActive);
+
+  if (!updatedUser) {
+    throw new AuthError(404, 'Satıcı bulunamadı');
+  }
+
+  await recordUserActiveStatusChange(ctx.userId, userId, 'seller', input.isActive);
+
+  return getSellerByUserId(ctx, userId);
 };

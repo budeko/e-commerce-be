@@ -3,12 +3,12 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '@/app/app';
 
 const mockListPublicCategories = vi.fn();
-const mockGetCategoryById = vi.fn();
+const mockGetPublicCategoryById = vi.fn();
 const mockGetCategoryPaths = vi.fn();
 
 vi.mock('@/features/catalog/categories/category.service', () => ({
   listPublicCategories: (...args: unknown[]) => mockListPublicCategories(...args),
-  getCategoryById: (...args: unknown[]) => mockGetCategoryById(...args),
+  getPublicCategoryById: (...args: unknown[]) => mockGetPublicCategoryById(...args),
   getCategoryPaths: (...args: unknown[]) => mockGetCategoryPaths(...args),
 }));
 
@@ -50,10 +50,14 @@ describe('category routes integration', () => {
   });
 
   it('GET /categories/:id aktif kategori döner', async () => {
-    mockGetCategoryById.mockResolvedValue({
+    mockGetPublicCategoryById.mockResolvedValue({
       id: categoryId,
       name: 'Elektronik',
-      isActive: true,
+      slug: 'elektronik',
+      isLeaf: true,
+      parentIds: [],
+      childIds: [],
+      paths: [[categoryId]],
     });
 
     const response = await app.inject({ method: 'GET', url: `/categories/${categoryId}` });
@@ -63,11 +67,8 @@ describe('category routes integration', () => {
   });
 
   it('GET /categories/:id pasif kategori için 404 döner', async () => {
-    mockGetCategoryById.mockResolvedValue({
-      id: categoryId,
-      name: 'Gizli',
-      isActive: false,
-    });
+    const { CommerceError } = await import('@/internal/common/errors/commerce-error');
+    mockGetPublicCategoryById.mockRejectedValue(new CommerceError(404, 'Kategori bulunamadı'));
 
     const response = await app.inject({ method: 'GET', url: `/categories/${categoryId}` });
 

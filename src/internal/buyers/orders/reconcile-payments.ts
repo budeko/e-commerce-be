@@ -16,6 +16,7 @@ import {
 
 const log = createLogger({ module: 'payment-reconcile' });
 
+const STUCK_PROCESSING_MS = 5 * 60_000;
 const FINAL_ORDER_STATUSES = new Set(['paid', 'shipped', 'delivered']);
 
 const isFinalOrderStatus = (status: string | undefined): boolean =>
@@ -117,9 +118,10 @@ const reconcileStuckProcessingPayment = async (paymentId: string) => {
 };
 
 export const reconcilePaymentOrderMismatches = async (): Promise<number> => {
+  const processingCutoff = new Date(Date.now() - STUCK_PROCESSING_MS);
   const [completedMismatches, processingPayments] = await Promise.all([
     listCompletedIyzicoPaymentsLean(),
-    listProcessingIyzicoPaymentsLean(),
+    listProcessingIyzicoPaymentsLean(processingCutoff),
   ]);
 
   let handled = 0;

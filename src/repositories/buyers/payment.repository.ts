@@ -96,11 +96,18 @@ export const listStuckProcessingPaymentsLean = async (cutoff: Date) =>
     updatedAt: { $lt: cutoff },
   }).lean();
 
-export const listProcessingIyzicoPaymentsLean = async () =>
-  Payment.find({
+export const listProcessingIyzicoPaymentsLean = async (cutoff?: Date) => {
+  const filter: Record<string, unknown> = {
     status: 'processing',
     provider: 'iyzico',
-  }).lean();
+  };
+
+  if (cutoff) {
+    filter.updatedAt = { $lt: cutoff };
+  }
+
+  return Payment.find(filter).lean();
+};
 
 export const failStalePendingPayments = async (orderIds: string[], cutoff: Date) =>
   Payment.updateMany(

@@ -31,9 +31,47 @@ export const findPendingPaymentSplitsForSeller = async (orderId: string, sellerI
   PaymentSplit.find({
     orderId,
     sellerId,
-    approvalStatus: 'pending',
+    approvalStatus: { $in: ['pending', 'failed'] },
     paymentTransactionId: { $ne: null },
   });
+
+export const resetFailedPaymentSplitsToPending = async (orderId: string, sellerId: string) =>
+  PaymentSplit.updateMany(
+    {
+      orderId,
+      sellerId,
+      approvalStatus: 'failed',
+      paymentTransactionId: { $ne: null },
+    },
+    {
+      $set: {
+        approvalStatus: 'pending',
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+export const listRetryablePaymentSplitGroupsLean = async () =>
+  PaymentSplit.aggregate<{ orderId: string; sellerId: string }>([
+    {
+      $match: {
+        approvalStatus: { $in: ['pending', 'failed'] },
+        paymentTransactionId: { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: { orderId: '$orderId', sellerId: '$sellerId' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        orderId: '$_id.orderId',
+        sellerId: '$_id.sellerId',
+      },
+    },
+  ]);
 
 export const findPendingPaymentSplitsForOrder = async (orderId: string) =>
   PaymentSplit.find({

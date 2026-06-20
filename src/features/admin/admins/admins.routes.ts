@@ -5,9 +5,10 @@ import { validateBody } from '@/middleware/validation/validate-body';
 import { validateParams } from '@/middleware/validation/validate-params';
 import { userIdParamSchema } from '@/internal/common/validation/param-schemas';
 import { handleRouteError } from '@/internal/common/errors/handle-route-error';
-import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, updateAdmin } from '@/features/admin/admins/admins.service';
+import { createAdmin, deleteAdmin, getAdminByUserId, listAdmins, setAdminActiveStatus, updateAdmin } from '@/features/admin/admins/admins.service';
 import { createAdminSchema, type CreateAdminInput } from '@/features/admin/admins/create-admin.schema';
 import { updateAdminSchema, type UpdateAdminInput } from '@/features/admin/admins/update-admin.schema';
+import { setUserActiveStatusSchema, type SetUserActiveStatusInput } from '@/features/admin/common/set-user-active.schema';
 
 const adminWithUserId = {
   preHandler: [...adminOnly.preHandler, validateParams(userIdParamSchema)],
@@ -89,6 +90,40 @@ export default async function (fastify: FastifyInstance) {
 
         return reply.status(200).send({
           message: 'Admin güncellendi',
+          ...result,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Admin işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.patch(
+    '/:userId/active',
+    {
+      preHandler: [
+        ...adminOnly.preHandler,
+        requireOwner,
+        validateParams(userIdParamSchema),
+        validateBody(setUserActiveStatusSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        if (!req.adminContext) {
+          return reply.status(403).send({ message: 'Admin profili bulunamadı' });
+        }
+
+        const { userId } = req.params as { userId: string };
+        const result = await setAdminActiveStatus(
+          req.adminContext,
+          req.auth!.userId,
+          userId,
+          req.body as SetUserActiveStatusInput
+        );
+
+        return reply.status(200).send({
+          message: 'Admin hesap durumu güncellendi',
           ...result,
         });
       } catch (error) {

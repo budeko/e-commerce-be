@@ -11,6 +11,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   'seller.approved',
   'seller.rejected',
   'seller.iyzico_synced',
+  'user.deactivated',
+  'user.reactivated',
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

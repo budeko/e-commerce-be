@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { emailSchema } from '@/internal/auth/schemas/email.schema';
-import { passwordSchema } from '@/internal/auth/schemas/password.schema';
 import { uuidSchema } from '@/internal/common/validation/common-schemas';
 
 const memberProfileFieldsSchema = z.object({
@@ -11,7 +10,6 @@ const memberProfileFieldsSchema = z.object({
 
 export const createSellerMemberSchema = memberProfileFieldsSchema.extend({
   email: emailSchema,
-  password: passwordSchema,
   roleId: uuidSchema,
 });
 

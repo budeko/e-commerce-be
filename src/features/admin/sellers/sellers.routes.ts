@@ -14,8 +14,10 @@ import {
   getSellerByUserId,
   listSellers,
   rejectSeller,
+  setSellerActiveStatus,
   syncSellerIyzicoSubMerchant,
 } from '@/features/admin/sellers/sellers.service';
+import { setUserActiveStatusSchema, type SetUserActiveStatusInput } from '@/features/admin/common/set-user-active.schema';
 
 const adminWithUserId = {
   preHandler: [...adminOnly.preHandler, validateParams(userIdParamSchema)],
@@ -127,6 +129,34 @@ export default async function (fastify: FastifyInstance) {
 
         return reply.status(200).send({
           message: 'Satıcı reddedildi',
+          ...result,
+        });
+      } catch (error) {
+        return handleRouteError(reply, error, 'Satıcı işlemi sırasında bir hata oluştu');
+      }
+    }
+  );
+
+  fastify.patch(
+    '/:userId/active',
+    {
+      preHandler: [
+        ...adminWithUserId.preHandler,
+        requirePermission(PERMISSIONS.SELLERS_APPROVE),
+        validateBody(setUserActiveStatusSchema),
+      ],
+    },
+    async (req, reply) => {
+      try {
+        const { userId } = req.params as { userId: string };
+        const result = await setSellerActiveStatus(
+          req.adminContext!,
+          userId,
+          req.body as SetUserActiveStatusInput
+        );
+
+        return reply.status(200).send({
+          message: 'Satıcı hesap durumu güncellendi',
           ...result,
         });
       } catch (error) {

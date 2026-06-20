@@ -30,6 +30,26 @@ vi.mock('@/internal/buyers/orders/reconcile-payments', () => ({
   startPaymentReconciliationScheduler: vi.fn(),
 }));
 
+vi.mock('@/internal/buyers/orders/recover-stuck-payments', () => ({
+  startStuckPaymentRecoveryScheduler: vi.fn(),
+}));
+
+vi.mock('@/internal/buyers/orders/retry-payment-split-sync', () => ({
+  startPaymentSplitSyncRetryScheduler: vi.fn(),
+}));
+
+vi.mock('@/internal/buyers/orders/retry-failed-payment-splits', () => ({
+  startPaymentSplitApprovalRetryScheduler: vi.fn(),
+}));
+
+vi.mock('@/internal/common/outbox/process-outbox-events', () => ({
+  startOutboxProcessorScheduler: vi.fn(),
+}));
+
+vi.mock('@/internal/auth/register/expire-unverified-users', () => ({
+  startUnverifiedUserExpiryScheduler: vi.fn(),
+}));
+
 vi.mock('@/internal/common/logging', () => ({
   logger: {
     info: (...args: unknown[]) => mockLoggerInfo(...args),

@@ -58,6 +58,7 @@ describe('me routes integration', () => {
       select: vi.fn().mockResolvedValue({
         _id: userId,
         role: 'buyer',
+        isEmailVerified: true,
         passwordChangedAt: null,
         sessionsRevokedAt: null,
       }),

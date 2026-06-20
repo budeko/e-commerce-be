@@ -11,6 +11,7 @@ const {
   mockEndSession,
   mockSession,
   mockAssertPurchasableCatalogProduct,
+  mockCreateOrderFromCartForBuyer,
 } = vi.hoisted(() => {
   const mockWithTransaction = vi.fn();
   const mockEndSession = vi.fn().mockResolvedValue(undefined);
@@ -30,8 +31,13 @@ const {
     mockEndSession,
     mockSession,
     mockAssertPurchasableCatalogProduct: vi.fn(),
+    mockCreateOrderFromCartForBuyer: vi.fn(),
   };
 });
+
+vi.mock('@/internal/buyers/orders/create-order-from-cart', () => ({
+  createOrderFromCartForBuyer: (...args: unknown[]) => mockCreateOrderFromCartForBuyer(...args),
+}));
 
 vi.mock('@/internal/catalog/product/assert-purchasable-product', () => ({
   assertPurchasableCatalogProduct: (...args: unknown[]) =>
@@ -119,121 +125,53 @@ const mockApprovedSellers = () => {
 describe('createOrderFromCart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockBuyerFindById.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(buyerProfile),
-    });
-    mockApprovedSellers();
-    mockWithTransaction.mockImplementation(async (callback: () => Promise<void>) => {
-      await callback();
-    });
   });
 
-  it('sepet boşsa 400 fırlatır', async () => {
-    mockCartFindOneAndUpdate.mockResolvedValue(null);
+  it('internal sipariş oluşturucuyu çağırır ve yanıtı map eder', async () => {
+    mockCreateOrderFromCartForBuyer.mockResolvedValue({
+      _id: orderId,
+      buyerId,
+      items: [
+        {
+          productId,
+          sellerId,
+          name: 'Kulaklık',
+          price: 999,
+          quantity: 2,
+          subtotal: 1998,
+          fulfillmentStatus: 'pending',
+        },
+      ],
+      totalAmount: 1998,
+      currency: 'TRY',
+      status: 'pending',
+      shippingAddress: {
+        firstName: 'Ali',
+        lastName: 'Veli',
+        phone: '+905551112233',
+        country: 'Türkiye',
+        city: 'İstanbul',
+        address: 'Kadıköy Mah. No:1',
+      },
+    });
+
+    const result = await createOrderFromCart(buyerId);
+
+    expect(mockCreateOrderFromCartForBuyer).toHaveBeenCalledWith(buyerId);
+    expect(result.id).toBe(orderId);
+    expect(result.totalAmount).toBe(1998);
+  });
+
+  it('internal hata fırlatırsa iletir', async () => {
+    mockCreateOrderFromCartForBuyer.mockRejectedValue({
+      statusCode: 400,
+      message: 'Sepet boş',
+    });
 
     await expect(createOrderFromCart(buyerId)).rejects.toMatchObject({
       statusCode: 400,
       message: 'Sepet boş',
     });
-  });
-
-  it('profil eksikse 400 fırlatır', async () => {
-    mockBuyerFindById.mockReturnValue({
-      lean: vi.fn().mockResolvedValue({ firstName: 'Ali' }),
-    });
-
-    await expect(createOrderFromCart(buyerId)).rejects.toMatchObject({
-      statusCode: 400,
-      message: 'Sipariş için teslimat profili eksik',
-    });
-  });
-
-  it('sepetten sipariş oluşturur; stok düşmez, sepet atomik temizlenir', async () => {
-    mockCartFindOneAndUpdate.mockResolvedValue({
-      items: [{ productId, quantity: 2 }],
-    });
-    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
-    mockOrderCreate.mockResolvedValue([
-      {
-        toObject: () => ({
-          _id: orderId,
-          buyerId,
-          items: [
-            {
-              productId,
-              sellerId,
-              name: 'Kulaklık',
-              price: 999,
-              quantity: 2,
-              subtotal: 1998,
-              fulfillmentStatus: 'pending',
-            },
-          ],
-          totalAmount: 1998,
-          currency: 'TRY',
-          status: 'pending',
-          shippingAddress: {
-            firstName: 'Ali',
-            lastName: 'Veli',
-            phone: '+905551112233',
-            country: 'Türkiye',
-            city: 'İstanbul',
-            address: 'Kadıköy Mah. No:1',
-          },
-        }),
-      },
-    ]);
-
-    const result = await createOrderFromCart(buyerId);
-
-    expect(mockWithTransaction).toHaveBeenCalled();
-    expect(mockOrderCreate).toHaveBeenCalled();
-    expect(mockCartFindOneAndUpdate).toHaveBeenCalled();
-    expect(mockEndSession).toHaveBeenCalled();
-    expect(result.totalAmount).toBe(1998);
-    expect(result.status).toBe('pending');
-  });
-
-  it('priceSnapshot eski olsa bile güncel ürün fiyatını kullanır', async () => {
-    mockCartFindOneAndUpdate.mockResolvedValue({
-      items: [{ productId, quantity: 1, priceSnapshot: 850 }],
-    });
-    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
-    mockOrderCreate.mockResolvedValue([
-      {
-        toObject: () => ({
-          _id: orderId,
-          buyerId,
-          items: [
-            {
-              productId,
-              sellerId,
-              name: 'Kulaklık',
-              price: 999,
-              quantity: 1,
-              subtotal: 999,
-              fulfillmentStatus: 'pending',
-            },
-          ],
-          totalAmount: 999,
-          currency: 'TRY',
-          status: 'pending',
-          shippingAddress: {
-            firstName: 'Ali',
-            lastName: 'Veli',
-            phone: '+905551112233',
-            country: 'Türkiye',
-            city: 'İstanbul',
-            address: 'Kadıköy Mah. No:1',
-          },
-        }),
-      },
-    ]);
-
-    const result = await createOrderFromCart(buyerId);
-
-    expect(result.items[0].price).toBe(999);
-    expect(result.totalAmount).toBe(999);
   });
 });
 

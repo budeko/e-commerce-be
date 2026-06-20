@@ -34,6 +34,11 @@ import { recordAdminAction } from '@/internal/auth/admin/admin-audit';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import type { CreateAdminInput } from '@/features/admin/admins/create-admin.schema';
 import type { UpdateAdminInput } from '@/features/admin/admins/update-admin.schema';
+import type { SetUserActiveStatusInput } from '@/features/admin/common/set-user-active.schema';
+import {
+  applyUserActiveStatus,
+  recordUserActiveStatusChange,
+} from '@/internal/auth/admin/user-active-status';
 
 const findAdminRecord = async (targetUserId: string) => {
   const targetAdmin = await findAdminById(targetUserId);
@@ -227,4 +232,41 @@ export const deleteAdmin = async (ctx: AdminAccessContext, targetUserId: string)
   });
 
   return { userId: targetUserId };
+};
+
+export const setAdminActiveStatus = async (
+  ctx: AdminAccessContext,
+  actorUserId: string,
+  targetUserId: string,
+  input: SetUserActiveStatusInput
+) => {
+  if (!ctx.isOwner) {
+    throw new AuthError(403, 'Hesap durumu değiştirme yetkisi sadece owner\'da');
+  }
+
+  if (actorUserId === targetUserId) {
+    throw new AuthError(400, 'Kendi hesap durumunu bu yolla değiştiremezsin');
+  }
+
+  const { targetAdmin } = await findAdminRecord(targetUserId);
+
+  if (!input.isActive && (await isOwnerRoleId(String(targetAdmin.roleId)))) {
+    const ownerCount = await countOwnerAdmins();
+
+    if (ownerCount <= 1) {
+      throw new AuthError(400, 'Son owner hesabı devre dışı bırakılamaz');
+    }
+  }
+
+  const updatedUser = await applyUserActiveStatus(targetUserId, 'admin', input.isActive);
+
+  if (!updatedUser) {
+    throw new AuthError(404, 'Admin bulunamadı');
+  }
+
+  await recordUserActiveStatusChange(ctx.userId, targetUserId, 'admin', input.isActive);
+
+  const rolesById = await getRoleSummariesByIds([String(targetAdmin.roleId)]);
+
+  return formatAdminResponse(targetAdmin, updatedUser, rolesById.get(String(targetAdmin.roleId)));
 };
