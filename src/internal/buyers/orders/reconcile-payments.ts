@@ -1,52 +1,124 @@
+import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
 import { refundIyzicoPayment } from '@/integrations/iyzico/refund-payment';
 import { createLogger } from '@/internal/common/logging';
+import { refundCapturedIyzicoPayment } from '@/internal/buyers/payment/refund-captured-payment';
 import { findOrderByIdLean } from '@/repositories/buyers/order.repository';
 import {
+  findPaymentById,
   listCompletedIyzicoPaymentsLean,
+  listProcessingIyzicoPaymentsLean,
   updatePaymentById,
 } from '@/repositories/buyers/payment.repository';
 
 const log = createLogger({ module: 'payment-reconcile' });
 
+const reconcileCompletedPaymentMismatch = async (payment: {
+  _id: unknown;
+  orderId: string;
+  amount: number;
+  externalId?: string | null;
+}) => {
+  const order = await findOrderByIdLean(payment.orderId);
+
+  if (!order || order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered') {
+    return false;
+  }
+
+  log.error(
+    {
+      orderId: payment.orderId,
+      paymentId: payment._id,
+      orderStatus: order.status,
+      externalId: payment.externalId,
+    },
+    'Ödeme tamamlandı ancak sipariş uyumsuz; iade deneniyor'
+  );
+
+  const refunded = payment.externalId
+    ? await refundIyzicoPayment(String(payment.externalId), payment.amount, payment.orderId)
+    : false;
+
+  await updatePaymentById(String(payment._id), {
+    status: refunded ? 'refunded' : 'completed',
+    updatedAt: new Date(),
+  });
+
+  if (!refunded) {
+    log.error(
+      { orderId: payment.orderId, paymentId: payment._id },
+      'Otomatik iade başarısız; manuel müdahale gerekir'
+    );
+  }
+
+  return true;
+};
+
+const reconcileStuckProcessingPayment = async (paymentId: string) => {
+  const payment = await findPaymentById(paymentId);
+
+  if (!payment) {
+    return false;
+  }
+
+  const checkoutToken = payment.externalId ? String(payment.externalId) : null;
+
+  if (!checkoutToken) {
+    await updatePaymentById(paymentId, {
+      status: 'failed',
+      updatedAt: new Date(),
+    });
+    return true;
+  }
+
+  try {
+    const result = await completeIyzicoCheckout(checkoutToken);
+
+    if (result.status === 'failed') {
+      await updatePaymentById(paymentId, {
+        status: 'failed',
+        updatedAt: new Date(),
+      });
+      return true;
+    }
+
+    const order = await findOrderByIdLean(payment.orderId);
+
+    if (!order || order.status !== 'pending') {
+      await refundCapturedIyzicoPayment(
+        payment,
+        result.externalId,
+        order?.status === 'cancelled' ? 'order_cancelled_refund' : 'reconcile_processing_refund'
+      );
+      return true;
+    }
+  } catch (error) {
+    log.error(
+      { err: error, orderId: payment.orderId, paymentId },
+      'Processing ödeme uzlaştırması başarısız'
+    );
+  }
+
+  return false;
+};
+
 export const reconcilePaymentOrderMismatches = async (): Promise<number> => {
-  const mismatches = await listCompletedIyzicoPaymentsLean();
+  const [completedMismatches, processingPayments] = await Promise.all([
+    listCompletedIyzicoPaymentsLean(),
+    listProcessingIyzicoPaymentsLean(),
+  ]);
 
   let handled = 0;
 
-  for (const payment of mismatches) {
-    const order = await findOrderByIdLean(payment.orderId);
-
-    if (!order || order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered') {
-      continue;
+  for (const payment of completedMismatches) {
+    if (await reconcileCompletedPaymentMismatch(payment)) {
+      handled += 1;
     }
+  }
 
-    log.error(
-      {
-        orderId: payment.orderId,
-        paymentId: payment._id,
-        orderStatus: order.status,
-        externalId: payment.externalId,
-      },
-      'Ödeme tamamlandı ancak sipariş uyumsuz; iade deneniyor'
-    );
-
-    const refunded = payment.externalId
-      ? await refundIyzicoPayment(String(payment.externalId), payment.amount, payment.orderId)
-      : false;
-
-    await updatePaymentById(String(payment._id), {
-      status: refunded ? 'refunded' : 'completed',
-      updatedAt: new Date(),
-    });
-
-    if (!refunded) {
-      log.error(
-        { orderId: payment.orderId, paymentId: payment._id },
-        'Otomatik iade başarısız; manuel müdahale gerekir'
-      );
+  for (const payment of processingPayments) {
+    if (await reconcileStuckProcessingPayment(String(payment._id))) {
+      handled += 1;
     }
-
-    handled += 1;
   }
 
   return handled;

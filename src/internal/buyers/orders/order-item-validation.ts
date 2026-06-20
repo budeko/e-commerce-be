@@ -37,29 +37,7 @@ export const assertSellersReadyForOrder = async (
   }
 };
 
-const PRICE_SNAPSHOT_TOLERANCE_RATIO = 0.01;
-
 export const resolveOrderUnitPrice = (
-  priceSnapshot: number | null | undefined,
+  _priceSnapshot: number | null | undefined,
   productPrice: number
-): number => {
-  if (priceSnapshot == null || !Number.isFinite(priceSnapshot) || priceSnapshot < 0) {
-    return productPrice;
-  }
-
-  if (priceSnapshot > productPrice) {
-    return productPrice;
-  }
-
-  if (priceSnapshot === 0 && productPrice > 0) {
-    return productPrice;
-  }
-
-  const minTrustedSnapshot = productPrice * (1 - PRICE_SNAPSHOT_TOLERANCE_RATIO);
-
-  if (priceSnapshot >= minTrustedSnapshot) {
-    return productPrice;
-  }
-
-  return priceSnapshot;
-};
+): number => productPrice;

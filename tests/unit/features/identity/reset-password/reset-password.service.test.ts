@@ -40,6 +40,7 @@ import { OtpError } from '@/internal/auth/otp/otp';
 import { resetPassword } from '@/features/identity/reset-password/reset-password.service';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
+const tokenJti = '770e8400-e29b-41d4-a716-446655440002';
 const newPassword = 'NewPass123';
 
 describe('resetPassword', () => {
@@ -47,14 +48,14 @@ describe('resetPassword', () => {
     vi.clearAllMocks();
     process.env.JWT_SECRET = 'test-jwt-secret-for-auth-tests';
     mockHashPassword.mockResolvedValue('hashed-new-password');
-    mockFindById.mockResolvedValue({ _id: userId });
+    mockFindById.mockResolvedValue({ _id: userId, activePasswordResetJti: tokenJti });
     mockFindByIdAndUpdate.mockResolvedValue({});
     mockInvalidateAuthOtp.mockResolvedValue(undefined);
   });
 
   describe('token ile', () => {
     it('geçerli token ile şifreyi günceller', async () => {
-      const token = signPasswordResetToken(userId);
+      const token = signPasswordResetToken(userId, tokenJti);
 
       await resetPassword({ token, newPassword });
 
@@ -65,6 +66,7 @@ describe('resetPassword', () => {
           $set: expect.objectContaining({
             password: 'hashed-new-password',
             passwordChangedAt: expect.any(Date),
+            activePasswordResetJti: null,
           }),
         })
       );

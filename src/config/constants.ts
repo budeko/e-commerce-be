@@ -41,6 +41,21 @@ export const AUTH_PUBLIC_RATE_LIMIT = {
   timeWindow: '15 minutes' as const,
 };
 
+export const AUTH_REGISTER_RATE_LIMIT = {
+  max: 5,
+  timeWindow: '15 minutes' as const,
+};
+
+export const AUTH_LOGIN_RATE_LIMIT = {
+  max: 15,
+  timeWindow: '15 minutes' as const,
+};
+
+export const AUTH_RECOVERY_RATE_LIMIT = {
+  max: 10,
+  timeWindow: '15 minutes' as const,
+};
+
 export const AUTH_ADMIN_RATE_LIMIT = {
   max: 60,
   timeWindow: '1 minute' as const,

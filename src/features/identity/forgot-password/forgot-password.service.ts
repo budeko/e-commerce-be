@@ -7,8 +7,8 @@ import {
 import { signPasswordResetToken } from '@/internal/auth/tokens/email-token';
 import { sendPasswordResetEmail } from '@/integrations/resend/send';
 import { createAuthOtp, invalidateAuthOtp } from '@/internal/auth/otp/otp';
-import { AuthError } from '@/internal/auth/errors';
-import { findUserByEmail } from '@/repositories/auth/user.repository';
+import { createUserId } from '@/internal/common/ids';
+import { findUserByEmail, updateUserById } from '@/repositories/auth/user.repository';
 
 const log = createLogger({ module: 'forgot-password' });
 
@@ -25,24 +25,24 @@ export const forgotPassword = async (email: string) => {
     assertEmailCooldown(user.passwordResetEmailSentAt);
   } catch (error) {
     if (error instanceof EmailCooldownError) {
-      throw new AuthError(error.statusCode, error.message);
+      return;
     }
 
     throw error;
   }
 
-  const token = signPasswordResetToken(userId);
+  const jti = createUserId();
+  const token = signPasswordResetToken(userId, jti);
   const code = await createAuthOtp(userId, 'password_reset');
 
   try {
+    await updateUserById(userId, {
+      $set: { activePasswordResetJti: jti },
+    });
     await sendPasswordResetEmail(user.email, token, code);
     await markPasswordResetEmailSent(userId);
   } catch (error) {
     log.error({ err: error, userId, email: user.email }, 'Şifre sıfırlama e-postası gönderilemedi');
     await invalidateAuthOtp(userId, 'password_reset');
-    throw new AuthError(
-      503,
-      'Şifre sıfırlama e-postası gönderilemedi, lütfen tekrar deneyin'
-    );
   }
 };

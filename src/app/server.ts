@@ -6,7 +6,9 @@ import { logger } from '@/internal/common/logging';
 import { startPendingOrderExpiryScheduler } from '@/internal/buyers/orders/expire-pending-orders';
 import { startPaymentReconciliationScheduler } from '@/internal/buyers/orders/reconcile-payments';
 import { startPaymentSplitSyncRetryScheduler } from '@/internal/buyers/orders/retry-payment-split-sync';
+import { startStuckPaymentRecoveryScheduler } from '@/internal/buyers/orders/recover-stuck-payments';
 import { startOutboxProcessorScheduler } from '@/internal/common/outbox/process-outbox-events';
+import { startUnverifiedUserExpiryScheduler } from '@/internal/auth/register/expire-unverified-users';
 
 export const getPort = (): number => env.port;
 
@@ -50,7 +52,9 @@ export const start = async (): Promise<void> => {
     startPendingOrderExpiryScheduler();
     startPaymentReconciliationScheduler();
     startPaymentSplitSyncRetryScheduler();
+    startStuckPaymentRecoveryScheduler();
     startOutboxProcessorScheduler();
+    startUnverifiedUserExpiryScheduler();
 
     const app = await buildApp();
     const port = getPort();

@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFindOwnedProductById = vi.fn();
+const mockPushProductImageIfUnderLimit = vi.fn();
 const mockUpload = vi.fn();
 const mockDelete = vi.fn();
 
 vi.mock('@/repositories/catalog/product.repository', () => ({
   findOwnedProductById: (...args: unknown[]) => mockFindOwnedProductById(...args),
+  pushProductImageIfUnderLimit: (...args: unknown[]) => mockPushProductImageIfUnderLimit(...args),
   saveProductDocument: (product: { save: () => Promise<unknown> }) => product.save(),
 }));
 
@@ -52,12 +54,14 @@ describe('uploadProductImage', () => {
   });
 
   it('görsel yükler ve ürüne ekler', async () => {
-    const save = vi.fn();
     mockFindOwnedProductById.mockResolvedValue({
       sellerId,
       images: [],
       updatedAt: new Date(),
-      save,
+    });
+    mockPushProductImageIfUnderLimit.mockResolvedValue({
+      sellerId,
+      images: [imageUrl],
       toObject: () => ({
         _id: productId,
         sellerId,
@@ -78,7 +82,7 @@ describe('uploadProductImage', () => {
       jpegBuffer,
       'image/jpeg'
     );
-    expect(save).toHaveBeenCalled();
+    expect(mockPushProductImageIfUnderLimit).toHaveBeenCalled();
     expect(result.url).toBe(imageUrl);
     expect(result.product.images).toEqual([imageUrl]);
   });

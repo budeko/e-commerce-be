@@ -25,6 +25,8 @@ const userSchema = new Schema(
     verificationExpiresAt: { type: Date, default: null },
     verificationEmailSentAt: { type: Date, default: null },
     passwordResetEmailSentAt: { type: Date, default: null },
+    activeEmailVerifyJti: { type: String, default: null },
+    activePasswordResetJti: { type: String, default: null },
     failedLoginAttempts: { type: Number, default: 0 },
     loginBlockedUntil: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now },
@@ -33,12 +35,6 @@ const userSchema = new Schema(
 );
 
 userSchema.index({ role: 1 });
-userSchema.index(
-  { verificationExpiresAt: 1 },
-  {
-    expireAfterSeconds: 0,
-    partialFilterExpression: { isEmailVerified: false },
-  }
-);
+userSchema.index({ isEmailVerified: 1, verificationExpiresAt: 1 });
 
 export const User = model('User', userSchema);

@@ -14,23 +14,30 @@ export const buildProductImageObjectPath = (
   extension: string
 ) => `${sellerId}/products/${productId}/${imageId}.${extension}`;
 
-const isImageBuffer = (buffer: Buffer) => {
-  if (buffer.length < 4) {
-    return false;
+const isJpegBuffer = (buffer: Buffer) => buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xd8;
+
+const isPngBuffer = (buffer: Buffer) =>
+  buffer.length >= 4 && buffer.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+
+const isWebpBuffer = (buffer: Buffer) =>
+  buffer.length >= 12 &&
+  buffer.subarray(0, 4).equals(Buffer.from('RIFF')) &&
+  buffer.subarray(8, 12).equals(Buffer.from('WEBP'));
+
+const detectImageMimeType = (buffer: Buffer): (typeof PRODUCT_IMAGE_MIMES)[number] | null => {
+  if (isJpegBuffer(buffer)) {
+    return 'image/jpeg';
   }
 
-  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
-    return true;
+  if (isPngBuffer(buffer)) {
+    return 'image/png';
   }
 
-  if (buffer.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) {
-    return true;
+  if (isWebpBuffer(buffer)) {
+    return 'image/webp';
   }
 
-  return (
-    buffer.subarray(0, 4).equals(Buffer.from('RIFF')) &&
-    buffer.subarray(8, 12).equals(Buffer.from('WEBP'))
-  );
+  return null;
 };
 
 export const resolveProductImageExtension = (mimeType: string) => {
@@ -49,21 +56,15 @@ export const resolveProductImageMimeType = (
   mimeType: string,
   buffer: Buffer
 ): string | null => {
-  if ((PRODUCT_IMAGE_MIMES as readonly string[]).includes(mimeType)) {
-    return mimeType;
-  }
+  const detected = detectImageMimeType(buffer);
 
-  if (mimeType !== 'application/octet-stream' || !isImageBuffer(buffer)) {
+  if (!detected) {
     return null;
   }
 
-  if (buffer[0] === 0xff) {
-    return 'image/jpeg';
+  if (mimeType === 'application/octet-stream' || (PRODUCT_IMAGE_MIMES as readonly string[]).includes(mimeType)) {
+    return detected;
   }
 
-  if (buffer.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) {
-    return 'image/png';
-  }
-
-  return 'image/webp';
+  return null;
 };

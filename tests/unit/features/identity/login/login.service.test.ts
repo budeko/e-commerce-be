@@ -65,7 +65,7 @@ describe('login', () => {
     });
   });
 
-  it('e-postası doğrulanmamış buyer 403 alır', async () => {
+  it('e-postası doğrulanmamış buyer 401 alır', async () => {
     mockFindOne.mockResolvedValue({
       _id: userId,
       role: 'buyer',
@@ -79,8 +79,8 @@ describe('login', () => {
     await expect(
       login({ email: 'buyer@example.com', password: 'Pass1234', rememberMe: false })
     ).rejects.toMatchObject({
-      statusCode: 403,
-      message: 'E-posta adresini doğrulamadan giriş yapamazsın',
+      statusCode: 401,
+      message: 'E-posta veya şifre hatalı',
     });
   });
 
@@ -139,7 +139,7 @@ describe('login', () => {
     });
   });
 
-  it('hesap kilitliyken 429 döner', async () => {
+  it('hesap kilitliyken 401 döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: userId,
       role: 'buyer',
@@ -152,7 +152,8 @@ describe('login', () => {
     await expect(
       login({ email: 'buyer@example.com', password: 'Pass1234', rememberMe: false })
     ).rejects.toMatchObject({
-      statusCode: 429,
+      statusCode: 401,
+      message: 'E-posta veya şifre hatalı',
     });
   });
 });

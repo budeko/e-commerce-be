@@ -160,6 +160,10 @@ export const listSellerProducts = async (sellerId: string) => {
 export const createProduct = async (sellerId: string, input: CreateProductInput) => {
   await assertProductCategory(input.categoryId);
 
+  if (input.minOrderQuantity > input.stock) {
+    throw new CommerceError(400, 'Minimum sipariş adedi stoktan fazla olamaz');
+  }
+
   const slug = resolveSlug(input.name, input.slug);
 
   const product = await createProductRecord({
@@ -291,7 +295,7 @@ export const updateProduct = async (
 
 export const deleteProduct = async (sellerId: string, productId: string) => {
   const product = await getOwnedProduct(sellerId, productId);
-  await deleteProductImagesFromStorage(product.images);
+  await deleteProductImagesFromStorage(sellerId, product.images);
   await deleteProductById(String(product._id));
 
   invalidateCatalogProductCache();

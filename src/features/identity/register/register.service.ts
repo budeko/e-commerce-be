@@ -10,6 +10,10 @@ import {
   deleteUnverifiedUser,
   getVerificationExpiresAt,
 } from '@/internal/auth/register/unverified-user';
+import {
+  buildRegisterAckResponse,
+  REGISTER_ACK_MESSAGE,
+} from '@/internal/auth/register/register-response';
 import { invalidateAuthOtp } from '@/internal/auth/otp/otp';
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';
@@ -30,10 +34,7 @@ const resolveEmailForRegister = async (email: string) => {
   }
 
   if (existing.isEmailVerified) {
-    throw new AuthError(
-      409,
-      'Kayıt işlemi tamamlanamadı. Giriş yapmayı veya şifre sıfırlamayı deneyin.'
-    );
+    return 'verified' as const;
   }
 
   await deleteUnverifiedUser(String(existing._id));
@@ -77,10 +78,7 @@ const createUserWithProfile = async (
     await markRegisterEmailCooldown(email);
     await invalidateAuthOtp(userId, 'email_verify');
     await deleteUnverifiedUser(userId);
-    throw new AuthError(
-      503,
-      'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin'
-    );
+    return null;
   }
 
   return { user };
@@ -94,18 +92,29 @@ export const register = async (data: RegisterInput) => {
     await assertRegisterEmailCooldown(normalizedEmail);
   } catch (error) {
     if (error instanceof EmailCooldownError) {
-      throw new AuthError(error.statusCode, error.message);
+      return buildRegisterAckResponse();
     }
 
     throw error;
   }
 
-  await resolveEmailForRegister(normalizedEmail);
-  const { user } = await createUserWithProfile(normalizedEmail, password, role);
+  const existingState = await resolveEmailForRegister(normalizedEmail);
+
+  if (existingState === 'verified') {
+    return buildRegisterAckResponse();
+  }
+
+  const created = await createUserWithProfile(normalizedEmail, password, role);
+
+  if (!created) {
+    return buildRegisterAckResponse();
+  }
+
+  const { user } = created;
   const statusFields = await buildAuthUserFields(user);
 
   return {
-    message: 'Kayıt başarılı. E-posta adresini doğrula.',
+    message: REGISTER_ACK_MESSAGE,
     ...statusFields,
     isEmailVerified: user.isEmailVerified,
   };

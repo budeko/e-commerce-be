@@ -2,7 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import {
   AUTH_ADMIN_RATE_LIMIT,
   AUTH_AUTHENTICATED_RATE_LIMIT,
-  AUTH_PUBLIC_RATE_LIMIT,
+  AUTH_LOGIN_RATE_LIMIT,
+  AUTH_RECOVERY_RATE_LIMIT,
+  AUTH_REGISTER_RATE_LIMIT,
   AUTH_SELLER_RATE_LIMIT,
 } from '@/middleware/presets/rate-limit';
 import { registerScopedRateLimit } from '@/plugins/rate-limit/register-scoped';
@@ -22,15 +24,22 @@ import sellersRoutes from '@/features/sellers/sellers.routes';
 
 export const registerAuthRoutes = async (app: FastifyInstance): Promise<void> => {
   await app.register(async (authScope) => {
-    await authScope.register(async (publicAuth) => {
-      await registerScopedRateLimit(publicAuth, AUTH_PUBLIC_RATE_LIMIT);
+    await authScope.register(async (registerScope) => {
+      await registerScopedRateLimit(registerScope, AUTH_REGISTER_RATE_LIMIT);
+      await registerScope.register(registerRoutes, { prefix: '/register' });
+    });
 
-      await publicAuth.register(registerRoutes, { prefix: '/register' });
-      await publicAuth.register(loginRoutes, { prefix: '/login' });
-      await publicAuth.register(verifyEmailRoutes, { prefix: '/verify-email' });
-      await publicAuth.register(forgotPasswordRoutes, { prefix: '/forgot-password' });
-      await publicAuth.register(resetPasswordRoutes, { prefix: '/reset-password' });
-      await publicAuth.register(resendVerificationRoutes, { prefix: '/resend-verification' });
+    await authScope.register(async (loginScope) => {
+      await registerScopedRateLimit(loginScope, AUTH_LOGIN_RATE_LIMIT);
+      await loginScope.register(loginRoutes, { prefix: '/login' });
+    });
+
+    await authScope.register(async (recoveryScope) => {
+      await registerScopedRateLimit(recoveryScope, AUTH_RECOVERY_RATE_LIMIT);
+      await recoveryScope.register(verifyEmailRoutes, { prefix: '/verify-email' });
+      await recoveryScope.register(forgotPasswordRoutes, { prefix: '/forgot-password' });
+      await recoveryScope.register(resetPasswordRoutes, { prefix: '/reset-password' });
+      await recoveryScope.register(resendVerificationRoutes, { prefix: '/resend-verification' });
     });
 
     await authScope.register(async (authenticatedAuth) => {

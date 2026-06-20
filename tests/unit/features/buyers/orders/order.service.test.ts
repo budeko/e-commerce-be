@@ -10,6 +10,7 @@ const {
   mockWithTransaction,
   mockEndSession,
   mockSession,
+  mockAssertPurchasableCatalogProduct,
 } = vi.hoisted(() => {
   const mockWithTransaction = vi.fn();
   const mockEndSession = vi.fn().mockResolvedValue(undefined);
@@ -28,8 +29,14 @@ const {
     mockWithTransaction,
     mockEndSession,
     mockSession,
+    mockAssertPurchasableCatalogProduct: vi.fn(),
   };
 });
+
+vi.mock('@/internal/catalog/product/assert-purchasable-product', () => ({
+  assertPurchasableCatalogProduct: (...args: unknown[]) =>
+    mockAssertPurchasableCatalogProduct(...args),
+}));
 
 vi.mock('mongoose', () => ({
   default: {
@@ -145,9 +152,7 @@ describe('createOrderFromCart', () => {
     mockCartFindOneAndUpdate.mockResolvedValue({
       items: [{ productId, quantity: 2 }],
     });
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(productDoc),
-    });
+    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
     mockOrderCreate.mockResolvedValue([
       {
         toObject: () => ({
@@ -189,13 +194,11 @@ describe('createOrderFromCart', () => {
     expect(result.status).toBe('pending');
   });
 
-  it('priceSnapshot varsa ürün fiyatı yerine snapshot kullanır', async () => {
+  it('priceSnapshot eski olsa bile güncel ürün fiyatını kullanır', async () => {
     mockCartFindOneAndUpdate.mockResolvedValue({
       items: [{ productId, quantity: 1, priceSnapshot: 850 }],
     });
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(productDoc),
-    });
+    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
     mockOrderCreate.mockResolvedValue([
       {
         toObject: () => ({
@@ -206,13 +209,13 @@ describe('createOrderFromCart', () => {
               productId,
               sellerId,
               name: 'Kulaklık',
-              price: 850,
+              price: 999,
               quantity: 1,
-              subtotal: 850,
+              subtotal: 999,
               fulfillmentStatus: 'pending',
             },
           ],
-          totalAmount: 850,
+          totalAmount: 999,
           currency: 'TRY',
           status: 'pending',
           shippingAddress: {
@@ -229,8 +232,8 @@ describe('createOrderFromCart', () => {
 
     const result = await createOrderFromCart(buyerId);
 
-    expect(result.items[0].price).toBe(850);
-    expect(result.totalAmount).toBe(850);
+    expect(result.items[0].price).toBe(999);
+    expect(result.totalAmount).toBe(999);
   });
 });
 

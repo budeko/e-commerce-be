@@ -28,7 +28,7 @@ import {
   saveOrderDocument,
 } from '@/repositories/buyers/order.repository';
 import { failPendingPaymentsByOrderId } from '@/repositories/buyers/payment.repository';
-import { findActiveCatalogProductLean } from '@/repositories/catalog/product.repository';
+import { assertPurchasableCatalogProduct } from '@/internal/catalog/product/assert-purchasable-product';
 
 type OrderItemRecord = {
   productId: string;
@@ -105,11 +105,7 @@ const buildOrderItemsFromCart = async (
   const orderItems: OrderItemRecord[] = [];
 
   for (const item of cartItems) {
-    const product = await findActiveCatalogProductLean(item.productId);
-
-    if (!product) {
-      throw new CommerceError(400, 'Sepette geçersiz ürün var');
-    }
+    const product = await assertPurchasableCatalogProduct(item.productId);
 
     assertProductStockAvailable(product, item.quantity);
 

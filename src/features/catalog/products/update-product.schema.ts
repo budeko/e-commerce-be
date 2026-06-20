@@ -27,6 +27,7 @@ export const updateProductSchema = z
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'Güncellenecek en az bir alan gerekli',
-  });
+  })
+  .strict();
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

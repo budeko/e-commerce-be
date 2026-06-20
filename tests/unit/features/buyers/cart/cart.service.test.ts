@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCartFindById = vi.fn();
 const mockCartCreate = vi.fn();
-const mockProductFindOne = vi.fn();
 const mockProductFind = vi.fn();
+const mockAssertPurchasableCatalogProduct = vi.fn();
 
 vi.mock('@/integrations/mongo', () => ({
   Cart: {
@@ -11,9 +11,13 @@ vi.mock('@/integrations/mongo', () => ({
     create: (...args: unknown[]) => mockCartCreate(...args),
   },
   Product: {
-    findOne: (...args: unknown[]) => mockProductFindOne(...args),
     find: (...args: unknown[]) => mockProductFind(...args),
   },
+}));
+
+vi.mock('@/internal/catalog/product/assert-purchasable-product', () => ({
+  assertPurchasableCatalogProduct: (...args: unknown[]) =>
+    mockAssertPurchasableCatalogProduct(...args),
 }));
 
 import {
@@ -55,9 +59,7 @@ const createCartDoc = (items: Array<{ productId: string; quantity: number; price
 describe('addToCart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(productDoc),
-    });
+    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
     mockProductFind.mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([productDoc]),
@@ -66,9 +68,10 @@ describe('addToCart', () => {
   });
 
   it('kategorisiz (orphan) ürün sepete eklenemez', async () => {
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(null),
-    });
+    const { CommerceError } = await import('@/internal/common/errors/commerce-error');
+    mockAssertPurchasableCatalogProduct.mockRejectedValue(
+      new CommerceError(404, 'Ürün bulunamadı')
+    );
     mockCartFindById.mockResolvedValue(createCartDoc([]));
 
     await expect(
@@ -78,19 +81,14 @@ describe('addToCart', () => {
       message: 'Ürün bulunamadı',
     });
 
-    expect(mockProductFindOne).toHaveBeenCalledWith(
-      expect.objectContaining({
-        _id: productId,
-        isActive: true,
-        categoryId: { $ne: null },
-      })
-    );
+    expect(mockAssertPurchasableCatalogProduct).toHaveBeenCalledWith(productId);
   });
 
   it('aktif ürün yoksa 404 fırlatır', async () => {
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(null),
-    });
+    const { CommerceError } = await import('@/internal/common/errors/commerce-error');
+    mockAssertPurchasableCatalogProduct.mockRejectedValue(
+      new CommerceError(404, 'Ürün bulunamadı')
+    );
     mockCartFindById.mockResolvedValue(createCartDoc([]));
 
     await expect(
@@ -112,9 +110,7 @@ describe('addToCart', () => {
   });
 
   it('minimum sipariş adedinin altında 400 fırlatır', async () => {
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue({ ...productDoc, minOrderQuantity: 3 }),
-    });
+    mockAssertPurchasableCatalogProduct.mockResolvedValue({ ...productDoc, minOrderQuantity: 3 });
     mockCartFindById.mockResolvedValue(createCartDoc([]));
 
     await expect(
@@ -154,9 +150,7 @@ describe('addToCart', () => {
 describe('updateCartItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockProductFindOne.mockReturnValue({
-      lean: vi.fn().mockResolvedValue(productDoc),
-    });
+    mockAssertPurchasableCatalogProduct.mockResolvedValue(productDoc);
     mockProductFind.mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([productDoc]),

@@ -45,3 +45,11 @@ export const updateUserById = async (userId: string, update: Record<string, unkn
 export const saveUserDocument = async (user: { save: () => Promise<unknown> }) => user.save();
 
 export const deleteUserById = async (userId: string) => User.findByIdAndDelete(userId);
+
+export const listExpiredUnverifiedUsersLean = async (now: Date) =>
+  User.find({
+    isEmailVerified: false,
+    verificationExpiresAt: { $ne: null, $lt: now },
+  })
+    .select('_id')
+    .lean();

@@ -6,7 +6,7 @@ export const loginSchema = z.object({
   password: z
     .string({ error: 'Şifre zorunlu' })
     .min(1, 'Şifre zorunlu')
-    .max(128, 'Şifre çok uzun'),
+    .max(16, 'Şifre en fazla 16 karakter olabilir'),
   rememberMe: z.boolean().default(false),
 });
 

@@ -10,9 +10,9 @@ import {
   saveCartDocumentItems,
 } from '@/repositories/buyers/cart.repository';
 import {
-  findActiveCatalogProductLean,
   findProductSummariesByIdsLean,
 } from '@/repositories/catalog/product.repository';
+import { assertPurchasableCatalogProduct } from '@/internal/catalog/product/assert-purchasable-product';
 
 type CartItemRecord = {
   productId: string;
@@ -65,15 +65,7 @@ const toCartResponse = (
   updatedAt: cart.updatedAt,
 });
 
-const getActiveProduct = async (productId: string) => {
-  const product = await findActiveCatalogProductLean(productId);
-
-  if (!product) {
-    throw new CommerceError(404, 'Ürün bulunamadı');
-  }
-
-  return product;
-};
+const getActiveProduct = async (productId: string) => assertPurchasableCatalogProduct(productId);
 
 const ensureCart = ensureCartDocument;
 

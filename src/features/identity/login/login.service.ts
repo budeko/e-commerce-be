@@ -9,8 +9,7 @@ import {
 } from '@/repositories/auth/user.repository';
 import type { LoginInput } from '@/features/identity/login/login.schema';
 
-const LOCKOUT_MESSAGE =
-  'Çok fazla başarısız giriş denemesi. Lütfen bir süre sonra tekrar deneyin.';
+const INVALID_CREDENTIALS_MESSAGE = 'E-posta veya şifre hatalı';
 
 const recordFailedLogin = async (userId: string, currentAttempts: number) => {
   const nextAttempts = currentAttempts + 1;
@@ -38,25 +37,28 @@ export const login = async (data: LoginInput) => {
   const user = await findUserByEmail(data.email);
 
   if (!user) {
-    throw new AuthError(401, 'E-posta veya şifre hatalı');
+    throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
+  }
+
+  if (user.loginBlockedUntil && user.loginBlockedUntil <= new Date()) {
+    await resetLoginAttempts(user._id.toString());
+    user.failedLoginAttempts = 0;
+    user.loginBlockedUntil = null;
   }
 
   if (user.loginBlockedUntil && user.loginBlockedUntil > new Date()) {
-    throw new AuthError(429, LOCKOUT_MESSAGE);
+    throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
   }
 
   const passwordValid = await comparePassword(data.password, user.password);
 
   if (!passwordValid) {
     await recordFailedLogin(user._id.toString(), user.failedLoginAttempts ?? 0);
-    throw new AuthError(401, 'E-posta veya şifre hatalı');
+    throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
   }
 
   if (user.role !== 'admin' && !user.isEmailVerified) {
-    throw new AuthError(
-      403,
-      'E-posta adresini doğrulamadan giriş yapamazsın'
-    );
+    throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
   }
 
   await resetLoginAttempts(user._id.toString());

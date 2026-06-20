@@ -6,11 +6,11 @@ const mockInvalidateAuthOtp = vi.fn();
 const mockSendPasswordResetEmail = vi.fn();
 const mockAssertEmailCooldown = vi.fn();
 const mockMarkPasswordResetEmailSent = vi.fn();
+const mockUpdateUserById = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  User: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
-  },
+vi.mock('@/repositories/auth/user.repository', () => ({
+  findUserByEmail: (...args: unknown[]) => mockFindOne(...args),
+  updateUserById: (...args: unknown[]) => mockUpdateUserById(...args),
 }));
 
 vi.mock('@/internal/auth/otp/otp', () => ({
@@ -48,6 +48,7 @@ describe('forgotPassword', () => {
     mockSendPasswordResetEmail.mockResolvedValue(undefined);
     mockInvalidateAuthOtp.mockResolvedValue(undefined);
     mockMarkPasswordResetEmailSent.mockResolvedValue(undefined);
+    mockUpdateUserById.mockResolvedValue({});
     mockAssertEmailCooldown.mockImplementation(() => {});
   });
 
@@ -76,9 +77,10 @@ describe('forgotPassword', () => {
       '482913'
     );
     expect(mockMarkPasswordResetEmailSent).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
+    expect(mockUpdateUserById).toHaveBeenCalled();
   });
 
-  it('cooldown içinde 429 döner', async () => {
+  it('cooldown içinde sessizce döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
@@ -88,24 +90,18 @@ describe('forgotPassword', () => {
       throw new EmailCooldownError(429, 'E-posta az önce gönderildi. 45 saniye sonra tekrar deneyin');
     });
 
-    await expect(forgotPassword('user@example.com')).rejects.toMatchObject({
-      statusCode: 429,
-    });
-
+    await expect(forgotPassword('user@example.com')).resolves.toBeUndefined();
     expect(mockCreateAuthOtp).not.toHaveBeenCalled();
   });
 
-  it('mail gitmezse OTP iptal eder ve 503 döner', async () => {
+  it('mail gitmezse OTP iptal eder ve sessizce döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
     });
     mockSendPasswordResetEmail.mockRejectedValue(new Error('Resend hatası'));
 
-    await expect(forgotPassword('user@example.com')).rejects.toMatchObject({
-      statusCode: 503,
-      message: 'Şifre sıfırlama e-postası gönderilemedi, lütfen tekrar deneyin',
-    });
+    await expect(forgotPassword('user@example.com')).resolves.toBeUndefined();
 
     expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(
       '550e8400-e29b-41d4-a716-446655440000',

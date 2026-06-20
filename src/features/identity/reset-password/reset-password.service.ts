@@ -22,16 +22,17 @@ const updateUserPassword = async (userId: string, newPassword: string) => {
     $set: {
       password: hashedPassword,
       passwordChangedAt: new Date(),
+      activePasswordResetJti: null,
     },
   });
   await invalidateAuthOtp(userId, 'password_reset');
 };
 
 const resetPasswordByToken = async (token: string, newPassword: string) => {
-  let userId: string;
+  let verified: ReturnType<typeof verifyPasswordResetToken>;
 
   try {
-    userId = verifyPasswordResetToken(token);
+    verified = verifyPasswordResetToken(token);
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new AuthError(410, 'Sıfırlama bağlantısının süresi doldu');
@@ -40,7 +41,17 @@ const resetPasswordByToken = async (token: string, newPassword: string) => {
     throw new AuthError(400, 'Geçersiz sıfırlama tokeni');
   }
 
-  await updateUserPassword(userId, newPassword);
+  const user = await findUserById(verified.userId);
+
+  if (!user) {
+    throw new AuthError(404, 'Kullanıcı bulunamadı');
+  }
+
+  if (!user.activePasswordResetJti || user.activePasswordResetJti !== verified.jti) {
+    throw new AuthError(400, 'Geçersiz sıfırlama tokeni');
+  }
+
+  await updateUserPassword(verified.userId, newPassword);
 };
 
 const resetPasswordByCode = async (email: string, code: string, newPassword: string) => {

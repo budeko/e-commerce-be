@@ -110,25 +110,25 @@ describe('register', () => {
     expect(result.isEmailVerified).toBe(false);
   });
 
-  it('cooldown aktifken 429 döner', async () => {
+  it('cooldown aktifken genel onay mesajı döner', async () => {
     const { EmailCooldownError } = await import('@/internal/auth/mail/cooldown');
 
     mockAssertRegisterEmailCooldown.mockRejectedValue(
       new EmailCooldownError(429, 'E-posta gönderimleri arasında bekleme süresi var')
     );
 
-    await expect(
-      register({
-        email: 'user@example.com',
-        password: 'SecurePass1',
-        role: 'buyer',
-      })
-    ).rejects.toMatchObject({
-      statusCode: 429,
+    const result = await register({
+      email: 'user@example.com',
+      password: 'SecurePass1',
+      role: 'buyer',
+    });
+
+    expect(result).toEqual({
+      message: 'Kayıt talebiniz alındı. E-posta kutunuzu kontrol edin.',
     });
   });
 
-  it('mail gönderilemezse kaydı siler ve 503 döner', async () => {
+  it('mail gönderilemezse kaydı siler ve genel onay mesajı döner', async () => {
     mockFindOne.mockResolvedValue(null);
     mockCreate.mockResolvedValue({
       _id: newUserId,
@@ -138,35 +138,32 @@ describe('register', () => {
     });
     mockSendVerification.mockRejectedValue(new Error('Resend hatası'));
 
-    await expect(
-      register({
-        email: 'user@example.com',
-        password: 'SecurePass1',
-        role: 'buyer',
-      })
-    ).rejects.toMatchObject({
-      statusCode: 503,
-      message: 'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin',
+    const result = await register({
+      email: 'user@example.com',
+      password: 'SecurePass1',
+      role: 'buyer',
     });
 
+    expect(result).toEqual({
+      message: 'Kayıt talebiniz alındı. E-posta kutunuzu kontrol edin.',
+    });
     expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith(newUserId);
   });
 
-  it('doğrulanmış e-postada 409 döner', async () => {
+  it('doğrulanmış e-postada genel onay mesajı döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: existingUserId,
       isEmailVerified: true,
     });
 
-    await expect(
-      register({
-        email: 'user@example.com',
-        password: 'SecurePass1',
-        role: 'buyer',
-      })
-    ).rejects.toMatchObject({
-      statusCode: 409,
-      message: 'Kayıt işlemi tamamlanamadı. Giriş yapmayı veya şifre sıfırlamayı deneyin.',
+    const result = await register({
+      email: 'user@example.com',
+      password: 'SecurePass1',
+      role: 'buyer',
+    });
+
+    expect(result).toEqual({
+      message: 'Kayıt talebiniz alındı. E-posta kutunuzu kontrol edin.',
     });
   });
 });

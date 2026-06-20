@@ -4,15 +4,16 @@ import { AuthError } from '@/internal/auth/errors';
 
 const mockFindOne = vi.fn();
 const mockFindById = vi.fn();
+const mockUpdateUserById = vi.fn();
 const mockVerifyAuthOtp = vi.fn();
 const mockInvalidateAuthOtp = vi.fn();
 const mockDeleteUnverifiedUser = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  User: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
-    findById: (...args: unknown[]) => mockFindById(...args),
-  },
+vi.mock('@/repositories/auth/user.repository', () => ({
+  findUserByEmail: (...args: unknown[]) => mockFindOne(...args),
+  findUserById: (...args: unknown[]) => mockFindById(...args),
+  updateUserById: (...args: unknown[]) => mockUpdateUserById(...args),
+  saveUserDocument: (user: { save: () => Promise<unknown> }) => user.save(),
 }));
 
 vi.mock('@/internal/auth/register/unverified-user', () => ({
@@ -50,12 +51,14 @@ import { OtpError } from '@/internal/auth/otp/otp';
 import { verifyEmail } from '@/features/identity/verify-email/verify-email.service';
 
 const userId = '550e8400-e29b-41d4-a716-446655440000';
+const tokenJti = '770e8400-e29b-41d4-a716-446655440002';
 
 const unverifiedUser = {
   _id: userId,
   role: 'buyer',
   isEmailVerified: false,
   verificationExpiresAt: new Date(Date.now() + 60_000),
+  activeEmailVerifyJti: tokenJti,
 };
 
 describe('verifyEmail', () => {
@@ -64,47 +67,47 @@ describe('verifyEmail', () => {
     process.env.JWT_SECRET = 'test-jwt-secret-for-auth-tests';
     mockInvalidateAuthOtp.mockResolvedValue(undefined);
     mockDeleteUnverifiedUser.mockResolvedValue(undefined);
+    mockUpdateUserById.mockResolvedValue({});
   });
 
   describe('token ile', () => {
     it('geçerli token ile e-postayı doğrular ve oturum tokeni döner', async () => {
-      const save = vi.fn();
-      const token = signEmailVerificationToken(userId);
+      const token = signEmailVerificationToken(userId, tokenJti);
 
+      mockFindById
+        .mockResolvedValueOnce(unverifiedUser)
+        .mockResolvedValueOnce({
+          ...unverifiedUser,
+          isEmailVerified: true,
+        });
+
+      const result = await verifyEmail({ token });
+
+      expect(result.isEmailVerified).toBe(true);
+      expect(result.token).toEqual(expect.any(String));
+      expect(mockUpdateUserById).toHaveBeenCalled();
+      expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(userId, 'email_verify');
+      expect(mockVerifyAuthOtp).not.toHaveBeenCalled();
+    });
+
+    it('zaten doğrulanmış kullanıcıda oturum tokeni döner', async () => {
+      const token = signEmailVerificationToken(userId, tokenJti);
       mockFindById.mockResolvedValue({
         ...unverifiedUser,
-        save,
+        isEmailVerified: true,
       });
 
       const result = await verifyEmail({ token });
 
       expect(result.isEmailVerified).toBe(true);
       expect(result.token).toEqual(expect.any(String));
-      expect(save).toHaveBeenCalled();
-      expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(userId, 'email_verify');
-      expect(mockVerifyAuthOtp).not.toHaveBeenCalled();
-    });
-
-    it('zaten doğrulanmış kullanıcıda 409 döner', async () => {
-      const token = signEmailVerificationToken(userId);
-      mockFindById.mockResolvedValue({
-        ...unverifiedUser,
-        isEmailVerified: true,
-        save: vi.fn(),
-      });
-
-      await expect(verifyEmail({ token })).rejects.toMatchObject({
-        statusCode: 409,
-        message: 'E-posta zaten doğrulanmış',
-      });
     });
 
     it('doğrulama süresi dolmuşsa kaydı siler ve 410 döner', async () => {
-      const token = signEmailVerificationToken(userId);
+      const token = signEmailVerificationToken(userId, tokenJti);
       mockFindById.mockResolvedValue({
         ...unverifiedUser,
         verificationExpiresAt: new Date(Date.now() - 1_000),
-        save: vi.fn(),
       });
 
       await expect(verifyEmail({ token })).rejects.toMatchObject({
@@ -136,7 +139,7 @@ describe('verifyEmail', () => {
       const result = await verifyEmail({ email: 'user@example.com', code: '482913' });
 
       expect(result.token).toEqual(expect.any(String));
-      expect(mockFindOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+      expect(mockFindOne).toHaveBeenCalledWith('user@example.com');
       expect(mockVerifyAuthOtp).toHaveBeenCalledWith(userId, 'email_verify', '482913');
       expect(save).toHaveBeenCalled();
     });

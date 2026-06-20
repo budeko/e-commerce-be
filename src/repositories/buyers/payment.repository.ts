@@ -12,6 +12,8 @@ export const findPaymentByOrderId = async (orderId: string) => Payment.findOne({
 export const findPaymentByOrderIdLean = async (orderId: string) =>
   Payment.findOne({ orderId }).lean();
 
+export const findPaymentById = async (paymentId: string) => Payment.findById(paymentId);
+
 type CreatePaymentData = {
   orderId: string;
   buyerId: string;
@@ -84,9 +86,21 @@ export const failPendingPaymentsByOrderId = async (orderId: string) =>
 
 export const distinctPendingCheckoutOrderIds = async () =>
   Payment.distinct('orderId', {
-    status: 'pending',
+    status: { $in: ['pending', 'processing'] },
     externalId: { $ne: null },
   });
+
+export const listStuckProcessingPaymentsLean = async (cutoff: Date) =>
+  Payment.find({
+    status: 'processing',
+    updatedAt: { $lt: cutoff },
+  }).lean();
+
+export const listProcessingIyzicoPaymentsLean = async () =>
+  Payment.find({
+    status: 'processing',
+    provider: 'iyzico',
+  }).lean();
 
 export const failStalePendingPayments = async (orderIds: string[], cutoff: Date) =>
   Payment.updateMany(

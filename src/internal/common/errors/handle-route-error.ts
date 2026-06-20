@@ -4,6 +4,7 @@ import { logger } from '@/internal/common/logging';
 
 type HandleRouteErrorOptions = {
   duplicateKeyMessage?: string;
+  duplicateKeyStatusCode?: number;
 };
 
 export const handleRouteError = (
@@ -17,7 +18,9 @@ export const handleRouteError = (
   }
 
   if (options?.duplicateKeyMessage && isDuplicateKeyError(error)) {
-    return reply.status(409).send({ message: options.duplicateKeyMessage });
+    return reply
+      .status(options.duplicateKeyStatusCode ?? 409)
+      .send({ message: options.duplicateKeyMessage });
   }
 
   logger.error({ err: error }, fallbackMessage);

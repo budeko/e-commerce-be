@@ -134,7 +134,7 @@ describe('auth routes integration', () => {
     expect(response.json()).toEqual({ message: 'E-posta veya şifre hatalı' });
   });
 
-  it('POST /auth/login doğrulanmamış seller ile 403 döner', async () => {
+  it('POST /auth/login doğrulanmamış seller ile 401 döner', async () => {
     mockUserFindOne.mockResolvedValue({
       _id: userId,
       email: sellerEmail,
@@ -149,7 +149,7 @@ describe('auth routes integration', () => {
       payload: { email: sellerEmail, password: sellerPassword },
     });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(401);
   });
 
   it('POST /auth/login başarılı seller token döner', async () => {

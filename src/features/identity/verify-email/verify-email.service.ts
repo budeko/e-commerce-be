@@ -9,6 +9,7 @@ import {
   findUserByEmail,
   findUserById,
   saveUserDocument,
+  updateUserById,
 } from '@/repositories/auth/user.repository';
 import type { VerifyEmailInput } from '@/features/identity/verify-email/verify-email.schema';
 
@@ -20,7 +21,7 @@ const markEmailVerified = async (userId: string) => {
   }
 
   if (user.isEmailVerified) {
-    throw new AuthError(409, 'E-posta zaten doğrulanmış');
+    return user;
   }
 
   if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
@@ -30,6 +31,7 @@ const markEmailVerified = async (userId: string) => {
 
   user.isEmailVerified = true;
   user.verificationExpiresAt = null;
+  user.activeEmailVerifyJti = null;
   await saveUserDocument(user);
   await invalidateAuthOtp(userId, 'email_verify');
 
@@ -37,10 +39,10 @@ const markEmailVerified = async (userId: string) => {
 };
 
 const verifyEmailByToken = async (token: string) => {
-  let userId: string;
+  let verified: ReturnType<typeof verifyEmailVerificationToken>;
 
   try {
-    userId = verifyEmailVerificationToken(token);
+    verified = verifyEmailVerificationToken(token);
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       throw new AuthError(410, 'Doğrulama bağlantısının süresi doldu');
@@ -49,7 +51,39 @@ const verifyEmailByToken = async (token: string) => {
     throw new AuthError(400, 'Geçersiz doğrulama tokeni');
   }
 
-  return markEmailVerified(userId);
+  const user = await findUserById(verified.userId);
+
+  if (!user) {
+    throw new AuthError(404, 'Kullanıcı bulunamadı');
+  }
+
+  if (!user.isEmailVerified) {
+    if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+      await deleteUnverifiedUser(verified.userId);
+      throw new AuthError(410, 'Doğrulama süresi doldu, lütfen tekrar kayıt ol');
+    }
+
+    if (!user.activeEmailVerifyJti || user.activeEmailVerifyJti !== verified.jti) {
+      throw new AuthError(400, 'Geçersiz doğrulama tokeni');
+    }
+
+    await updateUserById(verified.userId, {
+      $set: {
+        isEmailVerified: true,
+        verificationExpiresAt: null,
+        activeEmailVerifyJti: null,
+      },
+    });
+    await invalidateAuthOtp(verified.userId, 'email_verify');
+  }
+
+  const refreshed = await findUserById(verified.userId);
+
+  if (!refreshed) {
+    throw new AuthError(404, 'Kullanıcı bulunamadı');
+  }
+
+  return refreshed;
 };
 
 const verifyEmailByCode = async (email: string, code: string) => {
@@ -60,7 +94,7 @@ const verifyEmailByCode = async (email: string, code: string) => {
   }
 
   if (user.isEmailVerified) {
-    throw new AuthError(409, 'E-posta zaten doğrulanmış');
+    return user;
   }
 
   try {

@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFindOne = vi.fn();
-const mockFindByIdAndUpdate = vi.fn();
-const mockSendVerification = vi.fn();
-const mockInvalidateAuthOtp = vi.fn();
+const mockSendUserVerificationEmail = vi.fn();
 const mockAssertEmailCooldown = vi.fn();
 const mockMarkVerificationEmailSent = vi.fn();
+const mockInvalidateAuthOtp = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  User: {
-    findOne: (...args: unknown[]) => mockFindOne(...args),
-    findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),
-  },
+vi.mock('@/repositories/auth/user.repository', () => ({
+  findUserByEmail: (...args: unknown[]) => mockFindOne(...args),
 }));
 
 vi.mock('@/internal/auth/mail/send-verification', () => ({
-  sendUserVerificationEmail: (...args: unknown[]) => mockSendVerification(...args),
+  sendUserVerificationEmail: (...args: unknown[]) => mockSendUserVerificationEmail(...args),
 }));
 
 vi.mock('@/internal/auth/otp/otp', () => ({
@@ -40,28 +36,20 @@ import { resendVerificationEmail } from '@/features/identity/resend-verification
 describe('resendVerificationEmail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSendVerification.mockResolvedValue(undefined);
+    mockSendUserVerificationEmail.mockResolvedValue(undefined);
     mockMarkVerificationEmailSent.mockResolvedValue(undefined);
     mockInvalidateAuthOtp.mockResolvedValue(undefined);
     mockAssertEmailCooldown.mockImplementation(() => {});
   });
 
-  it('doğrulanmamış kullanıcıya mail gönderir', async () => {
-    mockFindOne.mockResolvedValue({
-      _id: '550e8400-e29b-41d4-a716-446655440000',
-      email: 'user@example.com',
-      isEmailVerified: false,
-      verificationEmailSentAt: null,
-    });
+  it('kayıtlı olmayan e-postada sessizce döner', async () => {
+    mockFindOne.mockResolvedValue(null);
 
-    await resendVerificationEmail('user@example.com');
-
-    expect(mockAssertEmailCooldown).toHaveBeenCalled();
-    expect(mockSendVerification).toHaveBeenCalled();
-    expect(mockMarkVerificationEmailSent).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
+    await expect(resendVerificationEmail('ghost@example.com')).resolves.toBeUndefined();
+    expect(mockSendUserVerificationEmail).not.toHaveBeenCalled();
   });
 
-  it('cooldown içinde 429 döner', async () => {
+  it('cooldown içinde sessizce döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
@@ -72,25 +60,19 @@ describe('resendVerificationEmail', () => {
       throw new EmailCooldownError(429, 'E-posta az önce gönderildi. 50 saniye sonra tekrar deneyin');
     });
 
-    await expect(resendVerificationEmail('user@example.com')).rejects.toMatchObject({
-      statusCode: 429,
-    });
-
-    expect(mockSendVerification).not.toHaveBeenCalled();
+    await expect(resendVerificationEmail('user@example.com')).resolves.toBeUndefined();
+    expect(mockSendUserVerificationEmail).not.toHaveBeenCalled();
   });
 
-  it('mail gitmezse OTP iptal eder ve 503 döner', async () => {
+  it('mail gitmezse OTP iptal eder ve sessizce döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: '550e8400-e29b-41d4-a716-446655440000',
       email: 'user@example.com',
       isEmailVerified: false,
     });
-    mockSendVerification.mockRejectedValue(new Error('Resend hatası'));
+    mockSendUserVerificationEmail.mockRejectedValue(new Error('Resend hatası'));
 
-    await expect(resendVerificationEmail('user@example.com')).rejects.toMatchObject({
-      statusCode: 503,
-      message: 'Doğrulama e-postası gönderilemedi, lütfen tekrar deneyin',
-    });
+    await expect(resendVerificationEmail('user@example.com')).resolves.toBeUndefined();
 
     expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(
       '550e8400-e29b-41d4-a716-446655440000',

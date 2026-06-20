@@ -17,6 +17,7 @@ import {
 } from '@/integrations/supabase/supabase';
 import {
   findOwnedProductById,
+  pushProductImageIfUnderLimit,
   saveProductDocument,
 } from '@/repositories/catalog/product.repository';
 
@@ -30,17 +31,23 @@ const getOwnedProduct = async (sellerId: string, productId: string) => {
   return product;
 };
 
-const removeStoredImageIfManaged = async (url: string) => {
+const removeStoredImageIfManaged = async (sellerId: string, url: string) => {
   const { bucket } = getSupabaseConfig();
   const objectPath = parseStorageObjectPathFromPublicUrl(url, bucket);
 
-  if (objectPath) {
-    await deleteFromSellerStorage(objectPath);
+  if (!objectPath) {
+    return;
   }
+
+  if (!objectPath.startsWith(`${sellerId}/`)) {
+    throw new CommerceError(403, 'Görsel silme yetkisi yok');
+  }
+
+  await deleteFromSellerStorage(objectPath);
 };
 
-export const deleteProductImagesFromStorage = async (imageUrls: string[]) => {
-  await Promise.all(imageUrls.map((url) => removeStoredImageIfManaged(url)));
+export const deleteProductImagesFromStorage = async (sellerId: string, imageUrls: string[]) => {
+  await Promise.all(imageUrls.map((url) => removeStoredImageIfManaged(sellerId, url)));
 };
 
 export const uploadProductImage = async (
@@ -63,9 +70,9 @@ export const uploadProductImage = async (
     throw new CommerceError(400, 'Geçersiz dosya türü');
   }
 
-  const product = await getOwnedProduct(sellerId, productId);
+  const ownedProduct = await getOwnedProduct(sellerId, productId);
 
-  if (product.images.length >= MAX_PRODUCT_IMAGES) {
+  if (ownedProduct.images.length >= MAX_PRODUCT_IMAGES) {
     throw new CommerceError(400, `En fazla ${MAX_PRODUCT_IMAGES} görsel eklenebilir`);
   }
 
@@ -74,9 +81,17 @@ export const uploadProductImage = async (
   const objectPath = buildProductImageObjectPath(sellerId, productId, imageId, extension);
   const url = await uploadToSellerStorage(objectPath, buffer, resolvedMimeType);
 
-  product.images = [...product.images, url];
-  product.updatedAt = new Date();
-  await saveProductDocument(product);
+  const product = await pushProductImageIfUnderLimit(
+    sellerId,
+    productId,
+    url,
+    MAX_PRODUCT_IMAGES
+  );
+
+  if (!product) {
+    await deleteFromSellerStorage(objectPath);
+    throw new CommerceError(400, `En fazla ${MAX_PRODUCT_IMAGES} görsel eklenebilir`);
+  }
 
   invalidateCatalogProductCache();
 
@@ -97,7 +112,7 @@ export const deleteProductImage = async (
     throw new CommerceError(404, 'Ürün görseli bulunamadı');
   }
 
-  await removeStoredImageIfManaged(imageUrl);
+  await removeStoredImageIfManaged(sellerId, imageUrl);
 
   product.images = product.images.filter((url) => url !== imageUrl);
   product.updatedAt = new Date();

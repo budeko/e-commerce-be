@@ -110,3 +110,22 @@ export const findOwnedProductById = async (sellerId: string, productId: string) 
 
   return product;
 };
+
+export const pushProductImageIfUnderLimit = async (
+  sellerId: string,
+  productId: string,
+  imageUrl: string,
+  maxImages: number
+) =>
+  Product.findOneAndUpdate(
+    {
+      _id: productId,
+      sellerId,
+      $expr: { $lt: [{ $size: '$images' }, maxImages] },
+    },
+    {
+      $push: { images: imageUrl },
+      $set: { updatedAt: new Date() },
+    },
+    { new: true }
+  );
