@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Buyer, Cart, Order, Payment, Product, type ItemFulfillmentStatus, type OrderStatus } from '@/integrations/mongo';
+import type { ItemFulfillmentStatus, OrderStatus } from '@/integrations/mongo';
 import { createUserId } from '@/internal/common/ids';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import { approvePaymentSplitsForSeller } from '@/internal/buyers/payment/payment-split';
@@ -15,7 +15,20 @@ import {
   computeSellerSubtotal,
 } from '@/internal/buyers/orders/order-fulfillment';
 import type { UpdateOrderStatusInput } from '@/features/buyers/orders/update-order-status.schema';
-import { findBuyerOrder } from '@/repositories/buyers/order.repository';
+import { findBuyerShippingProfileLean } from '@/repositories/buyers/buyer.repository';
+import { clearNonEmptyCartInSession } from '@/repositories/buyers/cart.repository';
+import {
+  createOrderInSession,
+  findBuyerOrder,
+  findOrderByIdLean,
+  findSellerOrderForUpdate,
+  findSellerOrderLean,
+  listBuyerOrdersLean,
+  listSellerOrdersLean,
+  saveOrderDocument,
+} from '@/repositories/buyers/order.repository';
+import { failPendingPaymentsByOrderId } from '@/repositories/buyers/payment.repository';
+import { findActiveCatalogProductLean } from '@/repositories/catalog/product.repository';
 
 type OrderItemRecord = {
   productId: string;
@@ -61,7 +74,7 @@ const toOrderResponse = (order: OrderRecord) => ({
 });
 
 const buildShippingAddress = async (buyerId: string): Promise<ShippingAddressRecord> => {
-  const buyer = await Buyer.findById(buyerId).lean();
+  const buyer = await findBuyerShippingProfileLean(buyerId);
 
   if (
     !buyer?.firstName ||
@@ -86,30 +99,13 @@ const buildShippingAddress = async (buyerId: string): Promise<ShippingAddressRec
 
 export const getBuyerOrder = findBuyerOrder;
 
-const getSellerOrder = async (sellerId: string, orderId: string) => {
-  const order = await Order.findOne({
-    _id: orderId,
-    'items.sellerId': sellerId,
-  }).lean();
-
-  if (!order) {
-    throw new CommerceError(404, 'Sipariş bulunamadı');
-  }
-
-  return order;
-};
-
 const buildOrderItemsFromCart = async (
   cartItems: Array<{ productId: string; quantity: number; priceSnapshot?: number | null }>
 ) => {
   const orderItems: OrderItemRecord[] = [];
 
   for (const item of cartItems) {
-    const product = await Product.findOne({
-      _id: item.productId,
-      isActive: true,
-      categoryId: { $ne: null },
-    }).lean();
+    const product = await findActiveCatalogProductLean(item.productId);
 
     if (!product) {
       throw new CommerceError(400, 'Sepette geçersiz ürün var');
@@ -144,11 +140,7 @@ export const createOrderFromCart = async (buyerId: string) => {
     let createdOrder: OrderRecord | null = null;
 
     await session.withTransaction(async () => {
-      const cart = await Cart.findOneAndUpdate(
-        { _id: buyerId, 'items.0': { $exists: true } },
-        { $set: { items: [], updatedAt: new Date() } },
-        { session, returnDocument: 'before' }
-      );
+      const cart = await clearNonEmptyCartInSession(buyerId, session);
 
       if (!cart?.items?.length) {
         throw new CommerceError(400, 'Sepet boş');
@@ -157,19 +149,17 @@ export const createOrderFromCart = async (buyerId: string) => {
       const orderItems = await buildOrderItemsFromCart(cart.items);
       const totalAmount = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
-      const [order] = await Order.create(
-        [
-          {
-            _id: orderId,
-            buyerId,
-            items: orderItems,
-            totalAmount,
-            currency: 'TRY',
-            status: 'pending',
-            shippingAddress,
-          },
-        ],
-        { session }
+      const order = await createOrderInSession(
+        {
+          _id: orderId,
+          buyerId,
+          items: orderItems,
+          totalAmount,
+          currency: 'TRY',
+          status: 'pending',
+          shippingAddress,
+        },
+        session
       );
 
       createdOrder = order.toObject() as OrderRecord;
@@ -186,7 +176,7 @@ export const createOrderFromCart = async (buyerId: string) => {
 };
 
 export const listBuyerOrders = async (buyerId: string) => {
-  const orders = await Order.find({ buyerId }).sort({ createdAt: -1 }).lean();
+  const orders = await listBuyerOrdersLean(buyerId);
 
   return orders.map((order) => toOrderResponse(order as OrderRecord));
 };
@@ -198,9 +188,7 @@ export const getBuyerOrderById = async (buyerId: string, orderId: string) => {
 };
 
 export const listSellerOrders = async (sellerId: string) => {
-  const orders = await Order.find({ 'items.sellerId': sellerId })
-    .sort({ createdAt: -1 })
-    .lean();
+  const orders = await listSellerOrdersLean(sellerId);
 
   return orders.map((order) => {
     const sellerItems = order.items.filter((item) => item.sellerId === sellerId);
@@ -214,7 +202,7 @@ export const listSellerOrders = async (sellerId: string) => {
 };
 
 export const getSellerOrderById = async (sellerId: string, orderId: string) => {
-  const order = await getSellerOrder(sellerId, orderId);
+  const order = await findSellerOrderLean(sellerId, orderId);
   const sellerItems = order.items.filter((item) => item.sellerId === sellerId);
 
   return {
@@ -229,10 +217,7 @@ export const updateOrderStatus = async (
   orderId: string,
   input: UpdateOrderStatusInput
 ) => {
-  const order = await Order.findOne({
-    _id: orderId,
-    'items.sellerId': sellerId,
-  });
+  const order = await findSellerOrderForUpdate(sellerId, orderId);
 
   if (!order) {
     throw new CommerceError(404, 'Sipariş bulunamadı');
@@ -271,18 +256,13 @@ export const updateOrderStatus = async (
   }
 
   order.status = computeAggregateOrderStatus(order.items);
-  order.updatedAt = new Date();
-  await order.save();
+  await saveOrderDocument(order);
 
   return toOrderResponse(order.toObject() as OrderRecord);
 };
 
 export const cancelBuyerPendingOrder = async (buyerId: string, orderId: string) => {
-  const order = await Order.findOne({ _id: orderId, buyerId }).lean();
-
-  if (!order) {
-    throw new CommerceError(404, 'Sipariş bulunamadı');
-  }
+  const order = await findBuyerOrder(buyerId, orderId);
 
   if (order.status !== 'pending') {
     throw new CommerceError(400, 'Yalnızca bekleyen sipariş iptal edilebilir');
@@ -294,13 +274,9 @@ export const cancelBuyerPendingOrder = async (buyerId: string, orderId: string) 
     throw new CommerceError(400, 'Sipariş iptal edilemedi');
   }
 
-  await Payment.updateMany(
-    { orderId, status: 'pending' },
-    { $set: { status: 'failed', updatedAt: new Date() } }
-  );
+  await failPendingPaymentsByOrderId(orderId);
 
-  const updatedOrder = await Order.findById(orderId).lean();
+  const updatedOrder = await findOrderByIdLean(orderId);
 
   return toOrderResponse(updatedOrder as OrderRecord);
 };
-

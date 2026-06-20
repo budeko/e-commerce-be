@@ -1,5 +1,7 @@
 import { vi } from 'vitest';
 
+export const mockCompleteIyzicoCheckout = vi.fn();
+
 vi.mock('@/internal/auth/mail/send-verification', () => ({
   sendUserVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }));
@@ -18,10 +20,14 @@ vi.mock('@/integrations/iyzico/initialize-checkout', () => ({
 }));
 
 vi.mock('@/integrations/iyzico/retrieve-checkout', () => ({
-  completeIyzicoCheckout: vi.fn().mockResolvedValue({
-    status: 'completed',
-    externalId: 'e2e-payment-id',
-    orderId: 'placeholder-order-id',
-    itemTransactions: [{ itemId: 'prod-1', paymentTransactionId: 'txn-1' }],
-  }),
+  completeIyzicoCheckout: (...args: unknown[]) => mockCompleteIyzicoCheckout(...args),
+}));
+
+vi.mock('@/integrations/iyzico/create-submerchant', () => ({
+  createIyzicoSubMerchant: vi.fn().mockResolvedValue('e2e-sub-merchant-key'),
+}));
+
+vi.mock('@/internal/auth/admin/mail/send-seller-notifications', () => ({
+  sendSellerApprovedEmail: vi.fn().mockResolvedValue(undefined),
+  sendSellerRejectedEmail: vi.fn().mockResolvedValue(undefined),
 }));

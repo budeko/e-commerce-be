@@ -1,4 +1,3 @@
-import { Product } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import type { AddToCartInput } from '@/features/buyers/cart/add-to-cart.schema';
 import {
@@ -10,6 +9,10 @@ import {
   ensureCartDocument,
   saveCartDocumentItems,
 } from '@/repositories/buyers/cart.repository';
+import {
+  findActiveCatalogProductLean,
+  findProductSummariesByIdsLean,
+} from '@/repositories/catalog/product.repository';
 
 type CartItemRecord = {
   productId: string;
@@ -63,11 +66,7 @@ const toCartResponse = (
 });
 
 const getActiveProduct = async (productId: string) => {
-  const product = await Product.findOne({
-    _id: productId,
-    isActive: true,
-    categoryId: { $ne: null },
-  }).lean();
+  const product = await findActiveCatalogProductLean(productId);
 
   if (!product) {
     throw new CommerceError(404, 'Ürün bulunamadı');
@@ -87,9 +86,7 @@ const loadProductsForItems = async (items: CartItemRecord[]) => {
     return new Map<string, ProductSummary>();
   }
 
-  const products = await Product.find({ _id: { $in: productIds } })
-    .select('name price stock minOrderQuantity isActive images')
-    .lean();
+  const products = await findProductSummariesByIdsLean(productIds);
 
   return new Map(products.map((product) => [String(product._id), product as ProductSummary]));
 };

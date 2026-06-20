@@ -1,3 +1,4 @@
+import type { ClientSession } from 'mongoose';
 import { Cart } from '@/integrations/mongo';
 
 export const findCartByBuyerId = async (buyerId: string) => Cart.findById(buyerId);
@@ -26,3 +27,10 @@ export const clearBuyerCartItems = async (buyerId: string) => {
   await saveCartDocumentItems(cart, []);
   return cart;
 };
+
+export const clearNonEmptyCartInSession = async (buyerId: string, session: ClientSession) =>
+  Cart.findOneAndUpdate(
+    { _id: buyerId, 'items.0': { $exists: true } },
+    { $set: { items: [], updatedAt: new Date() } },
+    { session, returnDocument: 'before' }
+  );

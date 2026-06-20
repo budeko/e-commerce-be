@@ -36,10 +36,12 @@ tests/e2e/
 ├── helpers/
 │   ├── env.ts       # E2E env + mongo URI
 │   ├── setup.ts     # connect DB, buildApp, drop DB
+│   ├── fixtures.ts  # register/verify/seed helpers
 │   └── mocks.ts     # Resend + Iyzico mock (hoisted)
 └── flows/
-    ├── buyer-register.e2e.test.ts   # örnek (mevcut)
-    ├── buyer-checkout.e2e.test.ts   # planlanan
+    ├── buyer-register.e2e.test.ts
+    ├── buyer-auth.e2e.test.ts
+    ├── buyer-checkout.e2e.test.ts
     └── seller-onboarding.e2e.test.ts
 ```
 

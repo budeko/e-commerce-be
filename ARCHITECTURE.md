@@ -26,6 +26,8 @@ src/
   middleware/       # guards and validation preHandlers
   plugins/          # Fastify plugin registration
   repositories/     # data-access queries (Mongoose), shared across services
+    buyers/           # cart, order, payment, buyer profile reads
+    catalog/          # product reads for cart/order/payment flows
   internal/         # shared domain logic
     common/         # cross-cutting helpers (no domain coupling)
     auth/           # auth, tokens, permissions, profile helpers
@@ -155,6 +157,11 @@ Public catalog reads use **in-process memory cache** (`internal/common/cache`). 
 - `CATALOG_CACHE_ENABLED` — `true` (default) / `false`
 - `CATALOG_CATEGORIES_CACHE_TTL_MS`, `CATALOG_PRODUCTS_LIST_CACHE_TTL_MS`, `CATALOG_PRODUCT_DETAIL_CACHE_TTL_MS`, `CATALOG_VISIBLE_CATEGORIES_CACHE_TTL_MS`
 
+## Observability
+
+- **Logging:** Pino (`internal/common/logging`) — primary log sink.
+- **Sentry (optional):** `integrations/sentry/` — enabled via `SENTRY_ENABLED` + `SENTRY_DSN` (auto-on in production). Captures 5xx from `handleRouteError`, global error handler, and unhandled process errors. Disabled in `NODE_ENV=test`.
+
 ## Testing
 
 - Unit tests mirror `src/` under `tests/unit/`.
@@ -167,4 +174,4 @@ Public catalog reads use **in-process memory cache** (`internal/common/cache`). 
 2. Implement logic in `*.service.ts` (or extend an existing service).
 3. Add a thin handler in `*.routes.ts` with the right middleware preset.
 4. Put reusable non-HTTP logic in `internal/` (domain) or `internal/common/` (generic).
-5. Access MongoDB only via `@/integrations/mongo`.
+5. Access MongoDB via `repositories/` when queries are shared across services; otherwise keep one-off reads in the service until a second consumer appears.

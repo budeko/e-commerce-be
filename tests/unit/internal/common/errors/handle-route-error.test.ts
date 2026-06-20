@@ -1,8 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyReply } from 'fastify';
 import { AuthError } from '@/internal/auth/errors';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
+
+vi.mock('@/internal/common/logging', () => ({
+  logger: { error: vi.fn() },
+}));
+
+vi.mock('@/integrations/sentry/capture', () => ({
+  captureException: vi.fn(),
+}));
+
 import { handleRouteError } from '@/internal/common/errors/handle-route-error';
+import { captureException } from '@/integrations/sentry/capture';
+import { logger } from '@/internal/common/logging';
 
 const createReply = () => {
   const reply = {
@@ -22,6 +33,10 @@ const createReply = () => {
 };
 
 describe('handleRouteError', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('HttpError için status ve mesaj döner', () => {
     const reply = createReply();
 
@@ -58,5 +73,7 @@ describe('handleRouteError', () => {
 
     expect(reply.statusCode).toBe(500);
     expect(reply.body).toEqual({ message: 'İşlem sırasında bir hata oluştu' });
+    expect(logger.error).toHaveBeenCalled();
+    expect(captureException).toHaveBeenCalled();
   });
 });
