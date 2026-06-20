@@ -1,20 +1,20 @@
-import { Order, Payment } from '@/integrations/mongo';
 import { refundIyzicoPayment } from '@/integrations/iyzico/refund-payment';
 import { createLogger } from '@/internal/common/logging';
+import { findOrderByIdLean } from '@/repositories/buyers/order.repository';
+import {
+  listCompletedIyzicoPaymentsLean,
+  updatePaymentById,
+} from '@/repositories/buyers/payment.repository';
 
 const log = createLogger({ module: 'payment-reconcile' });
 
 export const reconcilePaymentOrderMismatches = async (): Promise<number> => {
-  const mismatches = await Payment.find({
-    status: 'completed',
-    provider: 'iyzico',
-    externalId: { $ne: null },
-  }).lean();
+  const mismatches = await listCompletedIyzicoPaymentsLean();
 
   let handled = 0;
 
   for (const payment of mismatches) {
-    const order = await Order.findById(payment.orderId).lean();
+    const order = await findOrderByIdLean(payment.orderId);
 
     if (!order || order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered') {
       continue;
@@ -34,11 +34,9 @@ export const reconcilePaymentOrderMismatches = async (): Promise<number> => {
       ? await refundIyzicoPayment(String(payment.externalId), payment.amount, payment.orderId)
       : false;
 
-    await Payment.findByIdAndUpdate(payment._id, {
-      $set: {
-        status: refunded ? 'refunded' : 'completed',
-        updatedAt: new Date(),
-      },
+    await updatePaymentById(String(payment._id), {
+      status: refunded ? 'refunded' : 'completed',
+      updatedAt: new Date(),
     });
 
     if (!refunded) {

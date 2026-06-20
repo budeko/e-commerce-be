@@ -7,12 +7,7 @@ vi.mock('@/internal/common/logging', () => ({
   logger: { error: vi.fn() },
 }));
 
-vi.mock('@/integrations/sentry/capture', () => ({
-  captureException: vi.fn(),
-}));
-
 import { handleRouteError } from '@/internal/common/errors/handle-route-error';
-import { captureException } from '@/integrations/sentry/capture';
 import { logger } from '@/internal/common/logging';
 
 const createReply = () => {
@@ -74,6 +69,5 @@ describe('handleRouteError', () => {
     expect(reply.statusCode).toBe(500);
     expect(reply.body).toEqual({ message: 'İşlem sırasında bir hata oluştu' });
     expect(logger.error).toHaveBeenCalled();
-    expect(captureException).toHaveBeenCalled();
   });
 });

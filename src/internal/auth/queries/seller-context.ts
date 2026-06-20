@@ -1,16 +1,14 @@
-import {
-  Seller,
-  SellerMember,
-  SellerRole,
-  SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/integrations/mongo';
 import type { SellerApprovalStatus } from '@/integrations/mongo';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import type { SellerPermissionKey } from '@/internal/auth/access/seller/permission-keys';
 import {
   ALL_SELLER_PERMISSIONS,
   BIREYSEL_SELLER_PERMISSIONS,
 } from '@/internal/auth/access/seller/permission-keys';
 import { ensureSellerMember } from '@/internal/auth/access/seller/system-roles';
+import { findSellerMemberById } from '@/repositories/sellers/seller-member.repository';
+import { findSellerByIdLean } from '@/repositories/sellers/seller.repository';
+import { findSellerRoleByIdLean } from '@/repositories/sellers/seller-role.repository';
 
 export type SellerAccessContext = {
   userId: string;
@@ -76,8 +74,8 @@ const buildContextFromMember = async (
   }
 ): Promise<SellerAccessContext | null> => {
   const [seller, role] = await Promise.all([
-    Seller.findById(member.sellerId).lean(),
-    SellerRole.findById(member.roleId).lean(),
+    findSellerByIdLean(member.sellerId),
+    findSellerRoleByIdLean(String(member.roleId)),
   ]);
 
   if (!seller || !role) {
@@ -113,13 +111,13 @@ const buildContextFromMember = async (
 };
 
 export const getSellerContext = async (userId: string): Promise<SellerAccessContext | null> => {
-  const member = await SellerMember.findById(userId);
+  const member = await findSellerMemberById(userId);
 
   if (member) {
     return buildContextFromMember(userId, member);
   }
 
-  const seller = await Seller.findById(userId).lean();
+  const seller = await findSellerByIdLean(userId);
 
   if (!seller) {
     return null;

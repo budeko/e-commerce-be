@@ -11,6 +11,11 @@ export {
 } from '@/integrations/mongo/models/auth/seller-role.model';
 export { Admin } from '@/integrations/mongo/models/auth/admin.model';
 export { AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo/models/auth/admin-role.model';
+export {
+  AdminAuditLog,
+  ADMIN_AUDIT_ACTIONS,
+} from '@/integrations/mongo/models/auth/admin-audit-log.model';
+export type { AdminAuditAction } from '@/integrations/mongo/models/auth/admin-audit-log.model';
 export { RevokedToken } from '@/integrations/mongo/models/auth/revoked-token.model';
 export { AuthOtp, AUTH_OTP_PURPOSES, buildAuthOtpId } from '@/integrations/mongo/models/auth/auth-otp.model';
 export type { AuthOtpPurpose } from '@/integrations/mongo/models/auth/auth-otp.model';
@@ -45,3 +50,19 @@ export {
   PAYMENT_SPLIT_APPROVAL_STATUSES,
 } from '@/integrations/mongo/models/ecommerce/payment-split.model';
 export type { PaymentSplitApprovalStatus } from '@/integrations/mongo/models/ecommerce/payment-split.model';
+export {
+  SellerWallet,
+  SELLER_WALLET_CURRENCIES,
+} from '@/integrations/mongo/models/ecommerce/seller-wallet.model';
+export type { SellerWalletCurrency } from '@/integrations/mongo/models/ecommerce/seller-wallet.model';
+export {
+  SellerWalletLedger,
+  SELLER_WALLET_LEDGER_ENTRY_TYPES,
+} from '@/integrations/mongo/models/ecommerce/seller-wallet-ledger.model';
+export type { SellerWalletLedgerEntryType } from '@/integrations/mongo/models/ecommerce/seller-wallet-ledger.model';
+
+export {
+  OutboxEvent,
+  OUTBOX_EVENT_STATUSES,
+} from '@/integrations/mongo/models/common/outbox-event.model';
+export type { OutboxEventStatus } from '@/integrations/mongo/models/common/outbox-event.model';

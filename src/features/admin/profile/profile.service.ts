@@ -7,6 +7,7 @@ import {
 } from '@/repositories/auth/admin.repository';
 import { findUserById } from '@/repositories/auth/user.repository';
 import { AuthError } from '@/internal/auth/errors';
+import { recordAdminAction } from '@/internal/auth/admin/admin-audit';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import type { AdminProfileUpdateInput } from '@/features/admin/profile/profile.schema';
 
@@ -66,6 +67,14 @@ export const updateAdminProfile = async (
   if (!updatedAdmin) {
     throw new AuthError(404, 'Admin bulunamadı');
   }
+
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'admin.profile_updated',
+    resourceType: 'admin',
+    resourceId: targetUserId,
+    metadata: data,
+  });
 
   const user = await findUserById(targetUserId);
 

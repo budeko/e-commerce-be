@@ -1,15 +1,31 @@
 import type { ClientSession } from 'mongoose';
+import type { OrderCurrency, OrderStatus } from '@/integrations/mongo';
 import { Order } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 
 type CreateOrderData = {
+  items: Array<{
+    productId: string;
+    sellerId: string;
+    name: string;
+    price: number;
+    quantity: number;
+    subtotal: number;
+    fulfillmentStatus?: 'pending' | 'shipped' | 'delivered';
+  }>;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    country: string;
+    city: string;
+    address: string;
+  };
   _id: string;
   buyerId: string;
-  items: unknown[];
   totalAmount: number;
-  currency: string;
-  status: string;
-  shippingAddress: unknown;
+  currency: OrderCurrency;
+  status: OrderStatus;
 };
 
 export const findBuyerOrder = async (buyerId: string, orderId: string) => {
@@ -56,8 +72,26 @@ export const createOrderInSession = async (data: CreateOrderData, session: Clien
 
 export const saveOrderDocument = async (order: {
   updatedAt?: Date;
-  save: () => Promise<unknown>;
+  save: (options?: { session?: ClientSession }) => Promise<unknown>;
 }) => {
   order.updatedAt = new Date();
   await order.save();
 };
+
+export const findPendingOrderByIdWithSession = async (orderId: string, session: ClientSession) =>
+  Order.findOne({ _id: orderId, status: 'pending' }).session(session);
+
+export const findOrderByIdWithSession = async (orderId: string, session: ClientSession) =>
+  Order.findById(orderId).session(session);
+
+export const findExpiringPendingOrdersLean = async (
+  cutoff: Date,
+  excludeOrderIds: string[]
+) =>
+  Order.find({
+    status: 'pending',
+    createdAt: { $lt: cutoff },
+    _id: { $nin: excludeOrderIds },
+  })
+    .select('_id')
+    .lean();

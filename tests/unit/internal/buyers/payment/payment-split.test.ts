@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockSellerFind = vi.fn();
-const mockPaymentSplitFindOneAndUpdate = vi.fn();
-const mockPaymentSplitFind = vi.fn();
+const mockFindSellersByIdsLean = vi.fn();
+const mockUpsertPaymentSplit = vi.fn();
+const mockFindPendingPaymentSplitsForOrder = vi.fn();
 const mockApproveIyzicoPaymentItem = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Seller: {
-    find: (...args: unknown[]) => mockSellerFind(...args),
-  },
-  PaymentSplit: {
-    findOneAndUpdate: (...args: unknown[]) => mockPaymentSplitFindOneAndUpdate(...args),
-    find: (...args: unknown[]) => mockPaymentSplitFind(...args),
-  },
+vi.mock('@/repositories/sellers/seller.repository', () => ({
+  findSellersByIdsLean: (...args: unknown[]) => mockFindSellersByIdsLean(...args),
+}));
+
+vi.mock('@/repositories/buyers/payment-split.repository', () => ({
+  upsertPaymentSplit: (...args: unknown[]) => mockUpsertPaymentSplit(...args),
+  findPendingPaymentSplitsForOrder: (...args: unknown[]) => mockFindPendingPaymentSplitsForOrder(...args),
+  savePaymentSplitDocument: (split: { save: () => Promise<unknown> }) => split.save(),
 }));
 
 vi.mock('@/internal/common/ids', () => ({
@@ -21,6 +21,10 @@ vi.mock('@/internal/common/ids', () => ({
 
 vi.mock('@/integrations/iyzico/approve-payment-item', () => ({
   approveIyzicoPaymentItem: (...args: unknown[]) => mockApproveIyzicoPaymentItem(...args),
+}));
+
+vi.mock('@/internal/sellers/wallet/release-available-from-split', () => ({
+  releaseSellerAvailableFromSplit: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.stubEnv('PLATFORM_COMMISSION_RATE', '0.10');
@@ -43,21 +47,17 @@ const orderItem = {
 describe('buildPaymentSplitsForOrder', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPaymentSplitFindOneAndUpdate.mockResolvedValue({});
+    mockUpsertPaymentSplit.mockResolvedValue({});
   });
 
   it('onaylı ve iyzico key’li satıcı için split üretir', async () => {
-    mockSellerFind.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          {
-            _id: sellerId,
-            approvalStatus: 'approved',
-            iyzicoSubMerchantKey: 'sub-merchant-key',
-          },
-        ]),
-      }),
-    });
+    mockFindSellersByIdsLean.mockResolvedValue([
+      {
+        _id: sellerId,
+        approvalStatus: 'approved',
+        iyzicoSubMerchantKey: 'sub-merchant-key',
+      },
+    ]);
 
     const result = await buildPaymentSplitsForOrder(orderId, [orderItem]);
 
@@ -74,21 +74,17 @@ describe('buildPaymentSplitsForOrder', () => {
         subMerchantPrice: 180,
       },
     });
-    expect(mockPaymentSplitFindOneAndUpdate).toHaveBeenCalledOnce();
+    expect(mockUpsertPaymentSplit).toHaveBeenCalledOnce();
   });
 
   it('onaylı olmayan satıcı için CommerceError fırlatır', async () => {
-    mockSellerFind.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          {
-            _id: sellerId,
-            approvalStatus: 'pending',
-            iyzicoSubMerchantKey: 'sub-merchant-key',
-          },
-        ]),
-      }),
-    });
+    mockFindSellersByIdsLean.mockResolvedValue([
+      {
+        _id: sellerId,
+        approvalStatus: 'pending',
+        iyzicoSubMerchantKey: 'sub-merchant-key',
+      },
+    ]);
 
     await expect(buildPaymentSplitsForOrder(orderId, [orderItem])).rejects.toThrow(CommerceError);
     await expect(buildPaymentSplitsForOrder(orderId, [orderItem])).rejects.toThrow(
@@ -97,17 +93,13 @@ describe('buildPaymentSplitsForOrder', () => {
   });
 
   it('iyzico sub-merchant key yoksa CommerceError fırlatır', async () => {
-    mockSellerFind.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          {
-            _id: sellerId,
-            approvalStatus: 'approved',
-            iyzicoSubMerchantKey: null,
-          },
-        ]),
-      }),
-    });
+    mockFindSellersByIdsLean.mockResolvedValue([
+      {
+        _id: sellerId,
+        approvalStatus: 'approved',
+        iyzicoSubMerchantKey: null,
+      },
+    ]);
 
     await expect(buildPaymentSplitsForOrder(orderId, [orderItem])).rejects.toThrow(
       /alt üye kaydı/
@@ -127,7 +119,7 @@ describe('approvePaymentSplitsForOrder', () => {
       save: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockPaymentSplitFind.mockResolvedValue([split]);
+    mockFindPendingPaymentSplitsForOrder.mockResolvedValue([split]);
     mockApproveIyzicoPaymentItem.mockResolvedValue(undefined);
 
     await approvePaymentSplitsForOrder(orderId);
@@ -144,7 +136,7 @@ describe('approvePaymentSplitsForOrder', () => {
       save: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockPaymentSplitFind.mockResolvedValue([split]);
+    mockFindPendingPaymentSplitsForOrder.mockResolvedValue([split]);
     mockApproveIyzicoPaymentItem.mockRejectedValue(new Error('iyzico down'));
 
     await expect(approvePaymentSplitsForOrder(orderId)).rejects.toThrow('iyzico down');

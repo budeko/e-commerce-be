@@ -1,10 +1,40 @@
-import { Order } from '@/integrations/mongo';
+import mongoose from 'mongoose';
+import { incrementStockForOrderItems } from '@/internal/buyers/orders/order-stock';
+import { findPendingOrderByIdWithSession } from '@/repositories/buyers/order.repository';
 
 export const cancelPendingOrder = async (orderId: string): Promise<boolean> => {
-  const result = await Order.updateOne(
-    { _id: orderId, status: 'pending' },
-    { $set: { status: 'cancelled', updatedAt: new Date() } }
-  );
+  const session = await mongoose.startSession();
 
-  return (result.modifiedCount ?? 0) > 0;
+  try {
+    let cancelled = false;
+
+    await session.withTransaction(async () => {
+      const order = await findPendingOrderByIdWithSession(orderId, session);
+
+      if (!order) {
+        return;
+      }
+
+      if (order.stockReserved) {
+        await incrementStockForOrderItems(
+          order.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+          session
+        );
+      }
+
+      order.status = 'cancelled';
+      order.stockReserved = false;
+      order.stockReservedAt = null;
+      order.updatedAt = new Date();
+      await order.save({ session });
+      cancelled = true;
+    });
+
+    return cancelled;
+  } finally {
+    await session.endSession();
+  }
 };

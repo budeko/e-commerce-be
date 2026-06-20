@@ -1,30 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockUserFindById = vi.fn();
-const mockUserFindByIdAndDelete = vi.fn();
+const mockFindUserById = vi.fn();
+const mockDeleteUserById = vi.fn();
 const mockDeleteAuthOtpsForUser = vi.fn();
-const mockBuyerFindByIdAndDelete = vi.fn();
-const mockSellerFindByIdAndDelete = vi.fn();
-const mockSellerMemberFindByIdAndDelete = vi.fn();
-const mockSellerRoleDeleteMany = vi.fn();
+const mockDeleteBuyerById = vi.fn();
+const mockDeleteSellerById = vi.fn();
+const mockDeleteSellerMemberById = vi.fn();
+const mockDeleteSellerRolesBySellerId = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  User: {
-    findById: (...args: unknown[]) => mockUserFindById(...args),
-    findByIdAndDelete: (...args: unknown[]) => mockUserFindByIdAndDelete(...args),
-  },
-  Buyer: {
-    findByIdAndDelete: (...args: unknown[]) => mockBuyerFindByIdAndDelete(...args),
-  },
-  SellerMember: {
-    findByIdAndDelete: (...args: unknown[]) => mockSellerMemberFindByIdAndDelete(...args),
-  },
-  SellerRole: {
-    deleteMany: (...args: unknown[]) => mockSellerRoleDeleteMany(...args),
-  },
-  Seller: {
-    findByIdAndDelete: (...args: unknown[]) => mockSellerFindByIdAndDelete(...args),
-  },
+vi.mock('@/repositories/auth/user.repository', () => ({
+  findUserById: (...args: unknown[]) => mockFindUserById(...args),
+  deleteUserById: (...args: unknown[]) => mockDeleteUserById(...args),
+}));
+
+vi.mock('@/repositories/buyers/buyer.repository', () => ({
+  deleteBuyerById: (...args: unknown[]) => mockDeleteBuyerById(...args),
+}));
+
+vi.mock('@/repositories/sellers/seller-member.repository', () => ({
+  deleteSellerMemberById: (...args: unknown[]) => mockDeleteSellerMemberById(...args),
+}));
+
+vi.mock('@/repositories/sellers/seller-role.repository', () => ({
+  deleteSellerRolesBySellerId: (...args: unknown[]) => mockDeleteSellerRolesBySellerId(...args),
+}));
+
+vi.mock('@/repositories/sellers/seller.repository', () => ({
+  deleteSellerById: (...args: unknown[]) => mockDeleteSellerById(...args),
 }));
 
 vi.mock('@/internal/auth/otp/otp', async () => {
@@ -45,11 +47,11 @@ describe('unverified-user helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDeleteAuthOtpsForUser.mockResolvedValue(undefined);
-    mockBuyerFindByIdAndDelete.mockResolvedValue(undefined);
-    mockSellerFindByIdAndDelete.mockResolvedValue(undefined);
-    mockSellerMemberFindByIdAndDelete.mockResolvedValue(undefined);
-    mockSellerRoleDeleteMany.mockResolvedValue(undefined);
-    mockUserFindByIdAndDelete.mockResolvedValue(undefined);
+    mockDeleteBuyerById.mockResolvedValue(undefined);
+    mockDeleteSellerById.mockResolvedValue(undefined);
+    mockDeleteSellerMemberById.mockResolvedValue(undefined);
+    mockDeleteSellerRolesBySellerId.mockResolvedValue(undefined);
+    mockDeleteUserById.mockResolvedValue(undefined);
   });
 
   it('getVerificationExpiresAt gelecekte bir tarih döner', () => {
@@ -58,31 +60,31 @@ describe('unverified-user helpers', () => {
   });
 
   it('doğrulanmış kullanıcıyı silmez', async () => {
-    mockUserFindById.mockResolvedValue({ isEmailVerified: true });
+    mockFindUserById.mockResolvedValue({ isEmailVerified: true });
 
     await deleteUnverifiedUser(userId);
 
-    expect(mockUserFindByIdAndDelete).not.toHaveBeenCalled();
+    expect(mockDeleteUserById).not.toHaveBeenCalled();
   });
 
   it('doğrulanmamış kullanıcıyı ve ilişkili kayıtları siler', async () => {
-    mockUserFindById.mockResolvedValue({ isEmailVerified: false });
+    mockFindUserById.mockResolvedValue({ isEmailVerified: false });
 
     await deleteUnverifiedUser(userId);
 
     expect(mockDeleteAuthOtpsForUser).toHaveBeenCalledWith(userId);
-    expect(mockBuyerFindByIdAndDelete).toHaveBeenCalledWith(userId);
-    expect(mockSellerMemberFindByIdAndDelete).toHaveBeenCalledWith(userId);
-    expect(mockSellerRoleDeleteMany).toHaveBeenCalledWith({ sellerId: userId });
-    expect(mockSellerFindByIdAndDelete).toHaveBeenCalledWith(userId);
-    expect(mockUserFindByIdAndDelete).toHaveBeenCalledWith(userId);
+    expect(mockDeleteBuyerById).toHaveBeenCalledWith(userId);
+    expect(mockDeleteSellerMemberById).toHaveBeenCalledWith(userId);
+    expect(mockDeleteSellerRolesBySellerId).toHaveBeenCalledWith(userId);
+    expect(mockDeleteSellerById).toHaveBeenCalledWith(userId);
+    expect(mockDeleteUserById).toHaveBeenCalledWith(userId);
   });
 
   it('kullanıcı yoksa işlem yapmaz', async () => {
-    mockUserFindById.mockResolvedValue(null);
+    mockFindUserById.mockResolvedValue(null);
 
     await deleteUnverifiedUser(userId);
 
-    expect(mockUserFindByIdAndDelete).not.toHaveBeenCalled();
+    expect(mockDeleteUserById).not.toHaveBeenCalled();
   });
 });

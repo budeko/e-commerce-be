@@ -1,20 +1,24 @@
-import {
-  Seller,
-  SellerMember,
-  SellerRole,
-  SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/integrations/mongo';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { ALL_SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 import { createUserId } from '@/internal/common/ids';
+import {
+  createSellerMember,
+  deleteSellerMembersBySellerId,
+  findSellerMemberById,
+} from '@/repositories/sellers/seller-member.repository';
+import {
+  createSellerRole,
+  deleteSellerRolesBySellerId,
+  findSellerRoleBySlugAndCompanyId,
+  saveSellerRoleDocument,
+} from '@/repositories/sellers/seller-role.repository';
+import { findSellerById } from '@/repositories/sellers/seller.repository';
 
 export const ensureSystemOwnerSellerRole = async (sellerId: string) => {
-  let role = await SellerRole.findOne({
-    sellerId,
-    slug: SELLER_SYSTEM_OWNER_ROLE_SLUG,
-  });
+  let role = await findSellerRoleBySlugAndCompanyId(sellerId, SELLER_SYSTEM_OWNER_ROLE_SLUG);
 
   if (!role) {
-    role = await SellerRole.create({
+    role = await createSellerRole({
       _id: createUserId(),
       sellerId,
       name: 'Owner',
@@ -34,20 +38,20 @@ export const ensureSystemOwnerSellerRole = async (sellerId: string) => {
 
   if (missingPermissions.length > 0) {
     role.permissions = ALL_SELLER_PERMISSIONS;
-    await role.save();
+    await saveSellerRoleDocument(role);
   }
 
   return role;
 };
 
 export const ensureSellerMember = async (userId: string) => {
-  const existing = await SellerMember.findById(userId);
+  const existing = await findSellerMemberById(userId);
 
   if (existing) {
     return existing;
   }
 
-  const seller = await Seller.findById(userId);
+  const seller = await findSellerById(userId);
 
   if (!seller || seller.sellerType !== 'kurumsal') {
     return null;
@@ -55,7 +59,7 @@ export const ensureSellerMember = async (userId: string) => {
 
   const ownerRole = await ensureSystemOwnerSellerRole(String(seller._id));
 
-  return SellerMember.create({
+  return createSellerMember({
     _id: userId,
     sellerId: String(seller._id),
     roleId: String(ownerRole._id),
@@ -65,21 +69,21 @@ export const ensureSellerMember = async (userId: string) => {
 
 export const cleanupSellerTeam = async (sellerId: string) => {
   await Promise.all([
-    SellerMember.deleteMany({ sellerId }),
-    SellerRole.deleteMany({ sellerId }),
+    deleteSellerMembersBySellerId(sellerId),
+    deleteSellerRolesBySellerId(sellerId),
   ]);
 };
 
 export const bootstrapSellerTeam = async (sellerId: string, ownerUserId: string) => {
   const ownerRole = await ensureSystemOwnerSellerRole(sellerId);
 
-  const existingMember = await SellerMember.findById(ownerUserId);
+  const existingMember = await findSellerMemberById(ownerUserId);
 
   if (existingMember) {
     return { ownerRole, member: existingMember };
   }
 
-  const member = await SellerMember.create({
+  const member = await createSellerMember({
     _id: ownerUserId,
     sellerId,
     roleId: String(ownerRole._id),

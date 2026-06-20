@@ -30,6 +30,7 @@ import {
   findUsersByIdsLean,
 } from '@/repositories/auth/user.repository';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
+import { recordAdminAction } from '@/internal/auth/admin/admin-audit';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 import type { CreateAdminInput } from '@/features/admin/admins/create-admin.schema';
 import type { UpdateAdminInput } from '@/features/admin/admins/update-admin.schema';
@@ -94,8 +95,20 @@ export const updateAdmin = async (
     }
   }
 
+  const previousRoleId = String(targetAdmin.roleId);
   targetAdmin.roleId = data.roleId;
   await saveAdminDocument(targetAdmin);
+
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'admin.role_updated',
+    resourceType: 'admin',
+    resourceId: targetUserId,
+    metadata: {
+      previousRoleId,
+      roleId: data.roleId,
+    },
+  });
 
   const rolesById = await getRoleSummariesByIds([data.roleId]);
 
@@ -159,6 +172,14 @@ export const createAdmin = async (ctx: AdminAccessContext, data: CreateAdminInpu
 
     const rolesById = await getRoleSummariesByIds([data.roleId]);
 
+    await recordAdminAction({
+      actorUserId: ctx.userId,
+      action: 'admin.created',
+      resourceType: 'admin',
+      resourceId: String(userId),
+      metadata: { roleId: data.roleId, email: data.email },
+    });
+
     return formatAdminResponse(admin, user, rolesById.get(data.roleId));
   } catch (error) {
     if (isDuplicateKeyError(error)) {
@@ -196,6 +217,14 @@ export const deleteAdmin = async (ctx: AdminAccessContext, targetUserId: string)
 
   await deleteAdminById(targetUserId);
   await deleteUserById(targetUserId);
+
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'admin.deleted',
+    resourceType: 'admin',
+    resourceId: targetUserId,
+    metadata: { roleId: String(targetAdmin.roleId) },
+  });
 
   return { userId: targetUserId };
 };

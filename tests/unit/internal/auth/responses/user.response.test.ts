@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 
-const mockSellerFindById = vi.fn();
+const mockFindSellerApprovalStatusLean = vi.fn();
 const mockGetAdminContext = vi.fn();
 const mockGetSellerContext = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Seller: {
-    findById: (...args: unknown[]) => mockSellerFindById(...args),
-  },
+vi.mock('@/repositories/sellers/seller.repository', () => ({
+  findSellerApprovalStatusLean: (...args: unknown[]) => mockFindSellerApprovalStatusLean(...args),
 }));
 
 vi.mock('@/internal/auth/queries/admin-context', () => ({
@@ -88,11 +86,7 @@ describe('buildAuthUserFields', () => {
 
   it('seller member yoksa legacy fallback döner', async () => {
     mockGetSellerContext.mockResolvedValue(null);
-    mockSellerFindById.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue({ approvalStatus: 'draft' }),
-      }),
-    });
+    mockFindSellerApprovalStatusLean.mockResolvedValue({ approvalStatus: 'draft' });
 
     const result = await buildAuthUserFields({
       _id: userId,

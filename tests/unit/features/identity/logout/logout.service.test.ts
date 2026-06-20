@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindByIdAndUpdate = vi.fn();
+const mockUpdateUserById = vi.fn();
 const mockRevokeToken = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  User: {
-    findByIdAndUpdate: (...args: unknown[]) => mockFindByIdAndUpdate(...args),
-  },
+vi.mock('@/repositories/auth/user.repository', () => ({
+  updateUserById: (...args: unknown[]) => mockUpdateUserById(...args),
 }));
 
 vi.mock('@/internal/auth/tokens/revoke-token', () => ({
@@ -19,7 +17,7 @@ describe('logout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRevokeToken.mockResolvedValue(undefined);
-    mockFindByIdAndUpdate.mockResolvedValue({});
+    mockUpdateUserById.mockResolvedValue({});
   });
 
   it('token revoke edilir', async () => {
@@ -32,15 +30,15 @@ describe('logout', () => {
 describe('logoutAllSessions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindByIdAndUpdate.mockResolvedValue({});
+    mockUpdateUserById.mockResolvedValue({});
   });
 
   it('sessionsRevokedAt günceller', async () => {
     await logoutAllSessions('550e8400-e29b-41d4-a716-446655440000');
 
-    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
+    expect(mockUpdateUserById).toHaveBeenCalledWith(
       '550e8400-e29b-41d4-a716-446655440000',
-      { sessionsRevokedAt: expect.any(Date) }
+      { $set: { sessionsRevokedAt: expect.any(Date) } }
     );
   });
 });

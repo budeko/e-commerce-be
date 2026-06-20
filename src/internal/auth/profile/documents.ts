@@ -6,7 +6,6 @@ import {
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
 } from '@/integrations/supabase/supabase';
-import { Seller } from '@/integrations/mongo';
 import { getSellerContext } from '@/internal/auth/queries/seller-context';
 import { AuthError } from '@/internal/auth/errors';
 import {
@@ -20,6 +19,10 @@ import {
 } from '@/internal/auth/profile/seller-document-types';
 import type { SellerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
 import { updateSellerProfile } from '@/internal/auth/profile/seller';
+import {
+  findSellerByIdLean,
+  updateSellerById,
+} from '@/repositories/sellers/seller.repository';
 
 export type UploadSellerDocumentInput = {
   docType: string;
@@ -65,7 +68,7 @@ export const uploadSellerDocument = async (
     throw new AuthError(403, 'Belge yükleme sadece şirket sahibi tarafından yapılabilir');
   }
 
-  const seller = await Seller.findById(ctx.companyId).lean();
+  const seller = await findSellerByIdLean(ctx.companyId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -100,8 +103,8 @@ export const uploadSellerDocument = async (
   const profileUpdate = { [profileField]: url } as SellerProfileUpdate;
 
   if (seller.approvalStatus === 'pending') {
-    await Seller.findByIdAndUpdate(ctx.companyId, { $set: profileUpdate });
-    const refreshed = await Seller.findById(ctx.companyId).lean();
+    await updateSellerById(ctx.companyId, { $set: profileUpdate });
+    const refreshed = await findSellerByIdLean(ctx.companyId);
 
     return {
       docType,

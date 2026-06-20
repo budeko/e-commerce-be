@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { User } from '@/integrations/mongo';
+import { findUserByIdLean } from '@/repositories/auth/user.repository';
 
 export const requireActiveBuyer = async (request: FastifyRequest, reply: FastifyReply) => {
   if (!request.auth) {
@@ -10,7 +10,7 @@ export const requireActiveBuyer = async (request: FastifyRequest, reply: Fastify
     return reply.status(403).send({ message: 'Bu işlem için alıcı hesabı gerekli' });
   }
 
-  const user = await User.findById(request.auth.userId).select('isActive role');
+  const user = await findUserByIdLean(request.auth.userId, 'isActive role');
 
   if (!user) {
     return reply.status(401).send({ message: 'Giriş gerekli' });

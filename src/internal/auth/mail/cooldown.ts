@@ -1,4 +1,12 @@
-import { AuthEmailCooldown, User, buildAuthEmailCooldownId } from '@/integrations/mongo';
+import { buildAuthEmailCooldownId } from '@/integrations/mongo';
+import {
+  findAuthEmailCooldownById,
+  upsertAuthEmailCooldownSentAt,
+} from '@/repositories/auth/auth-email-cooldown.repository';
+import {
+  findUserByEmailLean,
+  updateUserById,
+} from '@/repositories/auth/user.repository';
 
 export const EMAIL_COOLDOWN_MS = 60_000;
 
@@ -34,26 +42,24 @@ export const assertEmailCooldown = (lastSentAt: Date | null | undefined) => {
 };
 
 export const markVerificationEmailSent = async (userId: string) => {
-  await User.findByIdAndUpdate(userId, { verificationEmailSentAt: new Date() });
+  await updateUserById(userId, { $set: { verificationEmailSentAt: new Date() } });
 };
 
 export const markPasswordResetEmailSent = async (userId: string) => {
-  await User.findByIdAndUpdate(userId, { passwordResetEmailSentAt: new Date() });
+  await updateUserById(userId, { $set: { passwordResetEmailSentAt: new Date() } });
 };
 
 export const assertRegisterEmailCooldown = async (email: string) => {
   const normalized = email.toLowerCase();
-  const record = await AuthEmailCooldown.findById(
+  const record = await findAuthEmailCooldownById(
     buildAuthEmailCooldownId(normalized, 'register')
   );
   assertEmailCooldown(record?.sentAt);
 
-  const user = await User.findOne({ email: normalized }).select(
-    'isEmailVerified verificationEmailSentAt'
-  );
+  const user = await findUserByEmailLean(normalized, 'isEmailVerified verificationEmailSentAt');
 
   if (user && !user.isEmailVerified) {
-    assertEmailCooldown(user.verificationEmailSentAt);
+    assertEmailCooldown(user.verificationEmailSentAt as Date | null | undefined);
   }
 };
 
@@ -61,12 +67,5 @@ export const markRegisterEmailCooldown = async (email: string) => {
   const normalized = email.toLowerCase();
   const id = buildAuthEmailCooldownId(normalized, 'register');
 
-  await AuthEmailCooldown.findOneAndUpdate(
-    { _id: id },
-    {
-      $set: { sentAt: new Date() },
-      $setOnInsert: { _id: id },
-    },
-    { upsert: true }
-  );
+  await upsertAuthEmailCooldownSentAt(id, new Date());
 };

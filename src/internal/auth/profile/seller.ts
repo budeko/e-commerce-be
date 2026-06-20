@@ -1,4 +1,3 @@
-import { Seller } from '@/integrations/mongo';
 import { canReadCompanyProfile, canWriteCompanyProfile } from '@/internal/auth/access/seller/permissions';
 import { getSellerContext, type SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import {
@@ -13,6 +12,12 @@ import {
   omitUnchangedLockedIban,
 } from '@/internal/auth/profile/seller-iban-lock';
 import type { SellerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
+import {
+  findSellerById,
+  findSellerByIdLean,
+  saveSellerDocument,
+  updateSellerById,
+} from '@/repositories/sellers/seller.repository';
 
 const assertCanReadCompany = (ctx: SellerAccessContext) => {
   if (!canReadCompanyProfile(ctx)) {
@@ -35,7 +40,7 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
 
   assertCanWriteCompany(ctx);
 
-  const seller = await Seller.findById(ctx.companyId);
+  const seller = await findSellerById(ctx.companyId);
 
   if (!seller) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');
@@ -69,7 +74,7 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
 
   const previousSellerType = seller.sellerType;
 
-  const updatedSeller = await Seller.findByIdAndUpdate(
+  const updatedSeller = await updateSellerById(
     ctx.companyId,
     {
       $set: {
@@ -98,7 +103,7 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
   ) {
     updatedSeller.approvalStatus = 'pending';
     updatedSeller.rejectionReason = null;
-    await updatedSeller.save();
+    await saveSellerDocument(updatedSeller);
   }
 
   if (
@@ -107,7 +112,7 @@ export const updateSellerProfile = async (userId: string, data: SellerProfileUpd
   ) {
     updatedSeller.approvalStatus = 'pending';
     updatedSeller.rejectionReason = null;
-    await updatedSeller.save();
+    await saveSellerDocument(updatedSeller);
   }
 
   return {
@@ -125,7 +130,7 @@ export const getSellerCompanyProfile = async (userId: string) => {
 
   assertCanReadCompany(ctx);
 
-  const profile = await Seller.findById(ctx.companyId).lean();
+  const profile = await findSellerByIdLean(ctx.companyId);
 
   if (!profile) {
     throw new AuthError(404, 'Satıcı profili bulunamadı');

@@ -4,6 +4,9 @@ export const findAdminById = async (adminId: string) => Admin.findById(adminId);
 
 export const findAdminByIdLean = async (adminId: string) => Admin.findById(adminId).lean();
 
+export const findAdminRoleIdByUserIdLean = async (adminId: string) =>
+  Admin.findById(adminId).select('roleId').lean();
+
 export const listAdminsLean = async () => Admin.find().sort({ createdAt: -1 }).lean();
 
 export const createAdmin = async (data: Record<string, unknown>) => Admin.create(data);

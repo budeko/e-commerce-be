@@ -1,4 +1,3 @@
-import { Product } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import {
   buildProductImageObjectPath,
@@ -16,11 +15,15 @@ import {
   parseStorageObjectPathFromPublicUrl,
   uploadToSellerStorage,
 } from '@/integrations/supabase/supabase';
+import {
+  findOwnedProductById,
+  saveProductDocument,
+} from '@/repositories/catalog/product.repository';
 
 const getOwnedProduct = async (sellerId: string, productId: string) => {
-  const product = await Product.findById(productId);
+  const product = await findOwnedProductById(sellerId, productId);
 
-  if (!product || product.sellerId !== sellerId) {
+  if (!product) {
     throw new CommerceError(404, 'Ürün bulunamadı');
   }
 
@@ -73,7 +76,7 @@ export const uploadProductImage = async (
 
   product.images = [...product.images, url];
   product.updatedAt = new Date();
-  await product.save();
+  await saveProductDocument(product);
 
   invalidateCatalogProductCache();
 
@@ -98,7 +101,7 @@ export const deleteProductImage = async (
 
   product.images = product.images.filter((url) => url !== imageUrl);
   product.updatedAt = new Date();
-  await product.save();
+  await saveProductDocument(product);
 
   invalidateCatalogProductCache();
 

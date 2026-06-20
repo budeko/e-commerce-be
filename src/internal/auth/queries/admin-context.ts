@@ -1,5 +1,7 @@
-import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import type { PermissionKey } from '@/internal/auth/access/admin/permission-keys';
+import { SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
+import { findAdminRoleIdByUserIdLean } from '@/repositories/auth/admin.repository';
+import { findAdminRoleByIdLean } from '@/repositories/auth/admin-role.repository';
 
 export type AdminAccessContext = {
   userId: string;
@@ -11,13 +13,13 @@ export type AdminAccessContext = {
 };
 
 export const getAdminContext = async (userId: string): Promise<AdminAccessContext | null> => {
-  const admin = await Admin.findById(userId).select('roleId').lean();
+  const admin = await findAdminRoleIdByUserIdLean(userId);
 
   if (!admin?.roleId) {
     return null;
   }
 
-  const role = await AdminRole.findById(admin.roleId).lean();
+  const role = await findAdminRoleByIdLean(String(admin.roleId));
 
   if (!role) {
     return null;

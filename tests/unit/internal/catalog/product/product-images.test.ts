@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockProductFindById = vi.fn();
+const mockFindOwnedProductById = vi.fn();
 const mockUpload = vi.fn();
 const mockDelete = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Product: {
-    findById: (...args: unknown[]) => mockProductFindById(...args),
-  },
+vi.mock('@/repositories/catalog/product.repository', () => ({
+  findOwnedProductById: (...args: unknown[]) => mockFindOwnedProductById(...args),
+  saveProductDocument: (product: { save: () => Promise<unknown> }) => product.save(),
 }));
 
 vi.mock('@/integrations/supabase/supabase', () => ({
@@ -43,7 +42,7 @@ describe('uploadProductImage', () => {
   });
 
   it('ürün bulunamazsa 404 fırlatır', async () => {
-    mockProductFindById.mockResolvedValue(null);
+    mockFindOwnedProductById.mockResolvedValue(null);
 
     await expect(
       uploadProductImage(sellerId, productId, 'image/jpeg', jpegBuffer)
@@ -54,7 +53,7 @@ describe('uploadProductImage', () => {
 
   it('görsel yükler ve ürüne ekler', async () => {
     const save = vi.fn();
-    mockProductFindById.mockResolvedValue({
+    mockFindOwnedProductById.mockResolvedValue({
       sellerId,
       images: [],
       updatedAt: new Date(),
@@ -85,7 +84,7 @@ describe('uploadProductImage', () => {
   });
 
   it('10 görsel limitini aşamaz', async () => {
-    mockProductFindById.mockResolvedValue({
+    mockFindOwnedProductById.mockResolvedValue({
       sellerId,
       images: Array.from({ length: 10 }, (_, index) => `https://example.com/${index}.jpg`),
     });
@@ -106,7 +105,7 @@ describe('deleteProductImage', () => {
 
   it('görseli siler', async () => {
     const save = vi.fn();
-    mockProductFindById.mockResolvedValue({
+    mockFindOwnedProductById.mockResolvedValue({
       sellerId,
       images: [imageUrl],
       updatedAt: new Date(),

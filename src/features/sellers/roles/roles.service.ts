@@ -10,11 +10,7 @@ import {
   canReadSellerRoles,
   canWriteSellerRoles,
 } from '@/internal/auth/access/seller/permissions';
-import {
-  SellerMember,
-  SellerRole,
-  SELLER_SYSTEM_OWNER_ROLE_SLUG,
-} from '@/integrations/mongo';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
 import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import { createUserId } from '@/internal/common/ids';
@@ -22,6 +18,17 @@ import type {
   CreateSellerRoleInput,
   UpdateSellerRoleInput,
 } from '@/features/sellers/roles/create-role.schema';
+import { countSellerMembersByCompanyAndRoleId } from '@/repositories/sellers/seller-member.repository';
+import {
+  createSellerRole as createSellerRoleRecord,
+  deleteSellerRoleById,
+  findSellerRoleByIdAndCompanyId,
+  findSellerRoleByIdAndCompanyIdLean,
+  findSellerRoleBySlugAndCompanyIdLean,
+  listAssignableSellerRolesByCompanyIdLean,
+  listSellerRolesByCompanyIdLean,
+  saveSellerRoleDocument,
+} from '@/repositories/sellers/seller-role.repository';
 
 const formatRoleResponse = (role: {
   _id: unknown;
@@ -55,9 +62,7 @@ export const listSellerRoles = async (ctx: SellerAccessContext) => {
     throw new AuthError(403, 'Rol listesini görüntüleme yetkin yok');
   }
 
-  const roles = await SellerRole.find({ sellerId: ctx.companyId })
-    .sort({ isSystem: -1, name: 1 })
-    .lean();
+  const roles = await listSellerRolesByCompanyIdLean(ctx.companyId);
 
   return roles.map(formatRoleResponse);
 };
@@ -67,7 +72,7 @@ export const getSellerRoleById = async (ctx: SellerAccessContext, roleId: string
     throw new AuthError(403, 'Rol görüntüleme yetkin yok');
   }
 
-  const role = await SellerRole.findOne({ _id: roleId, sellerId: ctx.companyId }).lean();
+  const role = await findSellerRoleByIdAndCompanyIdLean(ctx.companyId, roleId);
 
   if (!role) {
     throw new AuthError(404, 'Rol bulunamadı');
@@ -85,17 +90,14 @@ export const createSellerRole = async (ctx: SellerAccessContext, data: CreateSel
     throw new AuthError(400, 'Bu slug sistem rolü için ayrılmış');
   }
 
-  const existingSlug = await SellerRole.findOne({
-    sellerId: ctx.companyId,
-    slug: data.slug,
-  }).lean();
+  const existingSlug = await findSellerRoleBySlugAndCompanyIdLean(ctx.companyId, data.slug);
 
   if (existingSlug) {
     throw new AuthError(409, 'Bu slug zaten kullanılıyor');
   }
 
   try {
-    const role = await SellerRole.create({
+    const role = await createSellerRoleRecord({
       _id: createUserId(),
       sellerId: ctx.companyId,
       name: data.name,
@@ -125,7 +127,7 @@ export const updateSellerRole = async (
     throw new AuthError(403, 'Rol güncelleme yetkisi sadece şirket sahibinde');
   }
 
-  const role = await SellerRole.findOne({ _id: roleId, sellerId: ctx.companyId });
+  const role = await findSellerRoleByIdAndCompanyId(ctx.companyId, roleId);
 
   if (!role) {
     throw new AuthError(404, 'Rol bulunamadı');
@@ -147,7 +149,7 @@ export const updateSellerRole = async (
     role.permissions = data.permissions;
   }
 
-  await role.save();
+  await saveSellerRoleDocument(role);
 
   return formatRoleResponse(role);
 };
@@ -157,7 +159,7 @@ export const deleteSellerRole = async (ctx: SellerAccessContext, roleId: string)
     throw new AuthError(403, 'Rol silme yetkisi sadece şirket sahibinde');
   }
 
-  const role = await SellerRole.findOne({ _id: roleId, sellerId: ctx.companyId });
+  const role = await findSellerRoleByIdAndCompanyId(ctx.companyId, roleId);
 
   if (!role) {
     throw new AuthError(404, 'Rol bulunamadı');
@@ -167,13 +169,13 @@ export const deleteSellerRole = async (ctx: SellerAccessContext, roleId: string)
     throw new AuthError(400, 'Sistem rolü silinemez');
   }
 
-  const assignedCount = await SellerMember.countDocuments({ sellerId: ctx.companyId, roleId });
+  const assignedCount = await countSellerMembersByCompanyAndRoleId(ctx.companyId, roleId);
 
   if (assignedCount > 0) {
     throw new AuthError(400, 'Bu role atanmış çalışanlar var, rol silinemez');
   }
 
-  await SellerRole.findByIdAndDelete(roleId);
+  await deleteSellerRoleById(roleId);
 
   return { roleId };
 };
@@ -189,13 +191,10 @@ export {
 export const listAssignableSellerRoles = async (ctx: SellerAccessContext) => {
   assertSellerOwner(ctx, 'Rol listesini görüntüleme yetkisi sadece şirket sahibinde');
 
-  const roles = await SellerRole.find({
-    sellerId: ctx.companyId,
-    slug: { $ne: SELLER_SYSTEM_OWNER_ROLE_SLUG },
-  })
-    .sort({ name: 1 })
-    .select('name slug description permissions isSystem')
-    .lean();
+  const roles = await listAssignableSellerRolesByCompanyIdLean(
+    ctx.companyId,
+    SELLER_SYSTEM_OWNER_ROLE_SLUG
+  );
 
   return roles.map(formatRoleResponse);
 };

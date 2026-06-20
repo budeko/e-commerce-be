@@ -2,11 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { connectDB } from '@/integrations/mongo';
 import { buildApp } from '@/app/app';
 import { env, validateEnvAtStartup } from '@/config/env';
-import { initSentry } from '@/integrations/sentry/init';
-import { captureException } from '@/integrations/sentry/capture';
 import { logger } from '@/internal/common/logging';
 import { startPendingOrderExpiryScheduler } from '@/internal/buyers/orders/expire-pending-orders';
 import { startPaymentReconciliationScheduler } from '@/internal/buyers/orders/reconcile-payments';
+import { startPaymentSplitSyncRetryScheduler } from '@/internal/buyers/orders/retry-payment-split-sync';
+import { startOutboxProcessorScheduler } from '@/internal/common/outbox/process-outbox-events';
 
 export const getPort = (): number => env.port;
 
@@ -34,24 +34,23 @@ const registerProcessHandlers = (closeApp: () => Promise<void>): void => {
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('unhandledRejection', (reason) => {
     logger.error({ err: reason }, 'Yakalanmamış promise rejection');
-    captureException(reason);
   });
   process.on('uncaughtException', (err) => {
     logger.fatal({ err }, 'Yakalanmamış exception');
-    captureException(err);
     process.exit(1);
   });
 };
 
 export const start = async (): Promise<void> => {
   try {
-    initSentry();
     validateEnvAtStartup();
     await connectDB();
     logger.info('MongoDB bağlantısı başarılı');
 
     startPendingOrderExpiryScheduler();
     startPaymentReconciliationScheduler();
+    startPaymentSplitSyncRetryScheduler();
+    startOutboxProcessorScheduler();
 
     const app = await buildApp();
     const port = getPort();
@@ -65,7 +64,6 @@ export const start = async (): Promise<void> => {
     logger.info({ port, host: '0.0.0.0' }, 'Sunucu çalışıyor');
   } catch (err) {
     logger.error({ err }, 'Başlatma hatası');
-    captureException(err);
     process.exit(1);
   }
 };

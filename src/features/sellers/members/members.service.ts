@@ -12,7 +12,6 @@ import {
   getSellerRoleSummariesByIds,
   isOwnerSellerRoleId,
 } from '@/internal/auth/access/seller/role-queries';
-import { SellerMember, User } from '@/integrations/mongo';
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';
 import { AuthError, isDuplicateKeyError } from '@/internal/auth/errors';
@@ -22,6 +21,21 @@ import type {
   UpdateSellerMemberProfileInput,
   UpdateSellerMemberRoleInput,
 } from '@/features/sellers/members/create-member.schema';
+import {
+  createSellerMember as createSellerMemberRecord,
+  deleteSellerMemberById,
+  findSellerMemberByCompanyAndUserId,
+  listSellerMembersByCompanyIdLean,
+  saveSellerMemberDocument,
+  updateSellerMemberById,
+} from '@/repositories/sellers/seller-member.repository';
+import {
+  createUser,
+  deleteUserById,
+  findUserByEmail,
+  findUserByIdLean,
+  findUsersByIdsLean,
+} from '@/repositories/auth/user.repository';
 
 const formatMemberResponse = (
   member: {
@@ -55,13 +69,13 @@ const formatMemberResponse = (
 });
 
 const findMemberRecord = async (companyId: string, targetUserId: string) => {
-  const member = await SellerMember.findOne({ _id: targetUserId, sellerId: companyId });
+  const member = await findSellerMemberByCompanyAndUserId(companyId, targetUserId);
 
   if (!member) {
     throw new AuthError(404, 'Çalışan bulunamadı');
   }
 
-  const user = await User.findById(targetUserId).select('email role isEmailVerified createdAt');
+  const user = await findUserByIdLean(targetUserId, 'email role isEmailVerified createdAt');
 
   if (!user || user.role !== 'seller') {
     throw new AuthError(404, 'Çalışan bulunamadı');
@@ -87,16 +101,12 @@ export const getSellerMemberByUserId = async (
 export const listSellerMembers = async (ctx: SellerAccessContext) => {
   assertSellerPermission(ctx, SELLER_PERMISSIONS.MEMBERS_READ, 'Ekip listesini görüntüleme yetkin yok');
 
-  const members = await SellerMember.find({ sellerId: ctx.companyId })
-    .sort({ isOwner: -1, createdAt: -1 })
-    .lean();
+  const members = await listSellerMembersByCompanyIdLean(ctx.companyId);
 
-  const userIds = members.map((member) => member._id);
+  const userIds = members.map((member) => String(member._id));
   const roleIds = members.map((member) => String(member.roleId));
 
-  const users = await User.find({ _id: { $in: userIds } })
-    .select('email isEmailVerified createdAt')
-    .lean();
+  const users = await findUsersByIdsLean(userIds, 'email isEmailVerified createdAt');
 
   const rolesById = await getSellerRoleSummariesByIds(ctx.companyId, roleIds);
   const usersById = new Map(users.map((user) => [String(user._id), user]));
@@ -118,7 +128,7 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
 
   await assertAssignableSellerRoleId(ctx.companyId, data.roleId);
 
-  const existing = await User.findOne({ email: data.email.toLowerCase() });
+  const existing = await findUserByEmail(data.email);
 
   if (existing) {
     throw new AuthError(409, 'Bu e-posta adresi zaten kayıtlı');
@@ -128,7 +138,7 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
   const userId = createUserId();
 
   try {
-    const user = await User.create({
+    const user = await createUser({
       _id: userId,
       email: data.email,
       password: hashedPassword,
@@ -137,7 +147,7 @@ export const createSellerMember = async (ctx: SellerAccessContext, data: CreateS
       isEmailVerified: true,
     });
 
-    const member = await SellerMember.create({
+    const member = await createSellerMemberRecord({
       _id: userId,
       sellerId: ctx.companyId,
       roleId: data.roleId,
@@ -192,7 +202,7 @@ export const updateSellerMemberRole = async (
 
   member.roleId = data.roleId;
   member.isOwner = false;
-  await member.save();
+  await saveSellerMemberDocument(member);
 
   const rolesById = await getSellerRoleSummariesByIds(ctx.companyId, [data.roleId]);
 
@@ -210,7 +220,7 @@ export const updateSellerMemberProfile = async (
 
   await findMemberRecord(ctx.companyId, targetUserId);
 
-  const updatedMember = await SellerMember.findByIdAndUpdate(
+  const updatedMember = await updateSellerMemberById(
     targetUserId,
     { $set: data },
     { returnDocument: 'after' }
@@ -220,7 +230,7 @@ export const updateSellerMemberProfile = async (
     throw new AuthError(404, 'Çalışan bulunamadı');
   }
 
-  const user = await User.findById(targetUserId).select('email isEmailVerified createdAt');
+  const user = await findUserByIdLean(targetUserId, 'email isEmailVerified createdAt');
   const rolesById = await getSellerRoleSummariesByIds(ctx.companyId, [String(updatedMember.roleId)]);
 
   return formatMemberResponse(
@@ -235,7 +245,7 @@ export const deleteSellerMember = async (ctx: SellerAccessContext, targetUserId:
     throw new AuthError(403, 'Çalışan silme yetkisi sadece şirket sahibinde');
   }
 
-  const member = await SellerMember.findOne({ _id: targetUserId, sellerId: ctx.companyId });
+  const member = await findSellerMemberByCompanyAndUserId(ctx.companyId, targetUserId);
 
   if (!member) {
     throw new AuthError(404, 'Çalışan bulunamadı');
@@ -249,8 +259,8 @@ export const deleteSellerMember = async (ctx: SellerAccessContext, targetUserId:
     }
   }
 
-  await SellerMember.findByIdAndDelete(targetUserId);
-  await User.findByIdAndDelete(targetUserId);
+  await deleteSellerMemberById(targetUserId);
+  await deleteUserById(targetUserId);
 
   return { userId: targetUserId };
 };

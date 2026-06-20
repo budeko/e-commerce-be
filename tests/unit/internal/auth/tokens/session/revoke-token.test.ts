@@ -2,13 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
 
 const mockRevokedTokenExists = vi.fn();
-const mockRevokedTokenUpdateOne = vi.fn();
+const mockUpsertRevokedToken = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  RevokedToken: {
-    exists: (...args: unknown[]) => mockRevokedTokenExists(...args),
-    updateOne: (...args: unknown[]) => mockRevokedTokenUpdateOne(...args),
-  },
+vi.mock('@/repositories/auth/revoked-token.repository', () => ({
+  revokedTokenExists: (...args: unknown[]) => mockRevokedTokenExists(...args),
+  upsertRevokedToken: (...args: unknown[]) => mockUpsertRevokedToken(...args),
 }));
 
 import { isTokenRevoked, revokeToken } from '@/internal/auth/tokens/revoke-token';
@@ -17,7 +15,7 @@ describe('revoke-token', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.JWT_SECRET = 'test-secret-key-for-unit-tests';
-    mockRevokedTokenUpdateOne.mockResolvedValue({});
+    mockUpsertRevokedToken.mockResolvedValue({});
   });
 
   it('revoke edilmiş token true döner', async () => {
@@ -44,13 +42,9 @@ describe('revoke-token', () => {
 
     await revokeToken(token);
 
-    expect(mockRevokedTokenUpdateOne).toHaveBeenCalledWith(
-      { _id: expect.any(String) },
-      {
-        $set: { expiresAt: expect.any(Date) },
-        $setOnInsert: { _id: expect.any(String) },
-      },
-      { upsert: true }
+    expect(mockUpsertRevokedToken).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Date)
     );
   });
 });

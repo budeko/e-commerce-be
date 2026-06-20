@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { verifyAuthToken, type AuthTokenPayload } from '@/internal/auth/tokens/access-token';
-import { User } from '@/integrations/mongo';
+import { findUserByIdLean } from '@/repositories/auth/user.repository';
 import {
   isTokenIssuedBefore,
   PASSWORD_CHANGED_MESSAGE,
@@ -34,7 +34,8 @@ export const requireAuth = async (request: FastifyRequest, reply: FastifyReply) 
     request.authToken = token;
 
     const decoded = jwt.decode(token) as jwt.JwtPayload | null;
-    const user = await User.findById(request.auth.userId).select(
+    const user = await findUserByIdLean(
+      request.auth.userId,
       'passwordChangedAt sessionsRevokedAt role isActive'
     );
 
@@ -50,11 +51,11 @@ export const requireAuth = async (request: FastifyRequest, reply: FastifyReply) 
       return reply.status(403).send({ message: 'Hesap aktif değil' });
     }
 
-    if (isTokenIssuedBefore(decoded?.iat, user?.passwordChangedAt ?? null)) {
+    if (isTokenIssuedBefore(decoded?.iat, (user?.passwordChangedAt as Date | null | undefined) ?? null)) {
       return reply.status(401).send({ message: PASSWORD_CHANGED_MESSAGE });
     }
 
-    if (isTokenIssuedBefore(decoded?.iat, user?.sessionsRevokedAt ?? null)) {
+    if (isTokenIssuedBefore(decoded?.iat, (user?.sessionsRevokedAt as Date | null | undefined) ?? null)) {
       return reply.status(401).send({ message: SESSIONS_REVOKED_MESSAGE });
     }
   } catch (error) {

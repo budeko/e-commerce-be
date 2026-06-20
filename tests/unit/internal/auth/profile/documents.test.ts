@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockUpload = vi.fn();
 const mockDelete = vi.fn();
 const mockUpdateSellerProfile = vi.fn();
-const mockSellerFindById = vi.fn();
+const mockFindSellerByIdLean = vi.fn();
+const mockUpdateSellerById = vi.fn();
+const mockGetSellerContext = vi.fn();
 
 vi.mock('@/integrations/supabase/supabase', () => ({
   uploadToSellerStorage: (...args: unknown[]) => mockUpload(...args),
@@ -16,16 +18,13 @@ vi.mock('@/integrations/supabase/supabase', () => ({
   },
 }));
 
-const mockGetSellerContext = vi.fn();
+vi.mock('@/repositories/sellers/seller.repository', () => ({
+  findSellerByIdLean: (...args: unknown[]) => mockFindSellerByIdLean(...args),
+  updateSellerById: (...args: unknown[]) => mockUpdateSellerById(...args),
+}));
 
 vi.mock('@/internal/auth/queries/seller-context', () => ({
   getSellerContext: (...args: unknown[]) => mockGetSellerContext(...args),
-}));
-
-vi.mock('@/integrations/mongo', () => ({
-  Seller: {
-    findById: (...args: unknown[]) => mockSellerFindById(...args),
-  },
 }));
 
 vi.mock('@/internal/auth/profile/seller', () => ({
@@ -54,9 +53,7 @@ describe('uploadSellerDocument', () => {
       teamManagementEnabled: true,
       member: { firstName: null, lastName: null, phone: null },
     });
-    mockSellerFindById.mockReturnValue({
-      lean: vi.fn().mockResolvedValue({ taxCertificateUrl: null }),
-    });
+    mockFindSellerByIdLean.mockResolvedValue({ taxCertificateUrl: null });
     mockUpload.mockResolvedValue(
       `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/taxCertificate.pdf`
     );
@@ -97,10 +94,8 @@ describe('uploadSellerDocument', () => {
   });
 
   it('aynı belge tipinde sabit path kullanır (üzerine yazar)', async () => {
-    mockSellerFindById.mockReturnValue({
-      lean: vi.fn().mockResolvedValue({
-        companyLogoUrl: `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/companyLogo.png`,
-      }),
+    mockFindSellerByIdLean.mockResolvedValue({
+      companyLogoUrl: `https://xxx.supabase.co/storage/v1/object/public/seller-documents/${userId}/companyLogo.png`,
     });
 
     const jpegBuffer = Buffer.from([0xff, 0xd8, 0xff, 0x00]);

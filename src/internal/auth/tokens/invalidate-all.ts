@@ -1,4 +1,4 @@
-import { User } from '@/integrations/mongo';
+import { updateUserById } from '@/repositories/auth/user.repository';
 
 export const PASSWORD_CHANGED_MESSAGE = 'Şifre değiştirildi, tekrar giriş yapın';
 export const SESSIONS_REVOKED_MESSAGE = 'Tüm oturumlar sonlandırıldı, tekrar giriş yapın';
@@ -15,5 +15,5 @@ export const isTokenIssuedBefore = (
 };
 
 export const revokeAllSessions = async (userId: string) => {
-  await User.findByIdAndUpdate(userId, { sessionsRevokedAt: new Date() });
+  await updateUserById(userId, { $set: { sessionsRevokedAt: new Date() } });
 };

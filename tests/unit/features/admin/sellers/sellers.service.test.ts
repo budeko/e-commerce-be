@@ -28,6 +28,18 @@ vi.mock('@/internal/auth/admin/mail/send-seller-notifications', () => ({
   sendSellerRejectedEmail: (...args: unknown[]) => mockSendRejected(...args),
 }));
 
+vi.mock('@/internal/auth/admin/admin-audit', () => ({
+  recordAdminAction: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/internal/common/outbox/enqueue-outbox-event', () => ({
+  enqueueOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  OUTBOX_EVENT_TYPES: {
+    EMAIL_SELLER_APPROVED: 'email.seller.approved',
+    EMAIL_SELLER_REJECTED: 'email.seller.rejected',
+  },
+}));
+
 import {
   approveSeller,
   rejectSeller,

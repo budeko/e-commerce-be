@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { User } from '@/integrations/mongo';
+import { findUserByIdLean } from '@/repositories/auth/user.repository';
 
 export const requireEmailVerified = async (
   request: FastifyRequest,
@@ -9,7 +9,7 @@ export const requireEmailVerified = async (
     return reply.status(401).send({ message: 'Giriş gerekli' });
   }
 
-  const user = await User.findById(request.auth.userId).select('isEmailVerified role');
+  const user = await findUserByIdLean(request.auth.userId, 'isEmailVerified role');
 
   if (!user) {
     return reply.status(401).send({ message: 'Giriş gerekli' });

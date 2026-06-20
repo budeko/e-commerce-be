@@ -1,10 +1,13 @@
 import crypto from 'crypto';
+import { AUTH_OTP_PURPOSES, buildAuthOtpId } from '@/integrations/mongo';
+import type { AuthOtpPurpose } from '@/repositories/auth/auth-otp.repository';
 import {
-  AUTH_OTP_PURPOSES,
-  AuthOtp,
-  AuthOtpPurpose,
-  buildAuthOtpId,
-} from '@/integrations/mongo';
+  deleteAuthOtpById,
+  deleteAuthOtpsByIds,
+  findAuthOtpById,
+  saveAuthOtpDocument,
+  upsertAuthOtp,
+} from '@/repositories/auth/auth-otp.repository';
 import { comparePassword, hashPassword } from '@/internal/common/security';
 
 const MAX_OTP_ATTEMPTS = 5;
@@ -36,14 +39,7 @@ export const createAuthOtp = async (
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS[purpose]);
   const id = buildAuthOtpId(userId, purpose);
 
-  await AuthOtp.findOneAndUpdate(
-    { _id: id },
-    {
-      $set: { codeHash, expiresAt, attemptCount: 0 },
-      $setOnInsert: { _id: id },
-    },
-    { upsert: true, returnDocument: 'after' }
-  );
+  await upsertAuthOtp(id, { codeHash, expiresAt, attemptCount: 0 });
 
   return code;
 };
@@ -54,19 +50,19 @@ export const verifyAuthOtp = async (
   code: string
 ): Promise<void> => {
   const id = buildAuthOtpId(userId, purpose);
-  const otp = await AuthOtp.findById(id);
+  const otp = await findAuthOtpById(id);
 
   if (!otp) {
     throw new OtpError(400, 'Doğrulama kodu geçersiz veya süresi dolmuş');
   }
 
   if (otp.expiresAt < new Date()) {
-    await AuthOtp.findByIdAndDelete(id);
+    await deleteAuthOtpById(id);
     throw new OtpError(410, 'Doğrulama kodunun süresi doldu');
   }
 
   if (otp.attemptCount >= MAX_OTP_ATTEMPTS) {
-    await AuthOtp.findByIdAndDelete(id);
+    await deleteAuthOtpById(id);
     throw new OtpError(429, 'Çok fazla hatalı deneme. Yeni kod isteyin');
   }
 
@@ -74,25 +70,25 @@ export const verifyAuthOtp = async (
 
   if (!valid) {
     otp.attemptCount += 1;
-    await otp.save();
+    await saveAuthOtpDocument(otp);
 
     if (otp.attemptCount >= MAX_OTP_ATTEMPTS) {
-      await AuthOtp.findByIdAndDelete(id);
+      await deleteAuthOtpById(id);
       throw new OtpError(429, 'Çok fazla hatalı deneme. Yeni kod isteyin');
     }
 
     throw new OtpError(400, 'Doğrulama kodu hatalı');
   }
 
-  await AuthOtp.findByIdAndDelete(id);
+  await deleteAuthOtpById(id);
 };
 
 export const invalidateAuthOtp = async (userId: string, purpose: AuthOtpPurpose) => {
-  await AuthOtp.findByIdAndDelete(buildAuthOtpId(userId, purpose));
+  await deleteAuthOtpById(buildAuthOtpId(userId, purpose));
 };
 
 export const deleteAuthOtpsForUser = async (userId: string) => {
-  await AuthOtp.deleteMany({
-    _id: { $in: AUTH_OTP_PURPOSES.map((purpose) => buildAuthOtpId(userId, purpose)) },
-  });
+  await deleteAuthOtpsByIds(
+    AUTH_OTP_PURPOSES.map((purpose) => buildAuthOtpId(userId, purpose))
+  );
 };

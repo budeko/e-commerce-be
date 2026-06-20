@@ -19,7 +19,12 @@ import {
   findUsersByIdsLean,
 } from '@/repositories/auth/user.repository';
 import { AuthError } from '@/internal/auth/errors';
+import { recordAdminAction } from '@/internal/auth/admin/admin-audit';
 import { HttpError } from '@/internal/common/errors';
+import {
+  enqueueOutboxEvent,
+  OUTBOX_EVENT_TYPES,
+} from '@/internal/common/outbox/enqueue-outbox-event';
 import { createIyzicoSubMerchant } from '@/integrations/iyzico/create-submerchant';
 import type { AdminAccessContext } from '@/internal/auth/queries/admin-context';
 
@@ -143,7 +148,7 @@ export const getSellerByUserId = async (ctx: AdminAccessContext, userId: string)
 
   return {
     userId: user._id,
-    email: user.email,
+    email: String(user.email),
     isEmailVerified: user.isEmailVerified,
     createdAt: user.createdAt,
     approvalStatus: profile.approvalStatus,
@@ -179,10 +184,23 @@ export const rejectSeller = async (
   seller.rejectionReason = reason;
   await saveSellerDocument(seller);
 
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'seller.rejected',
+    resourceType: 'seller',
+    resourceId: userId,
+    metadata: { reason },
+  });
+
   try {
-    await sendSellerRejectedEmail(user.email, reason, seller.companyName);
+    await sendSellerRejectedEmail(String(user.email), reason, seller.companyName);
   } catch (error) {
     log.error({ err: error, userId }, 'Satıcı red bildirimi gönderilemedi');
+    await enqueueOutboxEvent(OUTBOX_EVENT_TYPES.EMAIL_SELLER_REJECTED, {
+      email: String(user.email),
+      reason,
+      companyName: seller.companyName,
+    });
   }
 
   return {
@@ -219,7 +237,7 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
     throw new AuthError(400, 'Satıcı profili ve belgeler tamamlanmadan onaylanamaz');
   }
 
-  const subMerchantKey = await registerSellerIyzicoSubMerchant(seller, user.email, userId);
+  const subMerchantKey = await registerSellerIyzicoSubMerchant(seller, String(user.email), userId);
 
   const updated = await approveSellerIfPending(userId, {
     approvalStatus: 'approved',
@@ -231,10 +249,22 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
     throw new AuthError(409, 'Satıcı onayı başka bir işlem tarafından tamamlandı');
   }
 
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'seller.approved',
+    resourceType: 'seller',
+    resourceId: userId,
+    metadata: { iyzicoSubMerchantKey: subMerchantKey },
+  });
+
   try {
-    await sendSellerApprovedEmail(user.email, updated.companyName);
+    await sendSellerApprovedEmail(String(user.email), updated.companyName);
   } catch (error) {
     log.error({ err: error, userId }, 'Satıcı onay bildirimi gönderilemedi');
+    await enqueueOutboxEvent(OUTBOX_EVENT_TYPES.EMAIL_SELLER_APPROVED, {
+      email: String(user.email),
+      companyName: updated.companyName,
+    });
   }
 
   return {
@@ -272,10 +302,18 @@ export const syncSellerIyzicoSubMerchant = async (ctx: AdminAccessContext, userI
 
   seller.iyzicoSubMerchantKey = await registerSellerIyzicoSubMerchant(
     seller,
-    user.email,
+    String(user.email),
     userId
   );
   await saveSellerDocument(seller);
+
+  await recordAdminAction({
+    actorUserId: ctx.userId,
+    action: 'seller.iyzico_synced',
+    resourceType: 'seller',
+    resourceId: userId,
+    metadata: { iyzicoSubMerchantKey: seller.iyzicoSubMerchantKey },
+  });
 
   return {
     userId: seller._id,

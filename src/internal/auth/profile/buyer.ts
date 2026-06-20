@@ -1,10 +1,14 @@
-import { User, Buyer } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
 import { isBuyerProfileComplete } from '@/internal/auth/profile/profile-completion';
 import type { BuyerProfileUpdate } from '@/internal/auth/profile/profile-update.types';
+import {
+  findBuyerById,
+  updateBuyerById,
+} from '@/repositories/buyers/buyer.repository';
+import { updateUserById } from '@/repositories/auth/user.repository';
 
 const syncBuyerActiveStatus = async (userId: string, isComplete: boolean) => {
-  await User.findByIdAndUpdate(userId, { isActive: isComplete });
+  await updateUserById(userId, { $set: { isActive: isComplete } });
   return isComplete;
 };
 
@@ -33,7 +37,7 @@ const resolveBuyerBilling = (
 };
 
 export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdate) => {
-  const buyer = await Buyer.findById(userId);
+  const buyer = await findBuyerById(userId);
 
   if (!buyer) {
     throw new AuthError(404, 'Alıcı profili bulunamadı');
@@ -41,7 +45,7 @@ export const updateBuyerProfile = async (userId: string, data: BuyerProfileUpdat
 
   const billingUpdate = resolveBuyerBilling(buyer, data);
 
-  const updatedBuyer = await Buyer.findByIdAndUpdate(
+  const updatedBuyer = await updateBuyerById(
     userId,
     { $set: { ...data, ...billingUpdate } },
     { returnDocument: 'after' }

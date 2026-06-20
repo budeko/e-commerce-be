@@ -1,3 +1,4 @@
+import type { PaymentCurrency, PaymentStatus } from '@/integrations/mongo';
 import { Payment } from '@/integrations/mongo';
 import { createUserId } from '@/internal/common/ids';
 
@@ -15,9 +16,9 @@ type CreatePaymentData = {
   orderId: string;
   buyerId: string;
   amount: number;
-  currency: string;
+  currency: PaymentCurrency;
   provider: string;
-  status: string;
+  status: PaymentStatus;
 };
 
 export const createPayment = async (data: CreatePaymentData) =>
@@ -34,8 +35,84 @@ export const savePaymentDocument = async (payment: {
   await payment.save();
 };
 
+export const claimPendingPaymentForProcessing = async (orderId: string) =>
+  typeof (Payment as { findOneAndUpdate?: unknown }).findOneAndUpdate === 'function'
+    ? Payment.findOneAndUpdate(
+        { orderId, status: 'pending' },
+        { $set: { status: 'processing', updatedAt: new Date() } },
+        { returnDocument: 'after' }
+      )
+    : (async () => {
+        const payment = await Payment.findOne({ orderId, status: 'pending' });
+        if (!payment) {
+          return null;
+        }
+
+        payment.status = 'processing';
+        payment.updatedAt = new Date();
+        await payment.save();
+        return payment;
+      })();
+
+export const updatePaymentStatusByOrderId = async (
+  orderId: string,
+  status: PaymentStatus
+) =>
+  typeof (Payment as { findOneAndUpdate?: unknown }).findOneAndUpdate === 'function'
+    ? Payment.findOneAndUpdate(
+        { orderId },
+        { $set: { status, updatedAt: new Date() } },
+        { returnDocument: 'after' }
+      )
+    : (async () => {
+        const payment = await Payment.findOne({ orderId });
+        if (!payment) {
+          return null;
+        }
+
+        payment.status = status;
+        payment.updatedAt = new Date();
+        await payment.save();
+        return payment;
+      })();
+
 export const failPendingPaymentsByOrderId = async (orderId: string) =>
   Payment.updateMany(
     { orderId, status: 'pending' },
     { $set: { status: 'failed', updatedAt: new Date() } }
   );
+
+export const distinctPendingCheckoutOrderIds = async () =>
+  Payment.distinct('orderId', {
+    status: 'pending',
+    externalId: { $ne: null },
+  });
+
+export const failStalePendingPayments = async (orderIds: string[], cutoff: Date) =>
+  Payment.updateMany(
+    {
+      orderId: { $in: orderIds },
+      status: 'pending',
+      updatedAt: { $lt: cutoff },
+    },
+    { $set: { status: 'failed', updatedAt: new Date() } }
+  );
+
+export const listCompletedIyzicoPaymentsLean = async () =>
+  Payment.find({
+    status: 'completed',
+    provider: 'iyzico',
+    externalId: { $ne: null },
+  }).lean();
+
+export const listCompletedIyzicoPaymentsForSplitSyncLean = async () =>
+  Payment.find({
+    status: 'completed',
+    provider: 'iyzico',
+    externalId: { $ne: null },
+  })
+    .select('orderId externalId')
+    .lean();
+
+export const updatePaymentById = async (paymentId: string, update: Record<string, unknown>) =>
+  Payment.findByIdAndUpdate(paymentId, { $set: update });

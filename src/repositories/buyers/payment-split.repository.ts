@@ -1,0 +1,55 @@
+import { PaymentSplit } from '@/integrations/mongo';
+
+export const upsertPaymentSplit = async (
+  orderId: string,
+  productId: string,
+  set: Record<string, unknown>,
+  setOnInsert: Record<string, unknown>
+) =>
+  PaymentSplit.findOneAndUpdate(
+    { orderId, productId },
+    { $set: set, $setOnInsert: setOnInsert },
+    { upsert: true, new: true }
+  );
+
+export const updatePaymentSplitTransactionId = async (
+  orderId: string,
+  productId: string,
+  paymentTransactionId: string
+) =>
+  PaymentSplit.findOneAndUpdate(
+    { orderId, productId },
+    {
+      $set: {
+        paymentTransactionId,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+export const findPendingPaymentSplitsForSeller = async (orderId: string, sellerId: string) =>
+  PaymentSplit.find({
+    orderId,
+    sellerId,
+    approvalStatus: 'pending',
+    paymentTransactionId: { $ne: null },
+  });
+
+export const findPendingPaymentSplitsForOrder = async (orderId: string) =>
+  PaymentSplit.find({
+    orderId,
+    approvalStatus: 'pending',
+    paymentTransactionId: { $ne: null },
+  });
+
+export const savePaymentSplitDocument = async (split: { save: () => Promise<unknown> }) =>
+  split.save();
+
+export const findPaymentSplitsByOrderIdLean = async (orderId: string) =>
+  PaymentSplit.find({ orderId }).lean();
+
+export const paymentSplitWithNullTransactionExists = async (orderId: string) =>
+  PaymentSplit.exists({
+    orderId,
+    paymentTransactionId: null,
+  });

@@ -12,6 +12,7 @@ const {
   mockInitializeIyzicoCheckout,
   mockCompleteIyzicoCheckout,
   mockBuildPaymentSplitsForOrder,
+  mockReservePendingOrderStock,
   mockFulfillPaidOrder,
   mockCancelPendingOrder,
 } = vi.hoisted(() => ({
@@ -26,6 +27,7 @@ const {
   mockInitializeIyzicoCheckout: vi.fn(),
   mockCompleteIyzicoCheckout: vi.fn(),
   mockBuildPaymentSplitsForOrder: vi.fn(),
+  mockReservePendingOrderStock: vi.fn(),
   mockFulfillPaidOrder: vi.fn(),
   mockCancelPendingOrder: vi.fn(),
 }));
@@ -45,6 +47,14 @@ vi.mock('@/internal/buyers/payment/payment-split', () => ({
 
 vi.mock('@/internal/buyers/orders/fulfill-order', () => ({
   fulfillPaidOrder: (...args: unknown[]) => mockFulfillPaidOrder(...args),
+}));
+
+vi.mock('@/internal/buyers/orders/reserve-order-stock', () => ({
+  reservePendingOrderStock: (...args: unknown[]) => mockReservePendingOrderStock(...args),
+}));
+
+vi.mock('@/internal/sellers/wallet/credit-pending-from-order', () => ({
+  creditSellerPendingFromPaidOrder: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/internal/buyers/orders/cancel-pending-order', () => ({
@@ -174,6 +184,7 @@ describe('createPaymentForOrder', () => {
         },
       },
     ]);
+    mockReservePendingOrderStock.mockResolvedValue(true);
   });
 
   it('sipariş pending değilse 400 fırlatır', async () => {

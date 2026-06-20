@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hashPassword } from '@/internal/common/security';
 
-const mockFindOneAndUpdate = vi.fn();
-const mockFindById = vi.fn();
-const mockFindByIdAndDelete = vi.fn();
+const mockUpsertAuthOtp = vi.fn();
+const mockFindAuthOtpById = vi.fn();
+const mockDeleteAuthOtpById = vi.fn();
+const mockSaveAuthOtpDocument = vi.fn();
 
-vi.mock('@/integrations/mongo', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/integrations/mongo')>();
-  return {
-    ...actual,
-    AuthOtp: {
-      findOneAndUpdate: (...args: unknown[]) => mockFindOneAndUpdate(...args),
-      findById: (...args: unknown[]) => mockFindById(...args),
-      findByIdAndDelete: (...args: unknown[]) => mockFindByIdAndDelete(...args),
-    },
-  };
-});
+vi.mock('@/repositories/auth/auth-otp.repository', () => ({
+  upsertAuthOtp: (...args: unknown[]) => mockUpsertAuthOtp(...args),
+  findAuthOtpById: (...args: unknown[]) => mockFindAuthOtpById(...args),
+  deleteAuthOtpById: (...args: unknown[]) => mockDeleteAuthOtpById(...args),
+  saveAuthOtpDocument: (...args: unknown[]) => mockSaveAuthOtpDocument(...args),
+}));
 
 import { createAuthOtp, generateOtpCode, OtpError, verifyAuthOtp } from '@/internal/auth/otp/otp';
 
@@ -34,27 +30,23 @@ describe('generateOtpCode', () => {
 describe('createAuthOtp', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindOneAndUpdate.mockResolvedValue({});
+    mockUpsertAuthOtp.mockResolvedValue({});
   });
 
   it('kodu hashleyerek upsert eder', async () => {
     const code = await createAuthOtp(userId, 'email_verify');
 
     expect(code).toMatch(/^\d{6}$/);
-    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
-      { _id: otpId },
-      {
-        $set: expect.objectContaining({
-          codeHash: expect.any(String),
-          expiresAt: expect.any(Date),
-          attemptCount: 0,
-        }),
-        $setOnInsert: { _id: otpId },
-      },
-      { upsert: true, returnDocument: 'after' }
+    expect(mockUpsertAuthOtp).toHaveBeenCalledWith(
+      otpId,
+      expect.objectContaining({
+        codeHash: expect.any(String),
+        expiresAt: expect.any(Date),
+        attemptCount: 0,
+      })
     );
 
-    const storedHash = mockFindOneAndUpdate.mock.calls[0][1].$set.codeHash;
+    const storedHash = mockUpsertAuthOtp.mock.calls[0][1].codeHash;
     expect(storedHash).not.toBe(code);
   });
 });
@@ -64,14 +56,15 @@ describe('verifyAuthOtp', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFindByIdAndDelete.mockResolvedValue({});
+    mockDeleteAuthOtpById.mockResolvedValue({});
+    mockSaveAuthOtpDocument.mockImplementation((otp: { save: () => Promise<unknown> }) => otp.save());
   });
 
   it('doğru kod ile OTP kaydını siler', async () => {
     const code = '482913';
     const codeHash = await hashPassword(code);
 
-    mockFindById.mockResolvedValue({
+    mockFindAuthOtpById.mockResolvedValue({
       _id: otpId,
       expiresAt: new Date(Date.now() + 60_000),
       attemptCount: 0,
@@ -81,11 +74,11 @@ describe('verifyAuthOtp', () => {
 
     await verifyAuthOtp(userId, purpose, code);
 
-    expect(mockFindByIdAndDelete).toHaveBeenCalledWith(otpId);
+    expect(mockDeleteAuthOtpById).toHaveBeenCalledWith(otpId);
   });
 
   it('kayıt yoksa 400 döner', async () => {
-    mockFindById.mockResolvedValue(null);
+    mockFindAuthOtpById.mockResolvedValue(null);
 
     await expect(verifyAuthOtp(userId, purpose, '123456')).rejects.toMatchObject({
       statusCode: 400,
@@ -94,7 +87,7 @@ describe('verifyAuthOtp', () => {
   });
 
   it('süresi dolmuş kodda 410 döner ve kaydı siler', async () => {
-    mockFindById.mockResolvedValue({
+    mockFindAuthOtpById.mockResolvedValue({
       _id: otpId,
       expiresAt: new Date(Date.now() - 1_000),
       attemptCount: 0,
@@ -107,13 +100,13 @@ describe('verifyAuthOtp', () => {
       message: 'Doğrulama kodunun süresi doldu',
     });
 
-    expect(mockFindByIdAndDelete).toHaveBeenCalledWith(otpId);
+    expect(mockDeleteAuthOtpById).toHaveBeenCalledWith(otpId);
   });
 
   it('hatalı kodda deneme sayısını artırır', async () => {
     const codeHash = await hashPassword('482913');
     const save = vi.fn();
-    mockFindById.mockResolvedValue({
+    mockFindAuthOtpById.mockResolvedValue({
       _id: otpId,
       expiresAt: new Date(Date.now() + 60_000),
       attemptCount: 0,
@@ -132,7 +125,7 @@ describe('verifyAuthOtp', () => {
   it('5 hatalı denemeden sonra 429 döner ve kaydı siler', async () => {
     const codeHash = await hashPassword('482913');
     const save = vi.fn();
-    mockFindById.mockResolvedValue({
+    mockFindAuthOtpById.mockResolvedValue({
       _id: otpId,
       expiresAt: new Date(Date.now() + 60_000),
       attemptCount: 4,
@@ -145,6 +138,6 @@ describe('verifyAuthOtp', () => {
       message: 'Çok fazla hatalı deneme. Yeni kod isteyin',
     });
 
-    expect(mockFindByIdAndDelete).toHaveBeenCalledWith(otpId);
+    expect(mockDeleteAuthOtpById).toHaveBeenCalledWith(otpId);
   });
 });

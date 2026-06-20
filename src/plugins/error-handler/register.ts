@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { HttpError } from '@/internal/common/errors';
 import { logger } from '@/internal/common/logging';
-import { captureException } from '@/integrations/sentry/capture';
 
 export const registerErrorHandler = (app: FastifyInstance): void => {
   app.setErrorHandler((error: unknown, _request, reply) => {
@@ -19,7 +18,6 @@ export const registerErrorHandler = (app: FastifyInstance): void => {
 
     if (statusCode >= 500) {
       logger.error({ err: error }, 'İşlenmeyen sunucu hatası');
-      captureException(error);
     }
 
     const message =

@@ -1,7 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { HttpError, isDuplicateKeyError } from '@/internal/common/errors';
 import { logger } from '@/internal/common/logging';
-import { captureException } from '@/integrations/sentry/capture';
 
 type HandleRouteErrorOptions = {
   duplicateKeyMessage?: string;
@@ -22,7 +21,6 @@ export const handleRouteError = (
   }
 
   logger.error({ err: error }, fallbackMessage);
-  captureException(error, { fallbackMessage });
 
   return reply.status(500).send({ message: fallbackMessage });
 };

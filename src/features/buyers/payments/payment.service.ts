@@ -1,12 +1,15 @@
 import { env } from '@/config/env';
+import type { PaymentStatus } from '@/integrations/mongo';
 import { findBuyerOrder, findOrderByIdLean } from '@/repositories/buyers/order.repository';
 import { findBuyerPaymentProfileLean } from '@/repositories/buyers/buyer.repository';
 import {
+  claimPendingPaymentForProcessing,
   createPayment,
   findOrderIdByCheckoutToken,
   findPaymentByOrderId,
   findPaymentByOrderIdLean,
   savePaymentDocument,
+  updatePaymentStatusByOrderId,
 } from '@/repositories/buyers/payment.repository';
 import { findActiveProductLean } from '@/repositories/catalog/product.repository';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
@@ -19,12 +22,15 @@ import {
   buildPaymentSplitsForOrder,
   syncPaymentSplitTransactionIds,
 } from '@/internal/buyers/payment/payment-split';
+import { logPaymentTransition } from '@/internal/buyers/payment/payment-audit';
 import {
   assertProductStockAvailable,
   assertSellersReadyForOrder,
 } from '@/internal/buyers/orders/order-item-validation';
 import { cancelPendingOrder } from '@/internal/buyers/orders/cancel-pending-order';
 import { fulfillPaidOrder } from '@/internal/buyers/orders/fulfill-order';
+import { reservePendingOrderStock } from '@/internal/buyers/orders/reserve-order-stock';
+import { creditSellerPendingFromPaidOrder } from '@/internal/sellers/wallet/credit-pending-from-order';
 
 type PaymentRecord = {
   _id: unknown;
@@ -34,7 +40,7 @@ type PaymentRecord = {
   currency: string;
   provider?: string | null;
   externalId?: string | null;
-  status: string;
+  status: PaymentStatus;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -54,6 +60,8 @@ type CreatePaymentOptions = {
 
 const AMOUNT_TOLERANCE = 0.01;
 
+const FINAL_ORDER_STATUSES = new Set(['paid', 'shipped', 'delivered']);
+
 const toPaymentResponse = (payment: PaymentRecord) => ({
   id: String(payment._id),
   orderId: payment.orderId,
@@ -70,8 +78,13 @@ const toPaymentResponse = (payment: PaymentRecord) => ({
 const amountsMatch = (expected: number, actual: number): boolean =>
   Math.abs(expected - actual) <= AMOUNT_TOLERANCE;
 
+const isFinalOrderStatus = (status: string | undefined): boolean =>
+  Boolean(status && FINAL_ORDER_STATUSES.has(status));
+
 const markPaymentCompleted = async (
   payment: {
+    _id: unknown;
+    orderId: string;
     status: string;
     provider?: string | null;
     externalId?: string | null;
@@ -79,10 +92,18 @@ const markPaymentCompleted = async (
   },
   externalId: string
 ) => {
+  const prevStatus = payment.status as PaymentStatus;
   payment.status = 'completed';
   payment.provider = 'iyzico';
   payment.externalId = externalId;
   await savePaymentDocument(payment);
+  logPaymentTransition({
+    paymentId: String(payment._id),
+    orderId: payment.orderId,
+    from: prevStatus,
+    to: 'completed',
+    reason: 'iyzico_checkout_verified',
+  });
 };
 
 const loadBuyerPaymentProfile = async (buyerId: string) => {
@@ -105,7 +126,7 @@ const loadBuyerPaymentProfile = async (buyerId: string) => {
   }
 
   return {
-    email: user.email,
+    email: String(user.email),
     firstName: buyer.firstName,
     lastName: buyer.lastName,
     phone: buyer.phone,
@@ -113,7 +134,7 @@ const loadBuyerPaymentProfile = async (buyerId: string) => {
     country: buyer.country,
     city: buyer.city,
     address: buyer.deliveryAddress,
-    createdAt: user.createdAt ?? new Date(),
+    createdAt: (user.createdAt as Date | undefined) ?? new Date(),
   };
 };
 
@@ -149,6 +170,13 @@ export const createPaymentForOrder = async (
   }
 
   await assertOrderReadyForPayment(order.items as OrderItemRecord[]);
+  await reservePendingOrderStock(
+    input.orderId,
+    order.items.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+    }))
+  );
 
   const buyerProfile = await loadBuyerPaymentProfile(buyerId);
   const paymentSplits = await buildPaymentSplitsForOrder(input.orderId, order.items);
@@ -175,8 +203,18 @@ export const createPaymentForOrder = async (
 
   payment.provider = 'iyzico';
   payment.externalId = checkout.token;
+  const prevStatus = payment.status as PaymentStatus;
   payment.status = 'pending';
   await savePaymentDocument(payment);
+  if (prevStatus !== 'pending') {
+    logPaymentTransition({
+      paymentId: String(payment._id),
+      orderId: payment.orderId,
+      from: prevStatus,
+      to: 'pending',
+      reason: 'checkout_initialized',
+    });
+  }
 
   return {
     payment: toPaymentResponse(payment.toObject()),
@@ -204,8 +242,16 @@ const handleFulfillmentFailure = async (
   const refunded = await refundIyzicoPayment(externalId, payment.amount, payment.orderId);
 
   if (refunded) {
+    const prevStatus = payment.status as PaymentStatus;
     payment.status = 'refunded';
     await savePaymentDocument(payment);
+    logPaymentTransition({
+      paymentId: String(payment._id),
+      orderId: payment.orderId,
+      from: prevStatus,
+      to: 'refunded',
+      reason: 'fulfillment_failed_refund_success',
+    });
   }
 
   logger.error(
@@ -218,15 +264,25 @@ const handleFulfillmentFailure = async (
 
 export const completePaymentFromCheckoutToken = async (token: string) => {
   const result = await completeIyzicoCheckout(token);
-  const payment = await findPaymentByOrderId(result.orderId);
+  let payment = await findPaymentByOrderId(result.orderId);
 
   if (!payment) {
     throw new CommerceError(404, 'Ödeme kaydı bulunamadı');
   }
 
   if (result.status === 'failed') {
-    payment.status = 'failed';
-    await savePaymentDocument(payment);
+    const previousStatus = payment.status;
+    const updated = await updatePaymentStatusByOrderId(result.orderId, 'failed');
+    payment = updated ?? payment;
+    if (previousStatus !== 'failed') {
+      logPaymentTransition({
+        paymentId: String(payment._id),
+        orderId: payment.orderId,
+        from: previousStatus,
+        to: 'failed',
+        reason: 'iyzico_checkout_failed',
+      });
+    }
     await cancelPendingOrder(result.orderId);
 
     return {
@@ -239,7 +295,7 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
   if (payment.status === 'completed') {
     const order = await findOrderByIdLean(result.orderId);
 
-    if (order?.status === 'paid' || order?.status === 'shipped' || order?.status === 'delivered') {
+    if (isFinalOrderStatus(order?.status)) {
       return {
         payment: toPaymentResponse(payment.toObject()),
         success: true as const,
@@ -253,7 +309,7 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
     throw new CommerceError(404, 'Sipariş bulunamadı');
   }
 
-  if (order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered') {
+  if (isFinalOrderStatus(order.status)) {
     if (payment.status !== 'completed') {
       await markPaymentCompleted(payment, result.externalId);
     }
@@ -266,6 +322,49 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
 
   if (order.status !== 'pending') {
     throw new CommerceError(409, 'Sipariş ödemeye uygun değil');
+  }
+
+  if (payment.status === 'completed') {
+    throw new CommerceError(409, 'Ödeme zaten tamamlandı, sipariş uzlaştırması bekleniyor');
+  }
+
+  if (payment.status === 'processing') {
+    throw new CommerceError(409, 'Ödeme işleniyor, lütfen kısa süre sonra tekrar deneyin');
+  }
+
+  const claimedPayment = await claimPendingPaymentForProcessing(result.orderId);
+  if (claimedPayment) {
+    logPaymentTransition({
+      paymentId: String(claimedPayment._id),
+      orderId: claimedPayment.orderId,
+      from: 'pending',
+      to: 'processing',
+      reason: 'callback_claim',
+    });
+    payment = claimedPayment;
+  } else {
+    const latestPayment = await findPaymentByOrderId(result.orderId);
+
+    if (!latestPayment) {
+      throw new CommerceError(404, 'Ödeme kaydı bulunamadı');
+    }
+
+    payment = latestPayment;
+
+    if (payment.status === 'completed') {
+      return {
+        payment: toPaymentResponse(payment.toObject()),
+        success: true as const,
+      };
+    }
+
+    if (payment.status === 'processing') {
+      throw new CommerceError(409, 'Ödeme işleniyor, lütfen kısa süre sonra tekrar deneyin');
+    }
+  }
+
+  if (payment.status !== 'processing') {
+    throw new CommerceError(409, 'Ödeme işleme alınamadı');
   }
 
   if (!amountsMatch(order.totalAmount, result.paidAmount)) {
@@ -293,9 +392,7 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
       const refreshed = await findOrderByIdLean(result.orderId);
 
       if (
-        refreshed?.status === 'paid' ||
-        refreshed?.status === 'shipped' ||
-        refreshed?.status === 'delivered'
+        isFinalOrderStatus(refreshed?.status)
       ) {
         await markPaymentCompleted(payment, result.externalId);
 
@@ -303,6 +400,12 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
           await syncPaymentSplitTransactionIds(result.orderId, result.itemTransactions);
         } catch (syncError) {
           logger.error({ err: syncError, orderId: result.orderId }, 'Split transaction sync başarısız');
+        }
+
+        try {
+          await creditSellerPendingFromPaidOrder(result.orderId);
+        } catch (walletError) {
+          logger.error({ err: walletError, orderId: result.orderId }, 'Satıcı pending bakiye yazılamadı');
         }
 
         return {
@@ -321,6 +424,12 @@ export const completePaymentFromCheckoutToken = async (token: string) => {
     await syncPaymentSplitTransactionIds(result.orderId, result.itemTransactions);
   } catch (syncError) {
     logger.error({ err: syncError, orderId: result.orderId }, 'Split transaction sync başarısız');
+  }
+
+  try {
+    await creditSellerPendingFromPaidOrder(result.orderId);
+  } catch (walletError) {
+    logger.error({ err: walletError, orderId: result.orderId }, 'Satıcı pending bakiye yazılamadı');
   }
 
   return {

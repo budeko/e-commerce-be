@@ -1,12 +1,16 @@
-import { Buyer, Seller, SellerMember, SellerRole, User } from '@/integrations/mongo';
 import { deleteAuthOtpsForUser } from '@/internal/auth/otp/otp';
+import { deleteBuyerById } from '@/repositories/buyers/buyer.repository';
+import { deleteSellerMemberById } from '@/repositories/sellers/seller-member.repository';
+import { deleteSellerRolesBySellerId } from '@/repositories/sellers/seller-role.repository';
+import { deleteSellerById } from '@/repositories/sellers/seller.repository';
+import { deleteUserById, findUserById } from '@/repositories/auth/user.repository';
 
 export const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const getVerificationExpiresAt = () => new Date(Date.now() + VERIFICATION_TTL_MS);
 
 export const deleteUnverifiedUser = async (userId: string) => {
-  const user = await User.findById(userId);
+  const user = await findUserById(userId);
 
   if (!user || user.isEmailVerified) {
     return;
@@ -14,10 +18,10 @@ export const deleteUnverifiedUser = async (userId: string) => {
 
   await Promise.all([
     deleteAuthOtpsForUser(userId),
-    Buyer.findByIdAndDelete(userId),
-    SellerMember.findByIdAndDelete(userId),
-    SellerRole.deleteMany({ sellerId: userId }),
-    Seller.findByIdAndDelete(userId),
+    deleteBuyerById(userId),
+    deleteSellerMemberById(userId),
+    deleteSellerRolesBySellerId(userId),
+    deleteSellerById(userId),
   ]);
-  await User.findByIdAndDelete(userId);
+  await deleteUserById(userId);
 };

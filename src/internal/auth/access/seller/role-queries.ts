@@ -1,8 +1,14 @@
-import { SellerMember, SellerRole, SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
+import { countOwnerSellerMembersByCompanyId } from '@/repositories/sellers/seller-member.repository';
+import {
+  findSellerRoleByIdAndCompanyIdLean,
+  findSellerRoleSlugByIdAndCompanyIdLean,
+  findSellerRolesByIdsAndCompanyIdLean,
+} from '@/repositories/sellers/seller-role.repository';
+import { SELLER_SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 
 export const assertAssignableSellerRoleId = async (companyId: string, roleId: string) => {
-  const role = await SellerRole.findOne({ _id: roleId, sellerId: companyId }).lean();
+  const role = await findSellerRoleByIdAndCompanyIdLean(companyId, roleId);
 
   if (!role) {
     throw new AuthError(404, 'Rol bulunamadı');
@@ -16,12 +22,10 @@ export const assertAssignableSellerRoleId = async (companyId: string, roleId: st
 };
 
 export const countOwnerSellerMembers = async (companyId: string) =>
-  SellerMember.countDocuments({ sellerId: companyId, isOwner: true });
+  countOwnerSellerMembersByCompanyId(companyId);
 
 export const isOwnerSellerRoleId = async (companyId: string, roleId: string) => {
-  const role = await SellerRole.findOne({ _id: roleId, sellerId: companyId })
-    .select('slug isSystem')
-    .lean();
+  const role = await findSellerRoleSlugByIdAndCompanyIdLean(companyId, roleId);
 
   return role?.slug === SELLER_SYSTEM_OWNER_ROLE_SLUG;
 };
@@ -42,12 +46,7 @@ export const getSellerRoleSummariesByIds = async (
     return new Map();
   }
 
-  const roles = await SellerRole.find({
-    _id: { $in: uniqueIds },
-    sellerId: companyId,
-  })
-    .select('name slug')
-    .lean();
+  const roles = await findSellerRolesByIdsAndCompanyIdLean(companyId, uniqueIds);
 
   return new Map(
     roles.map((role) => [

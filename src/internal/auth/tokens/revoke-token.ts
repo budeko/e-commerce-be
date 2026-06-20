@@ -1,13 +1,16 @@
 import { createHash } from 'crypto';
 import jwt from 'jsonwebtoken';
-import { RevokedToken } from '@/integrations/mongo';
+import {
+  revokedTokenExists,
+  upsertRevokedToken,
+} from '@/repositories/auth/revoked-token.repository';
 
 const hashToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 
 export const isTokenRevoked = async (token: string) => {
   const tokenHash = hashToken(token);
-  const revoked = await RevokedToken.exists({ _id: tokenHash });
+  const revoked = await revokedTokenExists(tokenHash);
   return Boolean(revoked);
 };
 
@@ -26,12 +29,5 @@ export const revokeToken = async (token: string) => {
 
   const tokenHash = hashToken(token);
 
-  await RevokedToken.updateOne(
-    { _id: tokenHash },
-    {
-      $set: { expiresAt },
-      $setOnInsert: { _id: tokenHash },
-    },
-    { upsert: true }
-  );
+  await upsertRevokedToken(tokenHash, expiresAt);
 };

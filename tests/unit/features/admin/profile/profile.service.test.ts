@@ -20,6 +20,10 @@ vi.mock('@/internal/auth/access/admin/role-queries', () => ({
   getRoleSummariesByIds: (...args: unknown[]) => mockGetRoleSummariesByIds(...args),
 }));
 
+vi.mock('@/internal/auth/admin/admin-audit', () => ({
+  recordAdminAction: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { updateAdminProfile } from '@/features/admin/profile/profile.service';
 
 const ownerId = '550e8400-e29b-41d4-a716-446655440000';

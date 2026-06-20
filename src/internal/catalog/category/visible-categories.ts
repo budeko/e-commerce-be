@@ -1,4 +1,4 @@
-import { Category } from '@/integrations/mongo';
+import { findAllCategoryGraphNodesLean } from '@/repositories/catalog/category.repository';
 import {
   filterCategoriesWithActiveAncestors,
   type CategoryGraphNode,
@@ -22,9 +22,7 @@ const toGraphNode = (category: {
 });
 
 const loadVisibleCategoryIds = async (): Promise<Set<string>> => {
-  const categories = await Category.find()
-    .select('_id parentIds childIds isActive isLeaf')
-    .lean();
+  const categories = await findAllCategoryGraphNodesLean();
 
   const nodes = categories.map(toGraphNode);
   const visible = filterCategoriesWithActiveAncestors(nodes);

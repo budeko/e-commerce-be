@@ -1,6 +1,6 @@
 import { getAdminContext } from '@/internal/auth/queries/admin-context';
 import { getSellerContext } from '@/internal/auth/queries/seller-context';
-import { Seller } from '@/integrations/mongo';
+import { findSellerApprovalStatusLean } from '@/repositories/sellers/seller.repository';
 import type { PermissionKey } from '@/internal/auth/access/admin/permission-keys';
 import type { SellerPermissionKey } from '@/internal/auth/access/seller/permission-keys';
 import { AuthError } from '@/internal/auth/errors';
@@ -64,7 +64,7 @@ export const buildAuthUserFields = async (
     const sellerContext = await getSellerContext(String(user._id));
 
     if (!sellerContext) {
-      const legacySeller = await Seller.findById(String(user._id)).select('approvalStatus').lean();
+      const legacySeller = await findSellerApprovalStatusLean(String(user._id));
 
       return {
         ...base,

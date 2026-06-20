@@ -54,6 +54,8 @@ const orderSchema = new Schema(
     totalAmount: { type: Number, required: true, min: 0 },
     currency: { type: String, enum: ORDER_CURRENCIES, default: 'TRY' },
     status: { type: String, enum: ORDER_STATUSES, default: 'pending' },
+    stockReserved: { type: Boolean, default: false },
+    stockReservedAt: { type: Date, default: null },
     shippingAddress: { type: shippingAddressSchema, required: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

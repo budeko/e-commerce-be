@@ -68,3 +68,45 @@ export const deactivateProductsInCategories = async (categoryIds: string[]) =>
 
 export const countProductsInCategory = async (categoryId: string) =>
   Product.countDocuments({ categoryId });
+
+export const decrementProductStockIfAvailable = async (
+  productId: string,
+  quantity: number,
+  session?: import('mongoose').ClientSession
+) =>
+  Product.findOneAndUpdate(
+    {
+      _id: productId,
+      stock: { $gte: quantity },
+      isActive: true,
+    },
+    {
+      $inc: { stock: -quantity },
+      $set: { updatedAt: new Date() },
+    },
+    { session, new: true }
+  );
+
+export const incrementProductStock = async (
+  productId: string,
+  quantity: number,
+  session?: import('mongoose').ClientSession
+) =>
+  Product.findByIdAndUpdate(
+    productId,
+    {
+      $inc: { stock: quantity },
+      $set: { updatedAt: new Date() },
+    },
+    { session }
+  );
+
+export const findOwnedProductById = async (sellerId: string, productId: string) => {
+  const product = await Product.findById(productId);
+
+  if (!product || product.sellerId !== sellerId) {
+    return null;
+  }
+
+  return product;
+};

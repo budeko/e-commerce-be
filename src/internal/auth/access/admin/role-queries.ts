@@ -1,8 +1,14 @@
-import { Admin, AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
+import { SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { AuthError } from '@/internal/auth/errors';
+import { countAdminsByRoleId } from '@/repositories/auth/admin.repository';
+import {
+  findAdminRoleByIdLean,
+  findAdminRoleBySlugLean,
+  findAdminRolesByIdsLean,
+} from '@/repositories/auth/admin-role.repository';
 
 export const assertAssignableRoleId = async (roleId: string) => {
-  const role = await AdminRole.findById(roleId).lean();
+  const role = await findAdminRoleByIdLean(roleId);
 
   if (!role) {
     throw new AuthError(404, 'Rol bulunamadı');
@@ -16,17 +22,17 @@ export const assertAssignableRoleId = async (roleId: string) => {
 };
 
 export const countOwnerAdmins = async () => {
-  const ownerRole = await AdminRole.findOne({ slug: SYSTEM_OWNER_ROLE_SLUG }).select('_id').lean();
+  const ownerRole = await findAdminRoleBySlugLean(SYSTEM_OWNER_ROLE_SLUG);
 
   if (!ownerRole) {
     return 0;
   }
 
-  return Admin.countDocuments({ roleId: String(ownerRole._id) });
+  return countAdminsByRoleId(String(ownerRole._id));
 };
 
 export const isOwnerRoleId = async (roleId: string) => {
-  const role = await AdminRole.findById(roleId).select('slug isSystem').lean();
+  const role = await findAdminRoleByIdLean(roleId);
   return role?.slug === SYSTEM_OWNER_ROLE_SLUG;
 };
 
@@ -43,9 +49,7 @@ export const getRoleSummariesByIds = async (roleIds: string[]): Promise<Map<stri
     return new Map();
   }
 
-  const roles = await AdminRole.find({ _id: { $in: uniqueIds } })
-    .select('name slug')
-    .lean();
+  const roles = await findAdminRolesByIdsLean(uniqueIds);
 
   return new Map(
     roles.map((role) => [

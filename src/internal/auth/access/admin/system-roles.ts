@@ -1,12 +1,17 @@
-import { AdminRole, SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
+import { SYSTEM_OWNER_ROLE_SLUG } from '@/integrations/mongo';
 import { ALL_PERMISSIONS } from '@/internal/auth/access/admin/permission-keys';
 import { createUserId } from '@/internal/common/ids';
+import {
+  createAdminRole,
+  findAdminRoleBySlug,
+  saveAdminRoleDocument,
+} from '@/repositories/auth/admin-role.repository';
 
 export const ensureSystemOwnerRole = async () => {
-  let role = await AdminRole.findOne({ slug: SYSTEM_OWNER_ROLE_SLUG });
+  let role = await findAdminRoleBySlug(SYSTEM_OWNER_ROLE_SLUG);
 
   if (!role) {
-    role = await AdminRole.create({
+    role = await createAdminRole({
       _id: createUserId(),
       name: 'Owner',
       slug: SYSTEM_OWNER_ROLE_SLUG,
@@ -25,7 +30,7 @@ export const ensureSystemOwnerRole = async () => {
 
   if (missingPermissions.length > 0) {
     role.permissions = ALL_PERMISSIONS;
-    await role.save();
+    await saveAdminRoleDocument(role);
   }
 
   return role;

@@ -1,17 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockBuyerFindById = vi.fn();
-const mockBuyerFindByIdAndUpdate = vi.fn();
-const mockUserFindByIdAndUpdate = vi.fn();
+const mockFindBuyerById = vi.fn();
+const mockUpdateBuyerById = vi.fn();
+const mockUpdateUserById = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Buyer: {
-    findById: (...args: unknown[]) => mockBuyerFindById(...args),
-    findByIdAndUpdate: (...args: unknown[]) => mockBuyerFindByIdAndUpdate(...args),
-  },
-  User: {
-    findByIdAndUpdate: (...args: unknown[]) => mockUserFindByIdAndUpdate(...args),
-  },
+vi.mock('@/repositories/buyers/buyer.repository', () => ({
+  findBuyerById: (...args: unknown[]) => mockFindBuyerById(...args),
+  updateBuyerById: (...args: unknown[]) => mockUpdateBuyerById(...args),
+}));
+
+vi.mock('@/repositories/auth/user.repository', () => ({
+  updateUserById: (...args: unknown[]) => mockUpdateUserById(...args),
 }));
 
 import { updateBuyerProfile } from '@/internal/auth/profile/buyer';
@@ -33,11 +32,11 @@ const completeBuyer = {
 describe('updateBuyerProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUserFindByIdAndUpdate.mockResolvedValue(undefined);
+    mockUpdateUserById.mockResolvedValue(undefined);
   });
 
   it('alıcı profili yoksa 404 döner', async () => {
-    mockBuyerFindById.mockResolvedValue(null);
+    mockFindBuyerById.mockResolvedValue(null);
 
     await expect(updateBuyerProfile(userId, { firstName: 'Ali' })).rejects.toMatchObject({
       statusCode: 404,
@@ -46,33 +45,33 @@ describe('updateBuyerProfile', () => {
   });
 
   it('tam profilde isActive true olur', async () => {
-    mockBuyerFindById.mockResolvedValue({
+    mockFindBuyerById.mockResolvedValue({
       billingSameAsDelivery: true,
       deliveryAddress: 'Adres',
       toObject: () => completeBuyer,
     });
-    mockBuyerFindByIdAndUpdate.mockResolvedValue({
+    mockUpdateBuyerById.mockResolvedValue({
       toObject: () => completeBuyer,
     });
 
     const result = await updateBuyerProfile(userId, { lastName: 'Veli' });
 
     expect(result.isActive).toBe(true);
-    expect(mockUserFindByIdAndUpdate).toHaveBeenCalledWith(userId, { isActive: true });
+    expect(mockUpdateUserById).toHaveBeenCalledWith(userId, { $set: { isActive: true } });
   });
 
   it('billingSameAsDelivery true iken fatura adresini teslimat adresine eşitler', async () => {
-    mockBuyerFindById.mockResolvedValue({
+    mockFindBuyerById.mockResolvedValue({
       billingSameAsDelivery: true,
       deliveryAddress: 'Eski adres',
     });
-    mockBuyerFindByIdAndUpdate.mockResolvedValue({
+    mockUpdateBuyerById.mockResolvedValue({
       toObject: () => ({ ...completeBuyer, deliveryAddress: 'Yeni adres' }),
     });
 
     await updateBuyerProfile(userId, { deliveryAddress: 'Yeni adres' });
 
-    expect(mockBuyerFindByIdAndUpdate).toHaveBeenCalledWith(
+    expect(mockUpdateBuyerById).toHaveBeenCalledWith(
       userId,
       {
         $set: expect.objectContaining({

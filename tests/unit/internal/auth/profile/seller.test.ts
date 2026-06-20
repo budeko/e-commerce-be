@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-keys';
 
-const mockSellerFindById = vi.fn();
-const mockSellerFindByIdAndUpdate = vi.fn();
+const mockFindSellerById = vi.fn();
+const mockUpdateSellerById = vi.fn();
+const mockSaveSellerDocument = vi.fn();
 const mockGetSellerContext = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Seller: {
-    findById: (...args: unknown[]) => mockSellerFindById(...args),
-    findByIdAndUpdate: (...args: unknown[]) => mockSellerFindByIdAndUpdate(...args),
-  },
+vi.mock('@/repositories/sellers/seller.repository', () => ({
+  findSellerById: (...args: unknown[]) => mockFindSellerById(...args),
+  updateSellerById: (...args: unknown[]) => mockUpdateSellerById(...args),
+  saveSellerDocument: (...args: unknown[]) => mockSaveSellerDocument(...args),
 }));
 
 vi.mock('@/internal/auth/queries/seller-context', () => ({
@@ -61,6 +61,7 @@ describe('updateSellerProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetSellerContext.mockResolvedValue(ownerContext);
+    mockSaveSellerDocument.mockImplementation((seller: { save: () => Promise<unknown> }) => seller.save());
   });
 
   it('satıcı profili yoksa 404 döner', async () => {
@@ -73,7 +74,7 @@ describe('updateSellerProfile', () => {
   });
 
   it('onay beklerken profil güncellenemez', async () => {
-    mockSellerFindById.mockResolvedValue({ approvalStatus: 'pending' });
+    mockFindSellerById.mockResolvedValue({ approvalStatus: 'pending' });
 
     await expect(updateSellerProfile(userId, { firstName: 'Ali' })).rejects.toMatchObject({
       statusCode: 403,
@@ -82,19 +83,19 @@ describe('updateSellerProfile', () => {
   });
 
   it('onaylı satıcıda kritik alan değişince pending olur', async () => {
-    mockSellerFindById.mockResolvedValue({
+    mockFindSellerById.mockResolvedValue({
       approvalStatus: 'approved',
       companyName: 'Eski Şirket',
       toObject: () => ({ approvalStatus: 'approved', companyName: 'Eski Şirket' }),
     });
-    mockSellerFindByIdAndUpdate.mockResolvedValue({
+    mockUpdateSellerById.mockResolvedValue({
       approvalStatus: 'pending',
       toObject: () => ({ approvalStatus: 'pending', ...completeBireyselSeller }),
     });
 
     const result = await updateSellerProfile(userId, { companyName: 'Yeni Şirket' });
 
-    expect(mockSellerFindByIdAndUpdate).toHaveBeenCalledWith(
+    expect(mockUpdateSellerById).toHaveBeenCalledWith(
       companyId,
       {
         $set: expect.objectContaining({
@@ -109,7 +110,7 @@ describe('updateSellerProfile', () => {
   });
 
   it('kayıtlı IBAN değiştirilemez', async () => {
-    mockSellerFindById.mockResolvedValue({
+    mockFindSellerById.mockResolvedValue({
       approvalStatus: 'approved',
       iban: 'TR330006100519786457841326',
       toObject: () => ({ approvalStatus: 'approved', iban: 'TR330006100519786457841326' }),
@@ -125,11 +126,11 @@ describe('updateSellerProfile', () => {
 
   it('draft profil tamamlanınca pending olur', async () => {
     const save = vi.fn();
-    mockSellerFindById.mockResolvedValue({
+    mockFindSellerById.mockResolvedValue({
       approvalStatus: 'draft',
       toObject: () => ({ approvalStatus: 'draft' }),
     });
-    mockSellerFindByIdAndUpdate.mockResolvedValue({
+    mockUpdateSellerById.mockResolvedValue({
       approvalStatus: 'draft',
       rejectionReason: null,
       save,

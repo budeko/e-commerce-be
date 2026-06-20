@@ -269,34 +269,6 @@ export const env = {
     );
   },
 
-  get sentryEnabled(): boolean {
-    return parseBooleanEnv(process.env.SENTRY_ENABLED, env.isProduction);
-  },
-
-  get sentryDsn(): string | undefined {
-    return trim(process.env.SENTRY_DSN);
-  },
-
-  get sentryEnvironment(): string {
-    return trim(process.env.SENTRY_ENVIRONMENT) ?? env.nodeEnv;
-  },
-
-  get sentryTracesSampleRate(): number {
-    const raw = trim(process.env.SENTRY_TRACES_SAMPLE_RATE);
-
-    if (!raw) {
-      return env.isProduction ? 0.1 : 0;
-    }
-
-    const value = Number(raw);
-
-    if (!Number.isFinite(value) || value < 0 || value > 1) {
-      return env.isProduction ? 0.1 : 0;
-    }
-
-    return value;
-  },
-
   resolveIyzicoUri(apiKey: string): string {
     if (env.iyzipayUri) {
       return env.iyzipayUri;

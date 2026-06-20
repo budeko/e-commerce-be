@@ -1,6 +1,6 @@
-import { Seller } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import { assertCartItemQuantity } from '@/internal/catalog/product/product-order-quantity';
+import { findSellersByIdsLean } from '@/repositories/sellers/seller.repository';
 
 export const assertProductStockAvailable = (
   product: { stock: number; minOrderQuantity?: number | null },
@@ -17,9 +17,7 @@ export const assertSellersReadyForOrder = async (
   items: Array<{ sellerId: string }>
 ): Promise<void> => {
   const sellerIds = [...new Set(items.map((item) => item.sellerId))];
-  const sellers = await Seller.find({ _id: { $in: sellerIds } })
-    .select('_id iyzicoSubMerchantKey approvalStatus')
-    .lean();
+  const sellers = await findSellersByIdsLean(sellerIds, '_id iyzicoSubMerchantKey approvalStatus');
 
   const sellersById = new Map(sellers.map((seller) => [String(seller._id), seller]));
 

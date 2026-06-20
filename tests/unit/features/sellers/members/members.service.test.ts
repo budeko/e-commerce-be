@@ -3,21 +3,22 @@ import { SELLER_PERMISSIONS } from '@/internal/auth/access/seller/permission-key
 import type { SellerAccessContext } from '@/internal/auth/queries/seller-context';
 import { AuthError } from '@/internal/auth/errors';
 
-const mockSellerMemberFind = vi.fn();
-const mockSellerMemberFindOne = vi.fn();
-const mockUserFind = vi.fn();
-const mockUserFindById = vi.fn();
+const mockListSellerMembersByCompanyIdLean = vi.fn();
+const mockFindSellerMemberByCompanyAndUserId = vi.fn();
+const mockFindUserByIdLean = vi.fn();
+const mockFindUsersByIdsLean = vi.fn();
 const mockGetSellerRoleSummariesByIds = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  SellerMember: {
-    find: (...args: unknown[]) => mockSellerMemberFind(...args),
-    findOne: (...args: unknown[]) => mockSellerMemberFindOne(...args),
-  },
-  User: {
-    find: (...args: unknown[]) => mockUserFind(...args),
-    findById: (...args: unknown[]) => mockUserFindById(...args),
-  },
+vi.mock('@/repositories/sellers/seller-member.repository', () => ({
+  findSellerMemberByCompanyAndUserId: (...args: unknown[]) =>
+    mockFindSellerMemberByCompanyAndUserId(...args),
+  listSellerMembersByCompanyIdLean: (...args: unknown[]) =>
+    mockListSellerMembersByCompanyIdLean(...args),
+}));
+
+vi.mock('@/repositories/auth/user.repository', () => ({
+  findUserByIdLean: (...args: unknown[]) => mockFindUserByIdLean(...args),
+  findUsersByIdsLean: (...args: unknown[]) => mockFindUsersByIdsLean(...args),
 }));
 
 vi.mock('@/internal/auth/access/seller/role-queries', () => ({
@@ -62,34 +63,26 @@ describe('listSellerMembers', () => {
   });
 
   it('yetkili satıcı ekip üyelerini listeler', async () => {
-    mockSellerMemberFind.mockReturnValue({
-      sort: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          {
-            _id: memberId,
-            sellerId: companyId,
-            roleId,
-            isOwner: true,
-            firstName: 'Ali',
-            lastName: 'Veli',
-            phone: null,
-            createdAt: new Date('2024-01-01'),
-          },
-        ]),
-      }),
-    });
-    mockUserFind.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue([
-          {
-            _id: memberId,
-            email: 'ali@test.com',
-            isEmailVerified: true,
-            createdAt: new Date('2024-01-01'),
-          },
-        ]),
-      }),
-    });
+    mockListSellerMembersByCompanyIdLean.mockResolvedValue([
+      {
+        _id: memberId,
+        sellerId: companyId,
+        roleId,
+        isOwner: true,
+        firstName: 'Ali',
+        lastName: 'Veli',
+        phone: null,
+        createdAt: new Date('2024-01-01'),
+      },
+    ]);
+    mockFindUsersByIdsLean.mockResolvedValue([
+      {
+        _id: memberId,
+        email: 'ali@test.com',
+        isEmailVerified: true,
+        createdAt: new Date('2024-01-01'),
+      },
+    ]);
     mockGetSellerRoleSummariesByIds.mockResolvedValue(
       new Map([[roleId, { roleId, name: 'Owner', slug: 'owner' }]])
     );
@@ -104,7 +97,7 @@ describe('listSellerMembers', () => {
       isOwner: true,
       profile: { firstName: 'Ali', lastName: 'Veli', phone: null },
     });
-    expect(mockSellerMemberFind).toHaveBeenCalledWith({ sellerId: companyId });
+    expect(mockListSellerMembersByCompanyIdLean).toHaveBeenCalledWith(companyId);
   });
 });
 
@@ -120,7 +113,7 @@ describe('getSellerMemberByUserId', () => {
   });
 
   it('yetkili satıcı çalışan detayını döner', async () => {
-    mockSellerMemberFindOne.mockResolvedValue({
+    mockFindSellerMemberByCompanyAndUserId.mockResolvedValue({
       _id: memberId,
       sellerId: companyId,
       roleId,
@@ -129,13 +122,11 @@ describe('getSellerMemberByUserId', () => {
       lastName: 'Veli',
       phone: null,
     });
-    mockUserFindById.mockReturnValue({
-      select: vi.fn().mockResolvedValue({
-        _id: memberId,
-        email: 'ali@test.com',
-        role: 'seller',
-        isEmailVerified: true,
-      }),
+    mockFindUserByIdLean.mockResolvedValue({
+      _id: memberId,
+      email: 'ali@test.com',
+      role: 'seller',
+      isEmailVerified: true,
     });
     mockGetSellerRoleSummariesByIds.mockResolvedValue(
       new Map([[roleId, { roleId, name: 'Owner', slug: 'owner' }]])

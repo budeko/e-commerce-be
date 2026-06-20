@@ -1,17 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockOrderUpdateMany = vi.fn();
-const mockPaymentDistinct = vi.fn();
-const mockPaymentUpdateMany = vi.fn();
+const mockFindExpiringPendingOrdersLean = vi.fn();
+const mockCancelPendingOrder = vi.fn();
+const mockDistinctPendingCheckoutOrderIds = vi.fn();
+const mockFailStalePendingPayments = vi.fn();
 
-vi.mock('@/integrations/mongo', () => ({
-  Order: {
-    updateMany: (...args: unknown[]) => mockOrderUpdateMany(...args),
-  },
-  Payment: {
-    distinct: (...args: unknown[]) => mockPaymentDistinct(...args),
-    updateMany: (...args: unknown[]) => mockPaymentUpdateMany(...args),
-  },
+vi.mock('@/repositories/buyers/order.repository', () => ({
+  findExpiringPendingOrdersLean: (...args: unknown[]) => mockFindExpiringPendingOrdersLean(...args),
+}));
+
+vi.mock('@/repositories/buyers/payment.repository', () => ({
+  distinctPendingCheckoutOrderIds: (...args: unknown[]) => mockDistinctPendingCheckoutOrderIds(...args),
+  failStalePendingPayments: (...args: unknown[]) => mockFailStalePendingPayments(...args),
+}));
+
+vi.mock('@/internal/buyers/orders/cancel-pending-order', () => ({
+  cancelPendingOrder: (...args: unknown[]) => mockCancelPendingOrder(...args),
 }));
 
 import { expirePendingOrders } from '@/internal/buyers/orders/expire-pending-orders';
@@ -19,49 +23,43 @@ import { expirePendingOrders } from '@/internal/buyers/orders/expire-pending-ord
 describe('expirePendingOrders', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPaymentDistinct.mockResolvedValue([]);
-    mockOrderUpdateMany.mockResolvedValue({ modifiedCount: 2 });
-    mockPaymentUpdateMany.mockResolvedValue({ modifiedCount: 0 });
+    mockDistinctPendingCheckoutOrderIds.mockResolvedValue([]);
+    mockFindExpiringPendingOrdersLean.mockResolvedValue([{ _id: 'o1' }, { _id: 'o2' }]);
+    mockCancelPendingOrder.mockResolvedValue(true);
+    mockFailStalePendingPayments.mockResolvedValue({ modifiedCount: 0 });
   });
 
   it('aktif checkout olmayan pending siparişleri iptal eder', async () => {
     const count = await expirePendingOrders();
 
     expect(count).toBe(2);
-    expect(mockOrderUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'pending',
-        _id: { $nin: [] },
-      }),
-      { $set: { status: 'cancelled', updatedAt: expect.any(Date) } }
+    expect(mockFindExpiringPendingOrdersLean).toHaveBeenCalledWith(
+      expect.any(Date),
+      []
     );
+    expect(mockCancelPendingOrder).toHaveBeenCalledTimes(2);
   });
 
   it('aktif checkout ödemesi olan siparişleri atlar', async () => {
-    mockPaymentDistinct.mockResolvedValue(['order-with-checkout']);
+    mockDistinctPendingCheckoutOrderIds.mockResolvedValue(['order-with-checkout']);
 
     await expirePendingOrders();
 
-    expect(mockOrderUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        _id: { $nin: ['order-with-checkout'] },
-      }),
-      expect.any(Object)
+    expect(mockFindExpiringPendingOrdersLean).toHaveBeenCalledWith(
+      expect.any(Date),
+      ['order-with-checkout']
     );
   });
 
   it('süresi dolan checkout ödemelerini failed yapar', async () => {
-    mockPaymentDistinct.mockResolvedValue(['order-with-checkout']);
-    mockPaymentUpdateMany.mockResolvedValue({ modifiedCount: 1 });
+    mockDistinctPendingCheckoutOrderIds.mockResolvedValue(['order-with-checkout']);
+    mockFailStalePendingPayments.mockResolvedValue({ modifiedCount: 1 });
 
     await expirePendingOrders();
 
-    expect(mockPaymentUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderId: { $in: ['order-with-checkout'] },
-        status: 'pending',
-      }),
-      { $set: { status: 'failed', updatedAt: expect.any(Date) } }
+    expect(mockFailStalePendingPayments).toHaveBeenCalledWith(
+      ['order-with-checkout'],
+      expect.any(Date)
     );
   });
 });

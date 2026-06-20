@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
-import { Product } from '@/integrations/mongo';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import { invalidateCatalogProductStock } from '@/internal/common/cache/catalog-cache';
+import {
+  decrementProductStockIfAvailable,
+  incrementProductStock,
+} from '@/repositories/catalog/product.repository';
 
 export type StockDecrement = {
   productId: string;
@@ -13,22 +16,26 @@ export const decrementStockForOrderItems = async (
   session?: mongoose.ClientSession
 ): Promise<void> => {
   for (const item of items) {
-    const updated = await Product.findOneAndUpdate(
-      {
-        _id: item.productId,
-        stock: { $gte: item.quantity },
-        isActive: true,
-      },
-      {
-        $inc: { stock: -item.quantity },
-        $set: { updatedAt: new Date() },
-      },
-      { session, new: true }
+    const updated = await decrementProductStockIfAvailable(
+      item.productId,
+      item.quantity,
+      session
     );
 
     if (!updated) {
       throw new CommerceError(400, 'Yetersiz stok');
     }
+  }
+
+  invalidateCatalogProductStock(items.map((item) => item.productId));
+};
+
+export const incrementStockForOrderItems = async (
+  items: StockDecrement[],
+  session?: mongoose.ClientSession
+): Promise<void> => {
+  for (const item of items) {
+    await incrementProductStock(item.productId, item.quantity, session);
   }
 
   invalidateCatalogProductStock(items.map((item) => item.productId));
