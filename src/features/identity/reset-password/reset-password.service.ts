@@ -8,6 +8,7 @@ import {
   findUserById,
   updateUserById,
 } from '@/repositories/auth/user.repository';
+import { revokeAllSessions } from '@/internal/auth/tokens/invalidate-all';
 import type { ResetPasswordInput } from '@/features/identity/reset-password/reset-password.schema';
 
 const updateUserPassword = async (userId: string, newPassword: string) => {
@@ -26,6 +27,7 @@ const updateUserPassword = async (userId: string, newPassword: string) => {
     },
   });
   await invalidateAuthOtp(userId, 'password_reset');
+  await revokeAllSessions(userId);
 };
 
 const resetPasswordByToken = async (token: string, newPassword: string) => {

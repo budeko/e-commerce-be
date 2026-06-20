@@ -36,10 +36,10 @@ export const forgotPassword = async (email: string) => {
   const code = await createAuthOtp(userId, 'password_reset');
 
   try {
+    await sendPasswordResetEmail(user.email, token, code);
     await updateUserById(userId, {
       $set: { activePasswordResetJti: jti },
     });
-    await sendPasswordResetEmail(user.email, token, code);
     await markPasswordResetEmailSent(userId);
   } catch (error) {
     log.error({ err: error, userId, email: user.email }, 'Şifre sıfırlama e-postası gönderilemedi');

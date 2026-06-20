@@ -107,7 +107,9 @@ describe('register', () => {
 
     expect(mockDeleteUnverifiedUser).toHaveBeenCalledWith(existingUserId);
     expect(mockMarkRegisterEmailCooldown).toHaveBeenCalledWith('user@example.com');
-    expect(result.isEmailVerified).toBe(false);
+    expect(result).toEqual({
+      message: 'Kayıt talebiniz alındı. E-posta kutunuzu kontrol edin.',
+    });
   });
 
   it('cooldown aktifken genel onay mesajı döner', async () => {

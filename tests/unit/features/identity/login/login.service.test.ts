@@ -139,6 +139,26 @@ describe('login', () => {
     });
   });
 
+  it('pasif satıcı giriş yapamaz', async () => {
+    mockFindOne.mockResolvedValue({
+      _id: userId,
+      role: 'seller',
+      password: 'hashed',
+      isEmailVerified: true,
+      isActive: false,
+      failedLoginAttempts: 0,
+      loginBlockedUntil: null,
+    });
+    mockComparePassword.mockResolvedValue(true);
+
+    await expect(
+      login({ email: 'seller@example.com', password: 'Pass1234', rememberMe: false })
+    ).rejects.toMatchObject({
+      statusCode: 401,
+      message: 'E-posta veya şifre hatalı',
+    });
+  });
+
   it('hesap kilitliyken 401 döner', async () => {
     mockFindOne.mockResolvedValue({
       _id: userId,

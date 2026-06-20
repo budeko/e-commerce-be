@@ -6,7 +6,7 @@ import {
 import { logger } from '@/internal/common/logging';
 import { OUTBOX_EVENT_TYPES } from '@/internal/common/outbox/enqueue-outbox-event';
 import {
-  listPendingOutboxEvents,
+  claimPendingOutboxEvent,
   markOutboxEventFailed,
   markOutboxEventProcessed,
 } from '@/repositories/common/outbox-event.repository';
@@ -45,10 +45,15 @@ const processOutboxEvent = async (event: {
 };
 
 export const processPendingOutboxEvents = async (): Promise<number> => {
-  const events = await listPendingOutboxEvents(BATCH_SIZE);
   let processedCount = 0;
 
-  for (const event of events) {
+  for (let index = 0; index < BATCH_SIZE; index += 1) {
+    const event = await claimPendingOutboxEvent();
+
+    if (!event) {
+      break;
+    }
+
     try {
       await processOutboxEvent({
         _id: event._id,

@@ -5,6 +5,7 @@ import {
   findUserById,
   updateUserById,
 } from '@/repositories/auth/user.repository';
+import { revokeAllSessions } from '@/internal/auth/tokens/invalidate-all';
 import type { ChangePasswordInput } from '@/features/identity/change-password/change-password.schema';
 
 export const changePassword = async (
@@ -30,4 +31,5 @@ export const changePassword = async (
       passwordChangedAt: new Date(),
     },
   });
+  await revokeAllSessions(auth.userId);
 };

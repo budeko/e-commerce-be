@@ -254,7 +254,6 @@ export const approveSeller = async (ctx: AdminAccessContext, userId: string) => 
     action: 'seller.approved',
     resourceType: 'seller',
     resourceId: userId,
-    metadata: { iyzicoSubMerchantKey: subMerchantKey },
   });
 
   try {
@@ -312,7 +311,6 @@ export const syncSellerIyzicoSubMerchant = async (ctx: AdminAccessContext, userI
     action: 'seller.iyzico_synced',
     resourceType: 'seller',
     resourceId: userId,
-    metadata: { iyzicoSubMerchantKey: seller.iyzicoSubMerchantKey },
   });
 
   return {

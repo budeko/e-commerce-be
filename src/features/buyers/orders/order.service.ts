@@ -239,10 +239,6 @@ export const updateOrderStatus = async (
     throw new CommerceError(404, 'Sipariş bulunamadı');
   }
 
-  if (input.status === 'delivered') {
-    await approvePaymentSplitsForSeller(orderId, sellerId);
-  }
-
   for (const item of order.items) {
     if (item.sellerId !== sellerId) {
       continue;
@@ -253,6 +249,10 @@ export const updateOrderStatus = async (
 
   order.status = computeAggregateOrderStatus(order.items);
   await saveOrderDocument(order);
+
+  if (input.status === 'delivered') {
+    await approvePaymentSplitsForSeller(orderId, sellerId);
+  }
 
   return toOrderResponse(order.toObject() as OrderRecord);
 };

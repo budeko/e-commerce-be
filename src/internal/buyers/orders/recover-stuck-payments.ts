@@ -15,6 +15,10 @@ import {
 const log = createLogger({ module: 'recover-stuck-payments' });
 
 const STUCK_PROCESSING_MS = 5 * 60_000;
+const FINAL_ORDER_STATUSES = new Set(['paid', 'shipped', 'delivered']);
+
+const isFinalOrderStatus = (status: string | undefined): boolean =>
+  Boolean(status && FINAL_ORDER_STATUSES.has(status));
 
 export const recoverStuckProcessingPayments = async (): Promise<number> => {
   const cutoff = new Date(Date.now() - STUCK_PROCESSING_MS);
@@ -41,7 +45,37 @@ export const recoverStuckProcessingPayments = async (): Promise<number> => {
 
       const order = await findOrderByIdLean(payment.orderId);
 
-      if (order?.status === 'pending') {
+      if (!order) {
+        const paymentDoc = await findPaymentByOrderId(payment.orderId);
+
+        if (paymentDoc) {
+          await refundCapturedIyzicoPayment(
+            paymentDoc,
+            result.externalId,
+            'stuck_missing_order_refund'
+          );
+        }
+
+        handled += 1;
+        continue;
+      }
+
+      if (order.status === 'cancelled') {
+        const paymentDoc = await findPaymentByOrderId(payment.orderId);
+
+        if (paymentDoc) {
+          await refundCapturedIyzicoPayment(
+            paymentDoc,
+            result.externalId,
+            'order_cancelled_refund'
+          );
+        }
+
+        handled += 1;
+        continue;
+      }
+
+      if (order.status === 'pending' || isFinalOrderStatus(order.status)) {
         await finalizeSuccessfulIyzicoCheckout(result);
         handled += 1;
         continue;
@@ -53,7 +87,7 @@ export const recoverStuckProcessingPayments = async (): Promise<number> => {
         await refundCapturedIyzicoPayment(
           paymentDoc,
           result.externalId,
-          order?.status === 'cancelled' ? 'order_cancelled_refund' : 'stuck_processing_refund'
+          'stuck_processing_refund'
         );
       }
 

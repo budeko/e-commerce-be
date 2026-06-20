@@ -32,6 +32,9 @@ const markEmailVerified = async (userId: string) => {
   user.isEmailVerified = true;
   user.verificationExpiresAt = null;
   user.activeEmailVerifyJti = null;
+  if (user.role === 'seller') {
+    user.isActive = true;
+  }
   await saveUserDocument(user);
   await invalidateAuthOtp(userId, 'email_verify');
 
@@ -57,25 +60,28 @@ const verifyEmailByToken = async (token: string) => {
     throw new AuthError(404, 'Kullanıcı bulunamadı');
   }
 
-  if (!user.isEmailVerified) {
-    if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
-      await deleteUnverifiedUser(verified.userId);
-      throw new AuthError(410, 'Doğrulama süresi doldu, lütfen tekrar kayıt ol');
-    }
-
-    if (!user.activeEmailVerifyJti || user.activeEmailVerifyJti !== verified.jti) {
-      throw new AuthError(400, 'Geçersiz doğrulama tokeni');
-    }
-
-    await updateUserById(verified.userId, {
-      $set: {
-        isEmailVerified: true,
-        verificationExpiresAt: null,
-        activeEmailVerifyJti: null,
-      },
-    });
-    await invalidateAuthOtp(verified.userId, 'email_verify');
+  if (user.isEmailVerified) {
+    throw new AuthError(400, 'E-posta zaten doğrulanmış, giriş yapın');
   }
+
+  if (user.verificationExpiresAt && user.verificationExpiresAt < new Date()) {
+    await deleteUnverifiedUser(verified.userId);
+    throw new AuthError(410, 'Doğrulama süresi doldu, lütfen tekrar kayıt ol');
+  }
+
+  if (!user.activeEmailVerifyJti || user.activeEmailVerifyJti !== verified.jti) {
+    throw new AuthError(400, 'Geçersiz doğrulama tokeni');
+  }
+
+  await updateUserById(verified.userId, {
+    $set: {
+      isEmailVerified: true,
+      verificationExpiresAt: null,
+      activeEmailVerifyJti: null,
+      ...(user.role === 'seller' ? { isActive: true } : {}),
+    },
+  });
+  await invalidateAuthOtp(verified.userId, 'email_verify');
 
   const refreshed = await findUserById(verified.userId);
 
@@ -94,7 +100,7 @@ const verifyEmailByCode = async (email: string, code: string) => {
   }
 
   if (user.isEmailVerified) {
-    return user;
+    throw new AuthError(400, 'E-posta zaten doğrulanmış, giriş yapın');
   }
 
   try {

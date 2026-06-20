@@ -36,6 +36,12 @@ vi.mock('@/internal/common/security', () => ({
   comparePassword: vi.fn(),
 }));
 
+const mockRevokeAllSessions = vi.fn();
+
+vi.mock('@/internal/auth/tokens/invalidate-all', () => ({
+  revokeAllSessions: (...args: unknown[]) => mockRevokeAllSessions(...args),
+}));
+
 import { OtpError } from '@/internal/auth/otp/otp';
 import { resetPassword } from '@/features/identity/reset-password/reset-password.service';
 
@@ -51,6 +57,7 @@ describe('resetPassword', () => {
     mockFindById.mockResolvedValue({ _id: userId, activePasswordResetJti: tokenJti });
     mockFindByIdAndUpdate.mockResolvedValue({});
     mockInvalidateAuthOtp.mockResolvedValue(undefined);
+    mockRevokeAllSessions.mockResolvedValue(undefined);
   });
 
   describe('token ile', () => {
@@ -71,6 +78,7 @@ describe('resetPassword', () => {
         })
       );
       expect(mockInvalidateAuthOtp).toHaveBeenCalledWith(userId, 'password_reset');
+      expect(mockRevokeAllSessions).toHaveBeenCalledWith(userId);
       expect(mockVerifyAuthOtp).not.toHaveBeenCalled();
     });
 

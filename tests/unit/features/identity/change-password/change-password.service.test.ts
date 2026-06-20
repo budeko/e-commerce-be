@@ -15,6 +15,12 @@ vi.mock('@/internal/common/security', () => ({
   hashPassword: (...args: unknown[]) => mockHashPassword(...args),
 }));
 
+const mockRevokeAllSessions = vi.fn();
+
+vi.mock('@/internal/auth/tokens/invalidate-all', () => ({
+  revokeAllSessions: (...args: unknown[]) => mockRevokeAllSessions(...args),
+}));
+
 import { changePassword } from '@/features/identity/change-password/change-password.service';
 
 describe('changePassword', () => {
@@ -24,6 +30,7 @@ describe('changePassword', () => {
     mockComparePassword.mockResolvedValue(true);
     mockHashPassword.mockResolvedValue('new-hash');
     mockUpdateUserById.mockResolvedValue({});
+    mockRevokeAllSessions.mockResolvedValue(undefined);
   });
 
   it('şifreyi günceller ve passwordChangedAt yazar', async () => {
@@ -41,5 +48,6 @@ describe('changePassword', () => {
         }),
       })
     );
+    expect(mockRevokeAllSessions).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
   });
 });

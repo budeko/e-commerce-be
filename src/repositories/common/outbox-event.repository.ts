@@ -15,32 +15,44 @@ export const createOutboxEvent = async (data: {
     updatedAt: new Date(),
   });
 
-export const listPendingOutboxEvents = async (limit: number) =>
-  OutboxEvent.find({ status: 'pending' })
-    .sort({ createdAt: 1 })
-    .limit(limit)
-    .lean();
+export const claimPendingOutboxEvent = async () =>
+  OutboxEvent.findOneAndUpdate(
+    { status: 'pending' },
+    {
+      $set: {
+        status: 'processing',
+        updatedAt: new Date(),
+      },
+    },
+    { sort: { createdAt: 1 }, new: true }
+  ).lean();
 
 export const markOutboxEventProcessed = async (eventId: string) =>
-  OutboxEvent.findByIdAndUpdate(eventId, {
-    $set: {
-      status: 'processed',
-      processedAt: new Date(),
-      updatedAt: new Date(),
-      lastError: null,
-    },
-  });
+  OutboxEvent.findOneAndUpdate(
+    { _id: eventId, status: 'processing' },
+    {
+      $set: {
+        status: 'processed',
+        processedAt: new Date(),
+        updatedAt: new Date(),
+        lastError: null,
+      },
+    }
+  );
 
 export const markOutboxEventFailed = async (
   eventId: string,
   errorMessage: string,
   attempts: number
 ) =>
-  OutboxEvent.findByIdAndUpdate(eventId, {
-    $set: {
-      status: attempts >= 5 ? 'failed' : 'pending',
-      lastError: errorMessage.slice(0, 2000),
-      attempts,
-      updatedAt: new Date(),
-    },
-  });
+  OutboxEvent.findOneAndUpdate(
+    { _id: eventId, status: 'processing' },
+    {
+      $set: {
+        status: attempts >= 5 ? 'failed' : 'pending',
+        lastError: errorMessage.slice(0, 2000),
+        attempts,
+        updatedAt: new Date(),
+      },
+    }
+  );

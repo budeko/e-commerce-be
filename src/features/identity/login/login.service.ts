@@ -61,6 +61,10 @@ export const login = async (data: LoginInput) => {
     throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
   }
 
+  if ((user.role === 'admin' || user.role === 'seller') && user.isActive === false) {
+    throw new AuthError(401, INVALID_CREDENTIALS_MESSAGE);
+  }
+
   await resetLoginAttempts(user._id.toString());
 
   const token = signAuthToken(user._id.toString(), user.role, data.rememberMe);

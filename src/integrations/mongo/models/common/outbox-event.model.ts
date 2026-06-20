@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-export const OUTBOX_EVENT_STATUSES = ['pending', 'processed', 'failed'] as const;
+export const OUTBOX_EVENT_STATUSES = ['pending', 'processing', 'processed', 'failed'] as const;
 export type OutboxEventStatus = (typeof OUTBOX_EVENT_STATUSES)[number];
 
 const outboxEventSchema = new Schema(

@@ -14,36 +14,23 @@ export type RecordAdminActionInput = {
 };
 
 export const recordAdminAction = async (input: RecordAdminActionInput): Promise<void> => {
-  try {
-    await createAdminAuditLog({
-      _id: createUserId(),
+  await createAdminAuditLog({
+    _id: createUserId(),
+    actorUserId: input.actorUserId,
+    action: input.action,
+    resourceType: input.resourceType,
+    resourceId: input.resourceId,
+    metadata: input.metadata ?? null,
+  });
+
+  log.info(
+    {
       actorUserId: input.actorUserId,
       action: input.action,
       resourceType: input.resourceType,
       resourceId: input.resourceId,
-      metadata: input.metadata ?? null,
-    });
-
-    log.info(
-      {
-        actorUserId: input.actorUserId,
-        action: input.action,
-        resourceType: input.resourceType,
-        resourceId: input.resourceId,
-        ...(input.metadata ? { metadata: input.metadata } : {}),
-      },
-      'Admin action recorded'
-    );
-  } catch (error) {
-    log.error(
-      {
-        err: error,
-        actorUserId: input.actorUserId,
-        action: input.action,
-        resourceType: input.resourceType,
-        resourceId: input.resourceId,
-      },
-      'Admin audit log yazılamadı'
-    );
-  }
+      ...(input.metadata ? { metadata: input.metadata } : {}),
+    },
+    'Admin action recorded'
+  );
 };

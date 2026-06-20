@@ -267,7 +267,7 @@ describe('updateOrderStatus', () => {
     expect(orderDoc.items[0].fulfillmentStatus).toBe('shipped');
   });
 
-  it('delivered yapınca split onayı kaydetmeden önce çağrılır', async () => {
+  it('delivered yapınca split onayı kayıttan sonra çağrılır', async () => {
     let saveCalled = false;
 
     const orderDoc = {
@@ -290,7 +290,7 @@ describe('updateOrderStatus', () => {
 
     mockOrderFindOne.mockResolvedValue(orderDoc);
     vi.mocked(approvePaymentSplitsForSeller).mockImplementation(async () => {
-      expect(saveCalled).toBe(false);
+      expect(saveCalled).toBe(true);
     });
 
     const result = await updateOrderStatus(sellerId, orderId, { status: 'delivered' });
@@ -300,7 +300,7 @@ describe('updateOrderStatus', () => {
     expect(orderDoc.save).toHaveBeenCalled();
   });
 
-  it('split onayı başarısız olursa sipariş kaydedilmez', async () => {
+  it('split onayı başarısız olursa sipariş kaydedilmiş kalır', async () => {
     const orderDoc = {
       _id: orderId,
       status: 'shipped',
@@ -309,10 +309,10 @@ describe('updateOrderStatus', () => {
       toObject: () => ({
         _id: orderId,
         buyerId,
-        items: [{ sellerId, fulfillmentStatus: 'shipped' }],
+        items: [{ sellerId, fulfillmentStatus: 'delivered' }],
         totalAmount: 1998,
         currency: 'TRY',
-        status: 'shipped',
+        status: 'delivered',
         shippingAddress: buyerProfile,
       }),
     };
@@ -324,8 +324,8 @@ describe('updateOrderStatus', () => {
       updateOrderStatus(sellerId, orderId, { status: 'delivered' })
     ).rejects.toThrow('iyzico down');
 
-    expect(orderDoc.save).not.toHaveBeenCalled();
-    expect(orderDoc.items[0].fulfillmentStatus).toBe('shipped');
+    expect(orderDoc.save).toHaveBeenCalled();
+    expect(orderDoc.items[0].fulfillmentStatus).toBe('delivered');
   });
 
   it('geçersiz geçişte 400 fırlatır', async () => {

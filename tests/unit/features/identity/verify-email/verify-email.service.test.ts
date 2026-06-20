@@ -90,17 +90,41 @@ describe('verifyEmail', () => {
       expect(mockVerifyAuthOtp).not.toHaveBeenCalled();
     });
 
-    it('zaten doğrulanmış kullanıcıda oturum tokeni döner', async () => {
+    it('satıcı doğrulandığında isActive true olur', async () => {
+      const token = signEmailVerificationToken(userId, tokenJti);
+
+      mockFindById
+        .mockResolvedValueOnce({ ...unverifiedUser, role: 'seller' })
+        .mockResolvedValueOnce({
+          ...unverifiedUser,
+          role: 'seller',
+          isEmailVerified: true,
+          isActive: true,
+        });
+
+      await verifyEmail({ token });
+
+      expect(mockUpdateUserById).toHaveBeenCalledWith(userId, {
+        $set: {
+          isEmailVerified: true,
+          verificationExpiresAt: null,
+          activeEmailVerifyJti: null,
+          isActive: true,
+        },
+      });
+    });
+
+    it('zaten doğrulanmış kullanıcıda 400 döner', async () => {
       const token = signEmailVerificationToken(userId, tokenJti);
       mockFindById.mockResolvedValue({
         ...unverifiedUser,
         isEmailVerified: true,
       });
 
-      const result = await verifyEmail({ token });
-
-      expect(result.isEmailVerified).toBe(true);
-      expect(result.token).toEqual(expect.any(String));
+      await expect(verifyEmail({ token })).rejects.toMatchObject({
+        statusCode: 400,
+        message: 'E-posta zaten doğrulanmış, giriş yapın',
+      });
     });
 
     it('doğrulama süresi dolmuşsa kaydı siler ve 410 döner', async () => {

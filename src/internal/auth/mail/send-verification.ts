@@ -11,11 +11,11 @@ export const sendUserVerificationEmail = async (userId: string, email: string) =
   const token = signEmailVerificationToken(userId, jti);
   const code = await createAuthOtp(userId, 'email_verify');
 
+  await sendVerificationEmail(email, token, code);
+
   await updateUserById(userId, {
     $set: { activeEmailVerifyJti: jti },
   });
-
-  await sendVerificationEmail(email, token, code);
 
   return jti;
 };

@@ -1,6 +1,10 @@
 import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
 import { refundIyzicoPayment } from '@/integrations/iyzico/refund-payment';
 import { createLogger } from '@/internal/common/logging';
+import {
+  finalizeFailedIyzicoCheckout,
+  finalizeSuccessfulIyzicoCheckout,
+} from '@/internal/buyers/payment/finalize-checkout-payment';
 import { refundCapturedIyzicoPayment } from '@/internal/buyers/payment/refund-captured-payment';
 import { findOrderByIdLean } from '@/repositories/buyers/order.repository';
 import {
@@ -12,6 +16,11 @@ import {
 
 const log = createLogger({ module: 'payment-reconcile' });
 
+const FINAL_ORDER_STATUSES = new Set(['paid', 'shipped', 'delivered']);
+
+const isFinalOrderStatus = (status: string | undefined): boolean =>
+  Boolean(status && FINAL_ORDER_STATUSES.has(status));
+
 const reconcileCompletedPaymentMismatch = async (payment: {
   _id: unknown;
   orderId: string;
@@ -20,7 +29,7 @@ const reconcileCompletedPaymentMismatch = async (payment: {
 }) => {
   const order = await findOrderByIdLean(payment.orderId);
 
-  if (!order || order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered') {
+  if (!order || isFinalOrderStatus(order.status)) {
     return false;
   }
 
@@ -74,23 +83,29 @@ const reconcileStuckProcessingPayment = async (paymentId: string) => {
     const result = await completeIyzicoCheckout(checkoutToken);
 
     if (result.status === 'failed') {
-      await updatePaymentById(paymentId, {
-        status: 'failed',
-        updatedAt: new Date(),
-      });
+      await finalizeFailedIyzicoCheckout(result.orderId, result.reason);
       return true;
     }
 
     const order = await findOrderByIdLean(payment.orderId);
 
-    if (!order || order.status !== 'pending') {
-      await refundCapturedIyzicoPayment(
-        payment,
-        result.externalId,
-        order?.status === 'cancelled' ? 'order_cancelled_refund' : 'reconcile_processing_refund'
-      );
+    if (!order) {
+      await refundCapturedIyzicoPayment(payment, result.externalId, 'reconcile_missing_order_refund');
       return true;
     }
+
+    if (order.status === 'cancelled') {
+      await refundCapturedIyzicoPayment(payment, result.externalId, 'order_cancelled_refund');
+      return true;
+    }
+
+    if (order.status === 'pending' || isFinalOrderStatus(order.status)) {
+      await finalizeSuccessfulIyzicoCheckout(result);
+      return true;
+    }
+
+    await refundCapturedIyzicoPayment(payment, result.externalId, 'reconcile_processing_refund');
+    return true;
   } catch (error) {
     log.error(
       { err: error, orderId: payment.orderId, paymentId },

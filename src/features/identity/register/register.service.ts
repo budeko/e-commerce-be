@@ -12,13 +12,11 @@ import {
 } from '@/internal/auth/register/unverified-user';
 import {
   buildRegisterAckResponse,
-  REGISTER_ACK_MESSAGE,
 } from '@/internal/auth/register/register-response';
 import { invalidateAuthOtp } from '@/internal/auth/otp/otp';
 import { hashPassword } from '@/internal/common/security';
 import { createUserId } from '@/internal/common/ids';
 import { AuthError } from '@/internal/auth/errors';
-import { buildAuthUserFields } from '@/internal/auth/responses/user.response';
 import { createUser, findUserByEmail } from '@/repositories/auth/user.repository';
 import { createBuyerProfile } from '@/repositories/buyers/buyer.repository';
 import { createSellerProfile } from '@/repositories/sellers/seller.repository';
@@ -110,12 +108,5 @@ export const register = async (data: RegisterInput) => {
     return buildRegisterAckResponse();
   }
 
-  const { user } = created;
-  const statusFields = await buildAuthUserFields(user);
-
-  return {
-    message: REGISTER_ACK_MESSAGE,
-    ...statusFields,
-    isEmailVerified: user.isEmailVerified,
-  };
+  return buildRegisterAckResponse();
 };

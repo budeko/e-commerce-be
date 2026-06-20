@@ -9,9 +9,9 @@ import {
   findPaymentByOrderIdLean,
   savePaymentDocument,
 } from '@/repositories/buyers/payment.repository';
-import { findActiveProductLean } from '@/repositories/catalog/product.repository';
 import { initializeIyzicoCheckout } from '@/integrations/iyzico/initialize-checkout';
 import { completeIyzicoCheckout } from '@/integrations/iyzico/retrieve-checkout';
+import { assertPurchasableCatalogProduct } from '@/internal/catalog/product/assert-purchasable-product';
 import { CommerceError } from '@/internal/common/errors/commerce-error';
 import { logger } from '@/internal/common/logging';
 import type { CreatePaymentInput } from '@/features/buyers/payments/create-payment.schema';
@@ -77,12 +77,7 @@ const assertOrderReadyForPayment = async (items: OrderItemRecord[]) => {
   await assertSellersReadyForOrder(items);
 
   for (const item of items) {
-    const product = await findActiveProductLean(item.productId);
-
-    if (!product) {
-      throw new CommerceError(400, 'Siparişte geçersiz ürün var');
-    }
-
+    const product = await assertPurchasableCatalogProduct(item.productId);
     assertProductStockAvailable(product, item.quantity);
   }
 };
@@ -102,6 +97,10 @@ export const createPaymentForOrder = async (
 
   if (existingPayment?.status === 'completed') {
     throw new CommerceError(409, 'Bu sipariş için ödeme zaten tamamlandı');
+  }
+
+  if (existingPayment?.status === 'processing') {
+    throw new CommerceError(409, 'Bu sipariş için ödeme işleniyor');
   }
 
   await assertOrderReadyForPayment(order.items as OrderItemRecord[]);

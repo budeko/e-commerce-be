@@ -326,6 +326,14 @@ export const finalizeFailedIyzicoCheckout = async (orderId: string, reason: stri
     throw new CommerceError(404, 'Ödeme kaydı bulunamadı');
   }
 
+  if (payment.status === 'completed' || payment.status === 'refunded') {
+    return {
+      payment: toPaymentResponse(payment.toObject() as PaymentRecord),
+      success: false as const,
+      reason,
+    };
+  }
+
   const previousStatus = payment.status;
   const updated = await updatePaymentStatusByOrderId(orderId, 'failed');
   const resolvedPayment = updated ?? payment;

@@ -61,6 +61,14 @@ vi.mock('@/internal/buyers/orders/cancel-pending-order', () => ({
   cancelPendingOrder: (...args: unknown[]) => mockCancelPendingOrder(...args),
 }));
 
+vi.mock('@/internal/catalog/product/assert-purchasable-product', () => ({
+  assertPurchasableCatalogProduct: vi.fn().mockResolvedValue({
+    _id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
+    stock: 10,
+    isActive: true,
+  }),
+}));
+
 vi.mock('@/integrations/mongo', () => ({
   Order: {
     findOne: (...args: unknown[]) => mockOrderFindOne(...args),
@@ -198,6 +206,16 @@ describe('createPaymentForOrder', () => {
     await expect(createPaymentForOrder(buyerId, { orderId })).rejects.toMatchObject({
       statusCode: 400,
       message: 'Sipariş ödemeye uygun değil',
+    });
+  });
+
+  it('ödeme işleniyorsa 409 fırlatır', async () => {
+    mockOrderFindOne.mockReturnValue(mockLeanOrder(pendingOrder));
+    mockPaymentFindOne.mockResolvedValue({ status: 'processing' });
+
+    await expect(createPaymentForOrder(buyerId, { orderId })).rejects.toMatchObject({
+      statusCode: 409,
+      message: 'Bu sipariş için ödeme işleniyor',
     });
   });
 
