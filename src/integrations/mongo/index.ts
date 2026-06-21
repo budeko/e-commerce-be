@@ -70,3 +70,16 @@ export {
   OUTBOX_EVENT_STATUSES,
 } from '@/integrations/mongo/models/common/outbox-event.model';
 export type { OutboxEventStatus } from '@/integrations/mongo/models/common/outbox-event.model';
+
+export {
+  SupportTicket,
+  SUPPORT_TICKET_STATUSES,
+  SUPPORT_TICKET_CATEGORIES,
+  SUPPORT_AUTHOR_ROLES,
+} from '@/integrations/mongo/models/support/support-ticket.model';
+export type {
+  SupportTicketStatus,
+  SupportTicketCategory,
+  SupportAuthorRole,
+} from '@/integrations/mongo/models/support/support-ticket.model';
+export { SupportMessage } from '@/integrations/mongo/models/support/support-message.model';

@@ -80,3 +80,21 @@ export const canReadAdminRoles = (ctx: AdminAccessContext) =>
 export const canWriteAdminRoles = (ctx: AdminAccessContext) => ctx.isOwner;
 
 export const canDeleteAdminRoles = (ctx: AdminAccessContext) => ctx.isOwner;
+
+export const canReadOrders = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.ORDERS_READ);
+
+export const canReadSupport = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.SUPPORT_READ);
+
+export const canWriteSupport = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.SUPPORT_WRITE);
+
+export const canReadBuyers = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.BUYERS_READ);
+
+export const canReadFinance = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.FINANCE_READ);
+
+export const canExportFinance = (ctx: AdminAccessContext) =>
+  hasPermission(ctx, PERMISSIONS.FINANCE_EXPORT);

@@ -20,3 +20,7 @@ export const orderIdParamSchema = z.object({
 export const roleIdParamSchema = z.object({
   roleId: uuidSchema,
 });
+
+export const ticketIdParamSchema = z.object({
+  ticketId: uuidSchema,
+});

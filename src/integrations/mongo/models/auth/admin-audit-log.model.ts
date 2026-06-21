@@ -13,6 +13,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   'seller.iyzico_synced',
   'user.deactivated',
   'user.reactivated',
+  'support.ticket_updated',
+  'support.message_posted',
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

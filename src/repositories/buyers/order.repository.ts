@@ -95,3 +95,36 @@ export const findExpiringPendingOrdersLean = async (
   })
     .select('_id')
     .lean();
+
+export type ListAdminOrdersFilters = {
+  status?: OrderStatus;
+  buyerId?: string;
+  sellerId?: string;
+};
+
+export const listAdminOrdersLean = async (
+  filters: ListAdminOrdersFilters,
+  limit: number,
+  offset: number
+) => {
+  const query: Record<string, unknown> = {};
+
+  if (filters.status) {
+    query.status = filters.status;
+  }
+
+  if (filters.buyerId) {
+    query.buyerId = filters.buyerId;
+  }
+
+  if (filters.sellerId) {
+    query['items.sellerId'] = filters.sellerId;
+  }
+
+  const [items, total] = await Promise.all([
+    Order.find(query).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
+    Order.countDocuments(query),
+  ]);
+
+  return { items, total };
+};
