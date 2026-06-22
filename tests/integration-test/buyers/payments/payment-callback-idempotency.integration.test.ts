@@ -172,8 +172,8 @@ describe('payment callback idempotency integration', () => {
     const first = await postCallback();
     const second = await postCallback();
 
-    expect(first.statusCode).toBe(302);
-    expect(second.statusCode).toBe(302);
+    expect(first.statusCode).toBe(303);
+    expect(second.statusCode).toBe(303);
     expect(first.headers.location).toContain('payment=success');
     expect(second.headers.location).toContain('payment=success');
     expect(mockFulfillPaidOrder).toHaveBeenCalledTimes(1);

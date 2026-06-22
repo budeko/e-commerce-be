@@ -87,7 +87,7 @@ describeE2E('buyer checkout (E2E)', () => {
       payload: 'token=e2e-checkout-token',
     });
 
-    expect(callbackResponse.statusCode).toBe(302);
+    expect(callbackResponse.statusCode).toBe(303);
     expect(callbackResponse.headers.location).toContain(`/orders/${orderId}?payment=success`);
 
     const paidOrder = await Order.findById(orderId).lean();
@@ -148,8 +148,8 @@ describeE2E('buyer checkout (E2E)', () => {
       payload: 'token=e2e-checkout-token-dup',
     });
 
-    expect(firstCallback.statusCode).toBe(302);
-    expect(secondCallback.statusCode).toBe(302);
+    expect(firstCallback.statusCode).toBe(303);
+    expect(secondCallback.statusCode).toBe(303);
     expect(firstCallback.headers.location).toContain('payment=success');
     expect(secondCallback.headers.location).toContain('payment=success');
 
